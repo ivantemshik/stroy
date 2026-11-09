@@ -27,6 +27,21 @@ const PAGES = {
 };
 const SITEMAP = ['/', '/otdelka/', '/proektirovanie/', '/privacy/', '/soglasie/', '/cookies/'];
 
+// Общие куски страниц (шапка, контакты и подвал) лежат в src/site/partials и вставляются
+// на место комментария <!--#include имя флаги-->. Так все страницы выглядят одинаково.
+const PARTIALS_DIR = `${root}src/site/partials/`;
+function includePartials(html) {
+  const page = /<body[^>]*\sdata-page="([\w-]+)"/.exec(html)?.[1] || 'home';
+  return html.replace(/<!--#include (\w+)((?: [\w-]+)*)\s*-->/g, (match, name, flagsRaw) => {
+    const flags = new Set(flagsRaw.trim().split(/\s+/).filter(Boolean));
+    const part = readFileSync(`${PARTIALS_DIR}${name}.html`, 'utf8')
+      .replaceAll('{{page}}', page)
+      .replaceAll('{{headerClass}}', flags.has('over') ? ' site-header--over' : '')
+      .replaceAll('{{cta}}', flags.has('doc') ? '/#zayavka' : '#zayavka');
+    return part.replaceAll(`data-nav="${page}"`, `data-nav="${page}" aria-current="page"`).trim();
+  });
+}
+
 const siteUrl = () => (process.env.PUBLIC_SITE_URL || process.env.SITE_URL || 'http://127.0.0.1:5173').replace(/\/$/, '');
 const indexable = () => process.env.SITE_INDEXABLE === 'true';
 
@@ -51,7 +66,7 @@ function sitePlugin() {
     transformIndexHtml: {
       order: 'pre',
       handler(html, ctx) {
-        let out = html
+        let out = includePartials(html)
           .replaceAll('%SITE_URL%', siteUrl())
           .replaceAll('%ROBOTS%', indexable() ? 'index, follow' : 'noindex, nofollow')
           .replaceAll('%YM_ID%', process.env.VITE_YM_ID || process.env.YM_COUNTER_ID || '');
@@ -86,6 +101,9 @@ function devApiPlugin() {
   return {
     name: 'dom-mira-dev-api',
     configureServer(server) {
+      // Правка шапки или подвала перезагружает страницы в режиме разработки.
+      server.watcher.add(PARTIALS_DIR);
+      server.watcher.on('change', file => { if (file.startsWith(PARTIALS_DIR)) server.ws.send({type: 'full-reload'}); });
       server.middlewares.use(async (req, res, next) => {
         if (!req.url.startsWith('/api/')) return next();
         try {

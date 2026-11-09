@@ -8,7 +8,10 @@ const LIST_SHAPES = {
   'home.promo': {title: 'Акции на главной', fields: [['title', 'Заголовок'], ['text', 'Текст']]},
   'otdelka.promo': {title: 'Акции на странице отделки', fields: [['title', 'Заголовок'], ['text', 'Текст']]},
   'home.faq': {title: 'Вопросы на главной', fields: [['q', 'Вопрос'], ['a', 'Ответ', true]]},
-  'otdelka.faq': {title: 'Вопросы на странице отделки', fields: [['q', 'Вопрос'], ['a', 'Ответ', true]]}
+  'otdelka.faq': {title: 'Вопросы на странице отделки', fields: [['q', 'Вопрос'], ['a', 'Ответ', true]]},
+  'proekt.prices': {title: 'Цены на странице проектирования', fields: [['name', 'Раздел проекта'], ['price', 'Цена']]},
+  'proekt.promo': {title: 'Акции на странице проектирования', fields: [['title', 'Заголовок'], ['text', 'Текст']]},
+  'proekt.faq': {title: 'Вопросы на странице проектирования', fields: [['q', 'Вопрос'], ['a', 'Ответ', true]]}
 };
 
 export default function Content() {

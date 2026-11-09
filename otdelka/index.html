@@ -20,88 +20,53 @@
   <link rel="preload" href="/fonts/manrope-cyrillic.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" as="image" href="/images/objects/otdelka-gostinaya-1472.webp" imagesrcset="/images/objects/otdelka-gostinaya-800.webp 800w, /images/objects/otdelka-gostinaya-1100.webp 1100w, /images/objects/otdelka-gostinaya-1472.webp 1472w" imagesizes="(max-width: 60rem) 100vw, 1500px" fetchpriority="high" />
   <link rel="stylesheet" href="../src/site/site.css" />
-  <script>document.documentElement.classList.add('js');</script>
+  <script>document.documentElement.classList.add('js');try{var t=localStorage.getItem('dm_theme');if(t==='dark'||t==='light')document.documentElement.dataset.theme=t}catch(e){}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Service","name":"Отделка загородного дома под ключ","serviceType":"Отделочные работы","areaServed":[{"@type":"City","name":"Москва"},{"@type":"AdministrativeArea","name":"Московская область"}],"provider":{"@type":"HomeAndConstructionBusiness","name":"Дом Мира","legalName":"ООО «ГК ВЕСЬ МИР»","url":"%SITE_URL%/","email":"info@gkvesmir.ru","address":{"@type":"PostalAddress","streetAddress":"Пресненская набережная, 12, помещение 2н","addressLocality":"Москва","postalCode":"123112","addressCountry":"RU"}},"offers":{"@type":"Offer","priceSpecification":{"@type":"UnitPriceSpecification","price":60000,"priceCurrency":"RUB","unitText":"м²","description":"Ремонт по дизайн проекту без инженерных систем, цена за работу без материалов"}}}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Строительство домов","item":"%SITE_URL%/"},{"@type":"ListItem","position":2,"name":"Отделочные работы","item":"%SITE_URL%/otdelka/"}]}</script>
   <script type="application/ld+json" data-c-jsonld="otdelka.faq">{}</script>
 </head>
 <body data-page="otdelka" data-service="finishing">
   <a class="skip" href="#main">К содержанию</a>
-
-  <header class="site-header">
-    <div class="container">
-      <a class="brand" href="/" aria-label="Дом Мира, на главную">
-        <svg viewBox="0 0 32 32" aria-hidden="true"><path class="wall" d="M3 17 16 5l13 12v11H19V17h-6v11H3Z"/><path class="roof" d="m16 5 13 12H16Z"/></svg>
-        <span><b>ДОМ МИРА</b><small>Строим в Москве и области</small></span>
-      </a>
-      <nav class="nav" aria-label="Основная навигация">
-        <a href="/">Строительство</a>
-        <a href="/otdelka/" aria-current="page">Отделка</a>
-        <a href="/proektirovanie/">Проектирование</a>
-        <a href="#etapy">Этапы</a>
-        <a href="#ceny">Цены</a>
-        <a href="#voprosy">Вопросы</a>
-      </nav>
-      <div class="header-actions">
-        <a class="header-phone" data-phone href="tel:" hidden></a>
-        <a class="icon-btn" href="https://t.me/dommira_consult_bot?start=s_otdelka" data-tg aria-label="Написать консультанту в Telegram" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 4 3 11l6 2m12-9-4 16-8-7m12-9L9 13m0 0v6l3-3"/></svg>
-        </a>
-        <button class="btn" type="button" data-open-calc>Рассчитать отделку</button>
-        <button class="icon-btn menu-toggle" type="button" aria-controls="mobile-menu" aria-expanded="false" aria-label="Открыть меню">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16M4 16h16"/></svg>
-        </button>
-      </div>
-    </div>
-    <nav class="mobile-menu" id="mobile-menu" aria-label="Меню" hidden>
-      <a href="/">Строительство домов</a>
-      <a href="/otdelka/" aria-current="page">Отделочные работы</a>
-      <a href="/proektirovanie/">Проектирование</a>
-      <a href="#etapy">Этапы работ</a>
-      <a href="#ceny">Цены</a>
-      <a href="#voprosy">Вопросы</a>
-      <a href="#zayavka">Оставить заявку</a>
-    </nav>
-  </header>
+  <div class="shell" id="top">
+  <!--#include header over-->
 
   <main id="main">
     <section class="hero" aria-labelledby="hero-title">
-      <div class="hero-stage">
-        <figure class="hero-photo">
-          <img src="/images/objects/otdelka-gostinaya-1472.webp" srcset="/images/objects/otdelka-gostinaya-800.webp 800w, /images/objects/otdelka-gostinaya-1100.webp 1100w, /images/objects/otdelka-gostinaya-1472.webp 1472w" sizes="(max-width: 60rem) 100vw, 1500px" width="1472" height="1098" alt="Гостиная со встроенными стеллажами, светлыми диванами и панелями на стенах" fetchpriority="high" style="object-position: 70% 55%" />
-        </figure>
-        <div class="hero-content">
-          <h1 id="hero-title">Отделка загородного дома под&nbsp;ключ</h1>
-          <p class="hero-lead">Черновые и чистовые работы, инженерия и мебель точно по&nbsp;вашему дизайн проекту.</p>
-          <div class="hero-actions">
-            <button class="btn" type="button" data-open-calc>Рассчитать отделку</button>
-            <a class="btn btn--quiet" href="https://t.me/dommira_consult_bot?start=s_otdelka" data-tg target="_blank" rel="noopener">Спросить в Telegram</a>
-          </div>
+      <figure class="hero-photo">
+        <img src="/images/objects/otdelka-gostinaya-1472.webp" srcset="/images/objects/otdelka-gostinaya-800.webp 800w, /images/objects/otdelka-gostinaya-1100.webp 1100w, /images/objects/otdelka-gostinaya-1472.webp 1472w" sizes="(max-width: 760px) 100vw, 1360px" width="1472" height="1098" alt="Гостиная со встроенными стеллажами, светлыми диванами и панелями на стенах" fetchpriority="high" style="object-position: 70% 55%" />
+      </figure>
+      <div class="hero-content">
+        <p class="eyebrow hero-eyebrow">Москва и Московская область</p>
+        <h1 id="hero-title">Отделка <span>загородного дома</span> <span>под&nbsp;ключ</span></h1>
+        <p class="hero-lead">Черновые и чистовые работы, инженерия и мебель точно по&nbsp;вашему дизайн проекту.</p>
+        <div class="hero-actions">
+          <button class="btn btn--wide" type="button" data-open-calc>Рассчитать отделку <svg class="arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6"/></svg></button>
+          <a class="btn btn--paper" href="https://t.me/dommira_consult_bot?start=s_otdelka" data-tg target="_blank" rel="noopener">Спросить в Telegram</a>
         </div>
-        <p class="hero-caption">Посёлок Променад, гостиная</p>
       </div>
-      <p class="notice" data-c="notice" hidden></p>
+      <div class="hero-bottom"><p class="hero-caption">Посёлок Променад, гостиная</p></div>
     </section>
+    <p class="notice" data-c="notice" hidden></p>
 
     <section class="section" id="situacii" aria-labelledby="paths-title">
       <div class="container">
         <div class="section-head">
-          <h2 id="paths-title">Три ситуации, с которых начинают отделку</h2>
+          <div><p class="eyebrow">01 / С чего начать</p><h2 id="paths-title">Три ситуации, <br /><span class="dim">с которых начинают отделку</span></h2></div>
           <p>Подключаемся к любой из них, целиком или на отдельных этапах.</p>
         </div>
         <ul class="paths">
           <li>
-            <img src="/images/objects/otdelka-chernovaya-600.webp" srcset="/images/objects/otdelka-chernovaya-600.webp 600w, /images/objects/otdelka-chernovaya-867.webp 867w" sizes="(max-width: 60rem) 100vw, 36vw" width="867" height="1156" alt="Потолок из влагостойкого гипсокартона на этапе черновой отделки" loading="lazy" />
+            <img src="/images/objects/otdelka-chernovaya-600.webp" srcset="/images/objects/otdelka-chernovaya-600.webp 600w, /images/objects/otdelka-chernovaya-867.webp 867w" sizes="(max-width: 900px) 100vw, 30vw" width="867" height="1156" alt="Потолок из влагостойкого гипсокартона на этапе черновой отделки" loading="lazy" />
             <h3>Дом построен, внутри голые стены</h3>
             <p>Черновые работы, инженерия, чистовая отделка и мебель. Можно начать с одного этапа.</p>
           </li>
           <li>
-            <img src="/images/objects/otdelka-stolovaya-800.webp" srcset="/images/objects/otdelka-stolovaya-800.webp 800w, /images/objects/otdelka-stolovaya-1467.webp 1467w" sizes="(max-width: 60rem) 100vw, 30vw" width="1467" height="1098" alt="Столовая с панорамными окнами и длинным столом" loading="lazy" />
+            <img src="/images/objects/otdelka-stolovaya-800.webp" srcset="/images/objects/otdelka-stolovaya-800.webp 800w, /images/objects/otdelka-stolovaya-1467.webp 1467w" sizes="(max-width: 900px) 100vw, 30vw" width="1467" height="1098" alt="Столовая с панорамными окнами и длинным столом" loading="lazy" />
             <h3>Есть дизайн проект</h3>
             <p>Проверим проект на реализуемость, посчитаем смету за 3 дня и реализуем с авторским надзором.</p>
           </li>
           <li>
-            <img src="/images/objects/rekonstrukciya-600.webp" srcset="/images/objects/rekonstrukciya-600.webp 600w, /images/objects/rekonstrukciya-1100.webp 1100w" sizes="(max-width: 60rem) 100vw, 30vw" width="1100" height="1467" alt="Реконструкция дома в Малаховке, кран поднимает плиту перекрытия" loading="lazy" />
+            <img src="/images/objects/rekonstrukciya-600.webp" srcset="/images/objects/rekonstrukciya-600.webp 600w, /images/objects/rekonstrukciya-1100.webp 1100w" sizes="(max-width: 900px) 100vw, 30vw" width="1100" height="1467" alt="Реконструкция дома в Малаховке, кран поднимает плиту перекрытия" loading="lazy" />
             <h3>Дому много лет</h3>
             <p>Капитальный ремонт: новая инженерия, ровные стены, полы, окна и двери, перепланировка.</p>
           </li>
@@ -110,9 +75,9 @@
     </section>
 
     <section class="section" id="etapy" aria-labelledby="steps-title">
-      <div class="container">
+      <div class="band">
         <div class="section-head">
-          <h2 id="steps-title">От аудита проекта до&nbsp;расстановки мебели</h2>
+          <div><p class="eyebrow">02 / Как идёт работа</p><h2 id="steps-title">От аудита проекта <br /><span class="dim">до&nbsp;расстановки мебели</span></h2></div>
           <p>Порядок работ по дизайн проекту. Каждый этап сверяем с чертежами.</p>
         </div>
         <ol class="steps">
@@ -131,23 +96,26 @@
     <section class="section" id="ceny" aria-labelledby="prices-title" data-goal-view="prices_view">
       <div class="container">
         <div class="section-head">
-          <h2 id="prices-title">Цены на отделочные работы за&nbsp;м²</h2>
+          <div><p class="eyebrow">03 / Открытый ориентир</p><h2 id="prices-title">Цены на отделку <br /><span class="dim">за&nbsp;квадратный метр</span></h2></div>
           <p>Цены за работу, без материалов. Точную смету даём после обмеров на объекте.</p>
         </div>
-        <div class="prices">
+      </div>
+      <div class="prices">
+        <div class="price-card">
           <table class="price-table">
             <caption>Прайс на отделочные работы</caption>
             <thead><tr><th scope="col">Работа</th><th scope="col" class="num">Цена</th></tr></thead>
             <tbody data-c-list="otdelka.prices"></tbody>
           </table>
+        </div>
+        <div class="calc-panel">
           <div>
-            <div class="calc-panel">
-              <h3>Посчитайте отделку за&nbsp;минуту</h3>
-              <p>Площадь, объём работ и наличие дизайн проекта: покажем ориентир и пришлём смету.</p>
-              <div><button class="btn" type="button" data-open-calc>Рассчитать отделку</button></div>
-            </div>
-            <ul class="promo-list" data-c-list="otdelka.promo"></ul>
+            <p class="eyebrow">Расчёт за минуту</p>
+            <h3>Посчитайте <span>отделку</span></h3>
+            <p>Площадь, объём работ и наличие дизайн проекта: покажем ориентир и пришлём смету.</p>
           </div>
+          <ul class="promo-list" data-c-list="otdelka.promo"></ul>
+          <button class="btn btn--paper" type="button" data-open-calc>Рассчитать отделку <svg class="arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6"/></svg></button>
         </div>
       </div>
     </section>
@@ -155,33 +123,32 @@
     <section class="section" id="nadzor" aria-labelledby="terms-title">
       <div class="container">
         <div class="section-head">
-          <h2 id="terms-title">Результат совпадает с&nbsp;проектом дизайнера</h2>
+          <div><p class="eyebrow">04 / Авторский надзор</p><h2 id="terms-title">Результат совпадает <br /><span class="dim">с&nbsp;проектом дизайнера</span></h2></div>
           <p>Розетки не окажутся за шкафом, а свет попадёт туда, где его ждут.</p>
         </div>
-        <div class="terms">
-          <figure>
-            <img src="/images/objects/otdelka-vannaya-600.webp" srcset="/images/objects/otdelka-vannaya-600.webp 600w, /images/objects/otdelka-vannaya-1063.webp 1063w" sizes="(max-width: 60rem) 100vw, 38vw" width="1063" height="1514" alt="Ванная комната с мраморными стенами и подвесной тумбой" loading="lazy" />
-            <figcaption>Ванная в доме в посёлке Променад: мрамор на стенах и раковина по проекту.</figcaption>
-          </figure>
-          <dl class="facts">
+      </div>
+      <div class="terms">
+        <figure>
+          <img src="/images/objects/otdelka-vannaya-600.webp" srcset="/images/objects/otdelka-vannaya-600.webp 600w, /images/objects/otdelka-vannaya-1063.webp 1063w" sizes="(max-width: 900px) 100vw, 40vw" width="1063" height="1514" alt="Ванная комната с мраморными стенами и подвесной тумбой" loading="lazy" />
+          <figcaption>Ванная в доме в посёлке Променад: мрамор на стенах и раковина по проекту.</figcaption>
+        </figure>
+        <dl class="facts">
             <div><dt>Авторский надзор</dt><dd>Прорабы и дизайнер на связи, изменения согласуем с вами.</dd></div>
             <div><dt>Фиксированная стоимость</dt><dd>Смета по позициям до начала работ, без доплат по ходу.</dd></div>
             <div><dt>Гарантия 5 лет</dt><dd>На все виды работ по договору.</dd></div>
             <div><dt>Документы при сдаче</dt><dd>Закрывающие документы, схемы скрытых коммуникаций и инструкции.</dd></div>
           </dl>
-        </div>
       </div>
     </section>
 
     <section class="section" id="interery" aria-labelledby="gallery-title">
       <div class="container">
         <div class="section-head">
-          <h2 id="gallery-title">Интерьеры в Променаде и Малаховке</h2>
+          <div><p class="eyebrow">05 / Наши интерьеры</p><h2 id="gallery-title">Интерьеры в Променаде <br /><span class="dim">и&nbsp;Малаховке</span></h2></div>
           <p>Дома, которые компания построила и довела до заезда. Нажмите на фото, чтобы открыть крупно.</p>
         </div>
       </div>
-      <div class="rail-outer">
-        <ul class="rail rail--tall" tabindex="0" aria-label="Фото интерьеров">
+      <ul class="rail rail--tall" tabindex="0" aria-label="Фото интерьеров">
           <li><button class="photo-btn" type="button" data-gallery="interiors:0"><figure><img src="/images/objects/otdelka-kamin-800.webp" width="800" height="600" alt="Гостиная с камином и деревянным потолком" loading="lazy" /><figcaption><b>Гостиная с камином</b><span>Посёлок Променад</span></figcaption></figure></button></li>
           <li><button class="photo-btn" type="button" data-gallery="interiors:1"><figure><img src="/images/objects/otdelka-spalnya-800.webp" width="800" height="606" alt="Спальня с панорамными окнами и мягким изголовьем" loading="lazy" /><figcaption><b>Спальня</b><span>Посёлок Променад</span></figcaption></figure></button></li>
           <li><button class="photo-btn" type="button" data-gallery="interiors:2"><figure><img src="/images/objects/otdelka-kuhnya-600.webp" width="600" height="832" alt="Кухня с белым островом и стеклянными шкафами" loading="lazy" /><figcaption><b>Кухня</b><span>Посёлок Променад</span></figcaption></figure></button></li>
@@ -190,25 +157,33 @@
           <li><button class="photo-btn" type="button" data-gallery="interiors:5"><figure><img src="/images/objects/otdelka-lestnica-600.webp" width="600" height="800" alt="Лестница с подвесными светильниками" loading="lazy" /><figcaption><b>Лестница и свет</b><span>Посёлок Малаховка</span></figcaption></figure></button></li>
           <li><button class="photo-btn" type="button" data-gallery="interiors:6"><figure><img src="/images/objects/promenad-basseyn-800.webp" width="800" height="638" alt="Бассейн с подсветкой стен" loading="lazy" /><figcaption><b>Бассейн</b><span>Посёлок Променад</span></figcaption></figure></button></li>
         </ul>
-      </div>
     </section>
 
     <section class="section" id="voprosy" aria-labelledby="faq-title">
       <div class="container faq">
-        <h2 id="faq-title">Что спрашивают перед&nbsp;отделкой</h2>
+        <div><p class="eyebrow">06 / Вопросы</p><h2 id="faq-title">Что спрашивают <br /><span class="dim">перед&nbsp;отделкой</span></h2></div>
         <div class="faq-list" data-c-list="otdelka.faq"></div>
       </div>
     </section>
 
     <section class="section" id="zayavka" aria-labelledby="request-title">
-      <div class="container">
-        <div class="request">
+      <div class="request">
+        <div class="request-intro">
           <div>
-            <div class="request-intro">
-              <h2 id="request-title">Пришлите проект или опишите задачу</h2>
-              <p>Посчитаем смету по позициям. Файлы проекта удобнее отправить консультанту в Telegram.</p>
-            </div>
-            <form class="lead-form ym-hide-content ym-disable-keys" data-lead-form="request-otdelka" data-service-default="finishing" novalidate>
+            <p class="eyebrow">07 / Заявка</p>
+            <h2 id="request-title">Пришлите проект <br /><span class="dim">или опишите задачу</span></h2>
+            <p>Посчитаем смету по позициям. Файлы проекта удобнее отправить <a class="link" href="https://t.me/dommira_consult_bot?start=s_otdelka" data-tg target="_blank" rel="noopener">консультанту в Telegram</a>.</p>
+          </div>
+          <ol class="request-next">
+            <li>Проверим дизайн проект на реализуемость</li>
+            <li>Посчитаем смету по позициям за 3 дня</li>
+            <li>Согласуем график и начнём работы</li>
+          </ol>
+        </div>
+        <div class="lead-card">
+          <p class="eyebrow">Обсудим ваш дом</p>
+          <h3>Начнём <span>с разговора</span></h3>
+          <form class="lead-form ym-hide-content ym-disable-keys" data-lead-form="request-otdelka" data-service-default="finishing" novalidate>
               <div class="field-row">
                 <div class="field"><label for="o-name">Как к вам обращаться</label><input id="o-name" name="name" autocomplete="name" maxlength="80" /><span class="field-error" id="o-name-error"></span></div>
                 <div class="field"><label for="o-phone">Телефон</label><input id="o-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7" required class="ym-hide-content" /><span class="field-error" id="o-phone-error"></span></div>
@@ -224,7 +199,7 @@
                     <option value="Отдельные работы">Отдельные работы</option>
                   </select>
                 </div>
-                <div class="field"><label for="o-area">Площадь, м²</label><input id="o-area" name="area" inputmode="numeric" maxlength="6" placeholder="Например, 200" /></div>
+                <div class="field"><label for="o-area">Площадь, м²</label><input id="o-area" name="area" inputmode="numeric" maxlength="6" placeholder="200" /></div>
               </div>
               <fieldset class="seg field">
                 <legend>Дизайн проект</legend>
@@ -244,58 +219,17 @@
               <label class="check"><input type="checkbox" name="consent" required /><span>Даю <a href="/soglasie/" target="_blank">согласие на обработку персональных данных</a> и принимаю <a href="/privacy/" target="_blank">политику конфиденциальности</a>.</span></label>
               <span class="field-error" data-error-for="consent"></span>
               <div class="form-actions">
-                <button class="btn" type="submit">Отправить заявку</button>
+                <button class="btn btn--paper btn--block" type="submit">Отправить заявку <svg class="arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6"/></svg></button>
                 <p class="form-status" role="status" aria-live="polite"></p>
               </div>
             </form>
-          </div>
-          <div class="request-aside">
-            <dl class="contact-list">
-              <div><dt>Telegram</dt><dd><a href="https://t.me/dommira_consult_bot?start=s_otdelka" data-tg target="_blank" rel="noopener">Написать консультанту</a><span>Сюда удобно прислать дизайн проект и фото объекта</span></dd></div>
-              <div><dt>Телефон</dt><dd><a data-phone href="tel:" hidden></a><span data-c="contacts.hours">Ежедневно с 9:00 до 21:00</span></dd></div>
-              <div><dt>Почта</dt><dd><a href="mailto:info@gkvesmir.ru" data-c-mail><span data-c="contacts.email">info@gkvesmir.ru</span></a></dd></div>
-              <div><dt>Офис</dt><dd><a href="https://yandex.ru/maps/?text=%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0%2C%20%D0%9F%D1%80%D0%B5%D1%81%D0%BD%D0%B5%D0%BD%D1%81%D0%BA%D0%B0%D1%8F%20%D0%BD%D0%B0%D0%B1%D0%B5%D1%80%D0%B5%D0%B6%D0%BD%D0%B0%D1%8F%2C%2012" target="_blank" rel="noopener"><span data-c="contacts.address">Москва, Пресненская набережная, 12, помещение 2н</span></a><span data-c="contacts.meeting">Встречи в офисе по договорённости</span></dd></div>
-            </dl>
-          </div>
         </div>
       </div>
     </section>
   </main>
 
-  <footer class="site-footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-col">
-          <a class="brand" href="/" aria-label="Дом Мира, на главную">
-            <svg viewBox="0 0 32 32" aria-hidden="true"><path class="wall" d="M3 17 16 5l13 12v11H19V17h-6v11H3Z"/><path class="roof" d="m16 5 13 12H16Z"/></svg>
-            <span><b>ДОМ МИРА</b><small>Строим в Москве и области</small></span>
-          </a>
-          <p>Строительство домов, отделка, проектирование и инженерные системы под ключ.</p>
-        </div>
-        <div class="footer-col">
-          <b>Услуги</b>
-          <ul><li><a href="/">Строительство домов</a></li><li><a href="/otdelka/">Отделочные работы</a></li><li><a href="/proektirovanie/">Проектирование</a></li></ul>
-        </div>
-        <div class="footer-col">
-          <b>Контакты</b>
-          <ul>
-            <li><a data-phone href="tel:" hidden></a></li>
-            <li><a href="mailto:info@gkvesmir.ru" data-c-mail><span data-c="contacts.email">info@gkvesmir.ru</span></a></li>
-            <li><a href="https://t.me/dommira_consult_bot?start=s_otdelka" data-tg target="_blank" rel="noopener">Telegram консультант</a></li>
-            <li data-c="contacts.address">Москва, Пресненская набережная, 12, помещение 2н</li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <b>Документы</b>
-          <ul><li><a href="/privacy/">Конфиденциальность</a></li><li><a href="/soglasie/">Согласие на обработку</a></li><li><a href="/cookies/">Cookie</a></li><li><button class="text-btn" type="button" data-cookie-settings>Настройки cookie</button></li></ul>
-        </div>
-      </div>
-      <div class="footer-legal">
-        <span>ООО «ГК ВЕСЬ МИР», ИНН 9703174864, ОГРН 1247700186722</span>
-        <span>Цены на сайте ориентировочные и не являются публичной офертой</span>
-      </div>
-    </div>
-  </footer>
+  <!--#include footer-->
+  </div>
 
   <dialog class="dialog" id="calc-dialog" aria-labelledby="calc-title"></dialog>
   <dialog class="dialog lightbox" id="gallery-dialog" aria-label="Фото интерьера"></dialog>

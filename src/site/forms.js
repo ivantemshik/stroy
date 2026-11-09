@@ -139,14 +139,16 @@ export function attachForm(form, {details, onSuccess} = {}) {
     const payload = {
       form: formName,
       page: location.pathname,
-      service: form.elements.service?.value || extra.service || form.dataset.serviceDefault || document.body.dataset.service || 'other',
+      service: form.elements.service?.value || extra.service || form.elements.object?.selectedOptions?.[0]?.dataset.service || form.dataset.serviceDefault || document.body.dataset.service || 'other',
       name: form.elements.name?.value?.trim() || '',
       phone: form.elements.phone?.value?.trim() || '',
       email: form.elements.email?.value?.trim() || '',
       contact_pref: radioValue(form, 'contact_pref') || null,
       message: form.elements.message?.value?.trim() || '',
       details: {
+        object: form.elements.object?.value || undefined,
         area: form.elements.area?.value?.trim() || undefined,
+        has_plot: radioValue(form, 'has_plot') || undefined,
         has_project: radioValue(form, 'has_project') || undefined,
         design_project: radioValue(form, 'design_project') || undefined,
         scope: radioValue(form, 'scope') || undefined,

@@ -5,6 +5,8 @@ import {initForms} from './forms.js';
 import {initCalc} from './calc.js';
 import {initObjects, initPhotoLinks} from './objects.js';
 import {initContent} from './content.js';
+import {initTheme} from './theme.js';
+import {initDesignSections} from './design.js';
 
 const page = document.body.dataset.page || 'home';
 
@@ -84,6 +86,7 @@ function initGoals() {
   viewed.forEach(node => observer.observe(node));
 }
 
+initTheme();
 captureAttribution();
 updateTelegramLinks();
 initMenu();
@@ -95,3 +98,4 @@ initCalc();
 initObjects();
 initPhotoLinks();
 initContent();
+initDesignSections();

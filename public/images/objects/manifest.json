@@ -227,6 +227,42 @@
    1200
   ]
  },
+ "garazh": {
+  "width": 1440,
+  "height": 1920,
+  "widths": [
+   1200,
+   700
+  ]
+ },
+ "garazh-2": {
+  "width": 1440,
+  "height": 1920,
+  "widths": [
+   1200
+  ]
+ },
+ "garazh-3": {
+  "width": 1440,
+  "height": 1920,
+  "widths": [
+   1200
+  ]
+ },
+ "garazh-potolok": {
+  "width": 960,
+  "height": 1280,
+  "widths": [
+   960
+  ]
+ },
+ "garazh-otdelka": {
+  "width": 960,
+  "height": 1280,
+  "widths": [
+   960
+  ]
+ },
  "otdelka-gostinaya": {
   "width": 1472,
   "height": 1098,

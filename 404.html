@@ -10,57 +10,19 @@
   <meta name="ym-counter" content="%YM_ID%" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="./src/site/site.css" />
-  <script>document.documentElement.classList.add('js');</script>
+  <script>document.documentElement.classList.add('js');try{var t=localStorage.getItem('dm_theme');if(t==='dark'||t==='light')document.documentElement.dataset.theme=t}catch(e){}</script>
 </head>
 <body data-page="404" data-service="other">
   <a class="skip" href="#main">К содержанию</a>
-  <header class="site-header">
-    <div class="container">
-      <a class="brand" href="/" aria-label="Дом Мира, на главную">
-        <svg viewBox="0 0 32 32" aria-hidden="true"><path class="wall" d="M3 17 16 5l13 12v11H19V17h-6v11H3Z"/><path class="roof" d="m16 5 13 12H16Z"/></svg>
-        <span><b>ДОМ МИРА</b><small>Строим в Москве и области</small></span>
-      </a>
-      <nav class="nav" aria-label="Основная навигация">
-        <a href="/">Строительство</a>
-        <a href="/otdelka/">Отделка</a>
-        <a href="/proektirovanie/">Проектирование</a>
-      </nav>
-      <div class="header-actions">
-        <a class="icon-btn" href="https://t.me/dommira_consult_bot?start=s_404" data-tg aria-label="Написать консультанту в Telegram" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 4 3 11l6 2m12-9-4 16-8-7m12-9L9 13m0 0v6l3-3"/></svg>
-        </a>
-        <button class="icon-btn menu-toggle" type="button" aria-controls="mobile-menu" aria-expanded="false" aria-label="Открыть меню">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16M4 16h16"/></svg>
-        </button>
-      </div>
-    </div>
-    <nav class="mobile-menu" id="mobile-menu" aria-label="Меню" hidden>
-      <a href="/">Строительство домов</a>
-      <a href="/otdelka/">Отделочные работы</a>
-      <a href="/proektirovanie/">Проектирование</a>
-    </nav>
-  </header>
+  <div class="shell" id="top">
+  <!--#include header doc-->
   <main id="main" class="doc">
     <h1>Такой страницы нет</h1>
     <p>Возможно, ссылка устарела. Начните с главной или напишите консультанту.</p>
     <p><a class="btn" href="/">Строительство домов</a> <a class="btn btn--quiet" href="/otdelka/">Отделочные работы</a></p>
   </main>
-  <footer class="site-footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-col">
-          <a class="brand" href="/" aria-label="Дом Мира, на главную">
-            <svg viewBox="0 0 32 32" aria-hidden="true"><path class="wall" d="M3 17 16 5l13 12v11H19V17h-6v11H3Z"/><path class="roof" d="m16 5 13 12H16Z"/></svg>
-            <span><b>ДОМ МИРА</b><small>Строим в Москве и области</small></span>
-          </a>
-        </div>
-        <div class="footer-col"><b>Услуги</b><ul><li><a href="/">Строительство домов</a></li><li><a href="/otdelka/">Отделочные работы</a></li><li><a href="/proektirovanie/">Проектирование</a></li></ul></div>
-        <div class="footer-col"><b>Контакты</b><ul><li><a href="mailto:info@gkvesmir.ru" data-c-mail><span data-c="contacts.email">info@gkvesmir.ru</span></a></li><li data-c="contacts.address">Москва, Пресненская набережная, 12, помещение 2н</li></ul></div>
-        <div class="footer-col"><b>Документы</b><ul><li><a href="/privacy/">Конфиденциальность</a></li><li><a href="/soglasie/">Согласие на обработку</a></li><li><a href="/cookies/">Cookie</a></li><li><button class="text-btn" type="button" data-cookie-settings>Настройки cookie</button></li></ul></div>
-      </div>
-      <div class="footer-legal"><span>ООО «ГК ВЕСЬ МИР», ИНН 9703174864, ОГРН 1247700186722</span><span>Москва и Московская область</span></div>
-    </div>
-  </footer>
+  <!--#include footer-->
+  </div>
   <script type="module" src="./src/site/main.js"></script>
 </body>
 </html>

@@ -8,9 +8,9 @@ const rub = value => new Intl.NumberFormat('ru-RU').format(Math.round(value));
 const CONFIGS = {
   construction: {
     service: 'construction',
-    title: 'Расчёт стоимости дома',
+    title: 'Расчёт стоимости строительства',
     steps: [
-      {key: 'object', q: 'Что строим?', options: ['Дом для постоянной жизни', 'Загородный дом для отдыха', 'Баня или гостевой дом', 'Коммерческий объект']},
+      {key: 'object', q: 'Что строим?', options: ['Частный дом', 'Одноэтажный дом', 'Коммерческий объект', 'Баня, гараж или гостевой дом']},
       {key: 'area', q: 'Какая площадь?', area: {min: 40, max: 900, step: 10, value: 150}},
       {key: 'material', q: 'Из чего стены?', options: ['Керамический блок', 'Газобетон', 'Монолит', 'Кирпич', 'Пока не знаю']},
       {key: 'has_project', q: 'Проект уже есть?', options: ['Есть готовый проект', 'Нужен проект', 'Пока не знаю']}
@@ -18,6 +18,25 @@ const CONFIGS = {
     estimate(state) {
       if (state.object === 'Коммерческий объект') return {value: null, note: 'Коммерческие объекты считаем по проекту: пришлём смету после разговора с инженером.'};
       return {value: state.area * 70000, note: `${rub(state.area)} м² × 70 000 ₽ за работу по прайсу «Строительство дома по проекту». Материалы считаются отдельно, точная сумма в смете.`};
+    }
+  },
+  design: {
+    service: 'design',
+    title: 'Расчёт стоимости проекта',
+    steps: [
+      {key: 'scope', q: 'Что нужно спроектировать?', options: ['Эскизный проект', 'Эскиз и архитектурный раздел', 'Эскиз, архитектура и расчёт нагрузки', 'Полный проект с инженерными системами']},
+      {key: 'area', q: 'Какая площадь дома?', area: {min: 40, max: 900, step: 10, value: 150}},
+      {key: 'has_plot', q: 'Участок уже есть?', options: ['Есть участок', 'Выбираю участок', 'Пока нет']}
+    ],
+    estimate(state) {
+      const parts = {
+        'Эскизный проект': [700],
+        'Эскиз и архитектурный раздел': [700, 1200],
+        'Эскиз, архитектура и расчёт нагрузки': [700, 1200, 1500],
+        'Полный проект с инженерными системами': [700, 1200, 1500, 1500]
+      }[state.scope] || [700];
+      const rate = parts.reduce((sum, value) => sum + value, 0);
+      return {value: state.area * rate, note: `${rub(state.area)} м² × ${parts.map(rub).join(' + ')} ₽ за м² по прайсу разделов, без материалов. При договоре на строительство проект входит в стоимость дома.`};
     }
   },
   finishing: {
@@ -111,9 +130,9 @@ export function initCalc() {
       dialog.querySelector('[data-close]').addEventListener('click', close);
       dialog.querySelector('[data-back]').addEventListener('click', () => { step = config.steps.length - 1; render(); });
       const form = dialog.querySelector('form');
-      attachForm(form, {details: () => ({service: config.service, details: {
+      attachForm(form, {details: () => ({service: state.object === 'Коммерческий объект' ? 'commercial' : config.service, details: {
         object: state.object, area: String(state.area), material: state.material, has_project: state.has_project,
-        scope: state.scope, design_project: state.design_project, estimate: estimateText
+        scope: state.scope, design_project: state.design_project, has_plot: state.has_plot, estimate: estimateText
       }})});
     }
     dialog.querySelector('#calc-title')?.focus();

@@ -1,0 +1,175 @@
+/* Дополнения к исходному стилю «Дом Мира» (src/style.css): ночное фото первого экрана, галерея проектов,
+   уведомление о cookie, поля заявки, страницы документов. Сам исходный стиль не меняется. */
+:root {
+  --night: #151615;
+  --night-2: #232523;
+  --night-muted: #a8aca7;
+  --night-line: rgba(247, 247, 245, 0.28);
+  --night-sky: #0f1a2b;
+  --night-sky-68: rgba(15, 26, 43, 0.68);
+  --night-sky-0: rgba(15, 26, 43, 0);
+  --star: #f4f8ff;
+  --white-line: rgba(255, 255, 255, 0.5);
+  --shade: rgba(24, 25, 24, 0.72);
+  --soft: #e7eae2;
+  --body: #3a3c3a;
+}
+
+/* ---------- Шапка: переключатель ночного фото рядом с «Обсудить проект» ---------- */
+.header-actions { display: flex; align-items: center; gap: 22px; }
+.theme-toggle { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 1px solid var(--white-line); border-radius: 50%; background: none; color: inherit; cursor: pointer; transition: background-color 0.2s, border-color 0.2s; }
+.theme-toggle:hover { border-color: currentColor; background: rgba(255, 255, 255, 0.12); }
+.theme-toggle:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+.theme-toggle svg { grid-area: 1 / 1; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: opacity 0.4s, transform 0.4s; }
+html:not(.js) .theme-toggle { display: none; }
+.js .theme-toggle .i-sun { opacity: 0; transform: rotate(-90deg) scale(0.6); }
+.js[data-theme="dark"] .theme-toggle .i-moon { opacity: 0; transform: rotate(90deg) scale(0.6); }
+.js[data-theme="dark"] .theme-toggle .i-sun { opacity: 1; transform: none; }
+@media (prefers-color-scheme: dark) {
+  .js:not([data-theme="light"]) .theme-toggle .i-moon { opacity: 0; transform: rotate(90deg) scale(0.6); }
+  .js:not([data-theme="light"]) .theme-toggle .i-sun { opacity: 1; transform: none; }
+}
+@media (max-width: 760px) { .header-actions { margin-left: auto; gap: 14px; } .header-actions .header-contact { margin-left: 0; } }
+@media (max-width: 480px) { .header-actions { margin-left: auto; } .menu-toggle { margin-left: 8px; } }
+
+/* ---------- Первый экран: дневное фото плавно сменяется ночным, загораются звёзды ---------- */
+.hero-photo--night { opacity: 0; transition: opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1); }
+.hero-stars { position: absolute; inset: 0 0 42% 0; z-index: -1; opacity: 0; pointer-events: none; transition: opacity 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.5s; }
+:root[data-theme="dark"] .hero-photo--night, :root[data-theme="dark"] .hero-stars { opacity: 1; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .hero-photo--night, :root:not([data-theme="light"]) .hero-stars { opacity: 1; } }
+.hero-stars i { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: var(--star); opacity: 0.6; animation: twinkle var(--d, 3.2s) ease-in-out var(--delay, 0s) infinite; }
+.hero-stars i.big { width: 3px; height: 3px; box-shadow: 0 0 6px var(--star); }
+.hero-stars .shooting { top: 12%; left: 78%; width: 130px; height: 1.5px; border-radius: 2px; background: linear-gradient(90deg, var(--star), var(--night-sky-0)); box-shadow: none; opacity: 0; transform: rotate(-24deg); transform-origin: left center; animation: shooting 1.3s cubic-bezier(0.16, 1, 0.3, 1) 0.9s 1 forwards; }
+@keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+@keyframes shooting { 0% { opacity: 0; transform: rotate(-24deg) translateX(0) scaleX(0.3); } 15% { opacity: 1; } 100% { opacity: 0; transform: rotate(-24deg) translateX(-420px) scaleX(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .hero-photo--night, .hero-stars, .theme-toggle svg { transition: none; }
+  .hero-stars i { animation: none; opacity: 0.7; }
+  .hero-stars .shooting { display: none; }
+}
+/* На телефоне сверху голубая полоса под текстом, ночью она становится ночным небом */
+@media (max-width: 480px) {
+  .hero-stars { inset: 0 0 55% 0; }
+  :root[data-theme="dark"] .hero { background: var(--night-sky); }
+  :root[data-theme="dark"] .hero::after { background: linear-gradient(180deg, var(--night-sky) 0%, var(--night-sky) 30%, var(--night-sky-68) 42%, var(--night-sky-0) 63%); }
+}
+@media (max-width: 480px) and (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .hero { background: var(--night-sky); }
+  :root:not([data-theme="light"]) .hero::after { background: linear-gradient(180deg, var(--night-sky) 0%, var(--night-sky) 30%, var(--night-sky-68) 42%, var(--night-sky-0) 63%); }
+}
+
+/* ---------- Наши проекты: карточки открывают фотоотчёт ---------- */
+.project-card[data-gallery] { cursor: zoom-in; }
+.projects-note a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---------- Фотоотчёт проекта ---------- */
+.lightbox { width: min(1200px, calc(100% - 32px)); max-height: calc(100dvh - 32px); padding: 0; border: 0; border-radius: 22px; background: var(--night); color: var(--paper); overflow: auto; }
+.lightbox::backdrop { background: var(--shade); }
+.lightbox .dialog-inner { display: grid; gap: 14px; padding: 16px; }
+.lightbox .dialog-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.lightbox-nav { display: flex; gap: 8px; }
+.lightbox .icon-btn { display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 1px solid var(--night-line); border-radius: 50%; background: none; color: var(--paper); cursor: pointer; }
+.lightbox .icon-btn:hover { background: var(--night-2); }
+.lightbox .icon-btn:focus-visible { outline: 2px solid var(--paper); outline-offset: 2px; }
+.lightbox .icon-btn:disabled { opacity: 0.4; cursor: default; }
+.lightbox .icon-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.lightbox figure { display: grid; gap: 10px; margin: 0; }
+.lightbox img { width: 100%; max-height: calc(100dvh - 190px); object-fit: contain; border-radius: 14px; background: var(--night-2); }
+.lightbox figcaption { display: flex; justify-content: space-between; gap: 16px; color: var(--night-muted); font-size: 12px; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* ---------- Поля заявки в окне расчёта ---------- */
+.quiz-message { min-height: 64px; resize: vertical; line-height: 1.5; }
+.quiz-consent { display: flex; gap: 8px; align-items: flex-start; margin: 14px 0; font-size: 13px; line-height: 1.45; }
+.quiz-consent input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; accent-color: var(--plum); }
+.quiz-consent a { color: var(--ink); }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+/* ---------- Подвал: дополнительные строки контактов и документы ---------- */
+.contact-extra { margin-top: 12px; font-size: 12px; line-height: 1.6; color: var(--muted); }
+.contact-extra a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.contact-extra a[data-phone] { font-size: 18px; letter-spacing: -0.5px; text-decoration: none; }
+.legal-links { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: end; gap: 4px 14px; }
+.legal-links a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 760px) { .legal-links { justify-content: flex-start; } }
+
+/* ---------- Уведомление о cookie и окно настроек ---------- */
+.cookie { position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 500; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px 24px; align-items: center; max-width: 920px; margin-inline: auto; padding: 22px 24px; border: 1px solid var(--line); border-radius: 22px; background: var(--paper); color: var(--ink); box-shadow: 0 30px 120px rgba(17, 17, 17, 0.2); }
+.cookie p { font-size: 13px; line-height: 1.6; }
+.cookie-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.cookie .btn, .dialog .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 18px; border: 1px solid var(--plum); border-radius: 9px; background: var(--plum); color: var(--paper); font: 550 12px/1 var(--font); white-space: nowrap; cursor: pointer; transition: background-color 0.2s; }
+.cookie .btn:hover, .dialog .btn:hover { background: #3e3246; }
+.cookie .btn--quiet, .dialog .btn--quiet { background: transparent; color: var(--ink); border-color: #d5dccd; }
+.cookie .btn--quiet:hover, .dialog .btn--quiet:hover { background: var(--soft); }
+.cookie .btn:focus-visible, .dialog .btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.link { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.dialog { width: min(560px, calc(100% - 32px)); padding: 0; border: 0; border-radius: 22px; background: var(--paper); color: var(--ink); box-shadow: 0 30px 120px rgba(17, 17, 17, 0.2); }
+.dialog::backdrop { background: var(--shade); }
+.dialog .dialog-inner { display: grid; gap: 16px; padding: 32px; }
+.dialog .dialog-head { display: flex; justify-content: space-between; align-items: start; gap: 16px; }
+.dialog .dialog-head h2 { font-size: 28px; letter-spacing: -1px; }
+.dialog .icon-btn { display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: none; color: var(--ink); cursor: pointer; }
+.dialog .icon-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.cookie-option { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.cookie-option input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--plum); }
+.cookie-option span span { display: block; color: var(--muted); font-size: 13px; }
+.dialog .note { color: var(--muted); font-size: 13px; }
+.dialog-actions { display: flex; justify-content: space-between; gap: 8px; }
+@media (max-width: 640px) { .cookie { grid-template-columns: 1fr; padding: 18px; } .cookie-actions .btn { flex: 1; } }
+
+/* ---------- Окно «О работе сайта»: ссылки на документы ---------- */
+#privacy-dialog a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---------- Страницы документов: шапка на бумаге, как на «Проектировании» ---------- */
+.pj-masthead { position: relative; }
+.pj-masthead .header { margin: 0 40px; color: var(--ink); }
+.pj-masthead .header-contact { color: var(--ink); }
+.pj-masthead .desktop-nav a[aria-current] { color: var(--plum); opacity: 1; }
+.pj-masthead .theme-toggle { border-color: var(--line); }
+@media (max-width: 1100px) { .pj-masthead .header { margin: 0 36px; } }
+@media (max-width: 760px) { .pj-masthead .header { margin: 0 25px; } .pj-masthead .menu-toggle { color: var(--ink); } }
+@media (max-width: 480px) { .pj-masthead .header { margin: 0 22px; } }
+.doc { max-width: 900px; padding-top: 24px; padding-bottom: 8px; }
+.doc .crumbs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 22px; padding: 0; list-style: none; color: var(--muted); font-size: 10px; font-weight: 650; letter-spacing: 0.075em; text-transform: uppercase; }
+.doc .crumbs li + li::before { content: "/"; margin-right: 8px; }
+.doc .crumbs a { color: inherit; }
+.doc h1 { margin-bottom: 18px; font-size: 42px; line-height: 1.1; letter-spacing: -1.85px; font-weight: 500; }
+.doc h2 { margin: 38px 0 12px; font-size: 22px; line-height: 1.25; letter-spacing: -0.6px; font-weight: 500; }
+.doc p, .doc li { max-width: 72ch; color: var(--body); font-size: 14px; line-height: 1.75; }
+.doc p + p { margin-top: 10px; }
+.doc ul, .doc ol { display: grid; gap: 6px; margin: 10px 0; padding-left: 22px; }
+.doc a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.doc .doc-meta { color: var(--muted); font-size: 12px; }
+.doc table { width: 100%; margin: 14px 0; border-collapse: collapse; font-size: 13px; }
+.doc th, .doc td { padding: 8px 12px 8px 0; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.doc th { color: var(--muted); font-weight: 600; }
+.table-scroll { overflow-x: auto; }
+.doc-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+@media (max-width: 760px) { .doc h1 { font-size: 31px; letter-spacing: -1.2px; } }
+
+/* ---------- Отделка: первый экран на фото интерьера, под текстом голубая дымка как небо на главной ---------- */
+:root { --haze-82: rgba(74, 104, 121, 0.82); --haze-55: rgba(74, 104, 121, 0.55); --haze-0: rgba(74, 104, 121, 0); }
+.hero--interior::after { background: linear-gradient(90deg, var(--haze-82) 0%, var(--haze-55) 36%, var(--haze-0) 62%), linear-gradient(180deg, var(--haze-55) 0, var(--haze-0) 160px); }
+.hero--interior .hero-photo img { object-position: 70% 55%; }
+@media (max-width: 480px) { .hero--interior::after { background: linear-gradient(180deg, #84aaba 0%, #84aaba 30%, #84aabaad 42%, #84aaba00 63%); } }
+.doc-actions .button.white { border: 1px solid var(--line); }
+
+/* ---------- Телефон: каждый блок примерно в один экран (компьютерная версия не меняется) ---------- */
+@media (max-width: 760px) {
+  .reviews-grid { grid-auto-flow: column; grid-auto-columns: 82%; grid-template-columns: none; gap: 10px; margin-right: -25px; padding-right: 25px; padding-bottom: 6px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: thin; }
+  .review-card { min-height: 0; scroll-snap-align: start; }
+  .intro { padding-top: 36px; padding-bottom: 30px; }
+  .intro-features { margin-top: 22px; }
+  .footer-title { padding-top: 24px; margin-bottom: 22px; }
+  .pj-gallery-photo { display: none; }
+  .pj-tiles { grid-template-rows: 200px auto; }
+  .pj-sky { min-height: 560px; }
+}
+@media (max-width: 480px) {
+  .reviews-grid { margin-right: -22px; padding-right: 22px; }
+  .home-card > img { height: 170px; }
+  .contact-grid { gap: 20px; }
+  .footer-bottom { margin-top: 28px; }
+}
+@media (max-width: 760px) { .pj-model { display: none; } .pj-tiles { grid-template-rows: auto; } }
+.doc .crumbs li { color: inherit; font-size: inherit; line-height: 1.5; max-width: none; }

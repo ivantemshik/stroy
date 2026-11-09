@@ -1,468 +1,108 @@
 <!doctype html>
 <html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Строительство домов и зданий под ключ в Москве и области | Дом Мира</title>
-  <meta name="description" content="Строим частные дома, коттеджи и коммерческие здания в Москве и Московской области: проект, строительство, инженерия, отделка и благоустройство. Договор, поэтапная оплата, гарантия до 10 лет." />
-  <meta name="robots" content="%ROBOTS%" />
-  <link rel="canonical" href="%SITE_URL%/" />
-  <meta name="theme-color" content="#f7f7f5" />
-  <meta name="ym-counter" content="%YM_ID%" />
-  <meta property="og:type" content="website" />
-  <meta property="og:locale" content="ru_RU" />
-  <meta property="og:site_name" content="Дом Мира" />
-  <meta property="og:title" content="Строительство домов и зданий под ключ | Дом Мира" />
-  <meta property="og:description" content="Полный цикл: от индивидуального проекта до готового дома и благоустройства участка. Реальные объекты компании в Москве и области." />
-  <meta property="og:url" content="%SITE_URL%/" />
-  <meta property="og:image" content="%SITE_URL%/images/hero/construction-hero-1200.webp" />
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <link rel="preload" href="/fonts/manrope-cyrillic.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="preload" as="image" href="/images/hero/construction-hero-1792.webp" imagesrcset="/images/hero/construction-hero-800.webp 800w, /images/hero/construction-hero-1200.webp 1200w, /images/hero/construction-hero-1792.webp 1792w" imagesizes="(max-width: 760px) 100vw, 1360px" media="(min-width: 761px)" fetchpriority="high" />
-  <link rel="preload" as="image" href="/images/hero/construction-hero-mobile-800.webp" media="(max-width: 760px)" fetchpriority="high" />
-  <link rel="stylesheet" href="./src/site/site.css" />
-  <script>document.documentElement.classList.add('js');try{var t=localStorage.getItem('dm_theme');if(t==='dark'||t==='light')document.documentElement.dataset.theme=t}catch(e){}</script>
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"HomeAndConstructionBusiness","name":"Дом Мира","legalName":"ООО «ГК ВЕСЬ МИР»","taxID":"9703174864","url":"%SITE_URL%/","email":"info@gkvesmir.ru","image":"%SITE_URL%/images/hero/construction-hero-1200.webp","address":{"@type":"PostalAddress","streetAddress":"Пресненская набережная, 12, помещение 2н","addressLocality":"Москва","postalCode":"123112","addressCountry":"RU"},"areaServed":[{"@type":"City","name":"Москва"},{"@type":"AdministrativeArea","name":"Московская область"}],"description":"Строительство частных домов, коттеджей и коммерческих зданий под ключ: проектирование, строительство, инженерные системы, отделка и благоустройство.","priceRange":"от 70 000 ₽/м²","makesOffer":[{"@type":"Offer","itemOffered":{"@type":"Service","name":"Строительство домов и зданий под ключ","serviceType":"Строительство частных домов и коммерческих зданий","areaServed":"Москва и Московская область"},"priceSpecification":{"@type":"UnitPriceSpecification","price":70000,"priceCurrency":"RUB","unitText":"м²","description":"Цена за работу, без материалов"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Отделка загородного дома под ключ","url":"%SITE_URL%/otdelka/"}}]}</script>
-  <script type="application/ld+json" data-c-jsonld="home.faq">{}</script>
-</head>
-<body data-page="home" data-service="construction">
-  <a class="skip" href="#main">К содержанию</a>
-  <div class="shell" id="top">
-  <!--#include header over-->
-
-  <main id="main">
-    <section class="hero hero--house" aria-labelledby="hero-title" data-hero>
-      <picture class="hero-photo">
-        <source media="(max-width: 760px)" srcset="/images/hero/construction-hero-mobile-800.webp" width="800" height="1100" />
-        <img src="/images/hero/construction-hero-1792.webp" srcset="/images/hero/construction-hero-800.webp 800w, /images/hero/construction-hero-1200.webp 1200w, /images/hero/construction-hero-1792.webp 1792w" sizes="(max-width: 760px) 100vw, 1360px" width="1792" height="1024" alt="Деревянный дом с панорамным остеклением фасада и террасой в саду" fetchpriority="high" />
-      </picture>
-      <picture class="hero-photo hero-photo--night" aria-hidden="true">
-        <source media="(max-width: 760px)" srcset="/images/hero/construction-hero-mobile-night-800.webp" width="800" height="1100" />
-        <img src="/images/hero/construction-hero-night-1792.webp" srcset="/images/hero/construction-hero-night-800.webp 800w, /images/hero/construction-hero-night-1200.webp 1200w, /images/hero/construction-hero-night-1792.webp 1792w" sizes="(max-width: 760px) 100vw, 1360px" width="1792" height="1024" alt="" loading="lazy" />
-      </picture>
-      <div class="hero-stars" aria-hidden="true"></div>
-      <div class="hero-content">
-        <p class="eyebrow hero-eyebrow">Москва и Московская область</p>
-        <h1 id="hero-title">Строительство <span>домов</span> <span>и&nbsp;зданий</span></h1>
-        <p class="hero-lead">Возводим частные дома, коттеджи и коммерческие объекты под&nbsp;ключ: от&nbsp;проекта до&nbsp;благоустройства.</p>
-        <div class="hero-actions">
-          <button class="btn btn--wide" type="button" data-open-calc>Рассчитать проект <svg class="arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6"/></svg></button>
-          <a class="btn btn--paper" href="https://t.me/dommira_consult_bot?start=s_home" data-tg target="_blank" rel="noopener">Спросить в Telegram</a>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#91b2bf" />
+    <title>Строительство домов и зданий под ключ в Москве и области | Дом Мира</title>
+    <meta name="description" content="Дом Мира: проектирование и строительство частных домов, коттеджей и коммерческих зданий в Москве и Московской области. От эскиза до отделки и благоустройства участка, строительство от 70 000 ₽/м²." />
+    <meta name="robots" content="%ROBOTS%" />
+    <link rel="canonical" href="%SITE_URL%/" />
+    <meta name="ym-counter" content="%YM_ID%" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ru_RU" />
+    <meta property="og:site_name" content="Дом Мира" />
+    <meta property="og:title" content="Дом Мира: твой дом, твой мир" />
+    <meta property="og:description" content="Проектируем и строим дома и здания под ключ в Москве и Московской области." />
+    <meta property="og:url" content="%SITE_URL%/" />
+    <meta property="og:image" content="%SITE_URL%/images/hero.webp" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preload" href="/fonts/manrope-cyrillic.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" as="image" href="/images/hero.webp" fetchpriority="high" />
+    <link rel="stylesheet" href="./src/style.css" />
+    <link rel="stylesheet" href="./src/addons.css" />
+    <script>document.documentElement.classList.add('js');try{var t=localStorage.getItem('dm_theme');if(t==='dark'||t==='light')document.documentElement.dataset.theme=t}catch(e){}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"HomeAndConstructionBusiness","name":"Дом Мира","legalName":"ООО «ГК ВЕСЬ МИР»","taxID":"9703174864","url":"%SITE_URL%/","email":"info@gkvesmir.ru","image":"%SITE_URL%/images/hero.webp","description":"Проектирование и строительство частных домов, коттеджей и коммерческих зданий под ключ: инженерные системы, отделка и благоустройство.","address":{"@type":"PostalAddress","streetAddress":"Пресненская набережная, 12, помещение 2н","addressLocality":"Москва","postalCode":"123112","addressCountry":"RU"},"areaServed":[{"@type":"City","name":"Москва"},{"@type":"AdministrativeArea","name":"Московская область"}],"priceRange":"от 700 ₽/м²","makesOffer":[{"@type":"Offer","itemOffered":{"@type":"Service","name":"Строительство домов и зданий под ключ"},"priceSpecification":{"@type":"UnitPriceSpecification","price":70000,"priceCurrency":"RUB","unitText":"м²","description":"Строительство по проекту, цена за работу"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Отделочные работы","url":"%SITE_URL%/otdelka/"}},{"@type":"Offer","itemOffered":{"@type":"Service","name":"Проектирование домов","url":"%SITE_URL%/proektirovanie/"}}]}</script>
+    <script type="application/ld+json" data-c-jsonld="home.faq">{}</script>
+  </head>
+  <body data-page="home">
+    <a class="skip-link" href="#main">К содержанию</a>
+    <div class="site-shell" id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <picture class="hero-photo"><source media="(max-width: 600px)" srcset="/images/hero-mobile.webp" /><img src="/images/hero.webp" alt="Современный деревянный дом с панорамными окнами и террасой" width="1660" height="948" fetchpriority="high" /></picture><picture class="hero-photo hero-photo--night" aria-hidden="true"><source media="(max-width: 600px)" srcset="/images/hero/hero-mobile-night-800.webp" /><img src="/images/hero/hero-night-1660.webp" alt="" width="1660" height="948" loading="lazy" /></picture><div class="hero-stars" aria-hidden="true"></div>
+        <!--#include header night-->
+        <div class="hero-content">
+          <p class="eyebrow hero-eyebrow">МОСКВА И МОСКОВСКАЯ ОБЛАСТЬ</p>
+          <h1 id="hero-title">Твой дом<span>— твой</span><span>мир.</span></h1>
+          <p class="hero-description">Проектируем и строим дома и здания,<br />в которых хочется жить.</p>
+          <button class="button plum" data-open="quiz">Рассчитать мой дом <span aria-hidden="true"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg></span></button>
         </div>
-      </div>
-      <div class="hero-bottom">
-        <ul class="hero-points"><li>Под вашу жизнь и участок</li><li>Полный цикл в одной команде</li><li>По индивидуальному проекту</li></ul>
-        <p class="hero-caption">Архитектурная визуализация</p>
-      </div>
-    </section>
-    <p class="notice" data-c="notice" hidden></p>
+      </section>
 
-    <section class="section" id="obekty" aria-labelledby="types-title">
-      <div class="container">
-        <div class="section-head">
-          <div><p class="eyebrow">01 / Ваша задача, наш масштаб</p><h2 id="types-title">Какие объекты <br /><span class="dim">мы строим</span></h2></div>
-          <p>Реализуем проекты разного масштаба: для жизни, бизнеса и инвестиций.</p>
-        </div>
-        <ul class="types">
-          <li class="type-card">
-            <img src="/images/objects/malakhovka-800.webp" srcset="/images/objects/malakhovka-800.webp 800w, /images/objects/malakhovka-1536.webp 1536w" sizes="(max-width: 900px) 100vw, 30vw" width="1536" height="1152" alt="Белый двухэтажный дом с графитовыми вставками среди сосен, посёлок Малаховка" loading="lazy" />
-            <p class="type-index">01</p><h3>Частные дома <span>Архитектура для вашей жизни</span></h3>
-          </li>
-          <li class="type-card">
-            <img src="/images/construction-villa.webp" width="1200" height="800" alt="Одноэтажная вилла с плоской кровлей и панорамными окнами" loading="lazy" />
-            <p class="type-index">02</p><h3>Одноэтажные дома <span>Всё пространство на одном уровне</span></h3>
-          </li>
-          <li class="type-card">
-            <img src="/images/construction-commercial.webp" width="1200" height="800" alt="Двухэтажное коммерческое здание со стеклянным фасадом" loading="lazy" />
-            <p class="type-index">03</p><h3>Коммерческие объекты <span>Для бизнеса и гостеприимства</span></h3>
-          </li>
-        </ul>
-        <p class="note types-note">Одноэтажный дом и коммерческое здание на фото: архитектурные визуализации. Построенные объекты ниже, в блоке «Наши проекты».</p>
-      </div>
-    </section>
-
-    <section class="section" id="etapy" aria-labelledby="cycle-title">
-      <div class="band cycle">
-        <figure class="cycle-photo">
-          <img src="/images/objects/peshkovo-gotov-700.webp" srcset="/images/objects/peshkovo-gotov-700.webp 700w, /images/objects/peshkovo-gotov-1200.webp 1200w" sizes="(max-width: 900px) 100vw, 32vw" width="1200" height="1600" alt="Готовый двухэтажный дом из светлого кирпича с террасой, деревня Пешково" loading="lazy" />
-        </figure>
-        <div class="cycle-body">
-          <div class="section-head">
-            <div><p class="eyebrow">02 / Одна команда на все этапы</p><h2 id="cycle-title">Строим <br /><span class="dim">по&nbsp;полному циклу</span></h2></div>
-            <p>Берём на себя все этапы: от проектирования до готового объекта и благоустройства участка.</p>
+      <main id="main">
+        <section class="intro section-pad" id="services" aria-labelledby="intro-title">
+          <div class="intro-copy">
+            <p class="eyebrow">01 / ОТ ИДЕИ ДО НОВОСЕЛЬЯ</p>
+            <h2 id="intro-title">Возьмем на себя<br />проектирование,<br />строительство<br />и заботу о деталях</h2>
+            <p class="muted intro-description">Одна команда для дома, участка и интерьера.<br class="desktop-break" /> Соединяем инженерную точность, архитектурную<br class="desktop-break" /> эстетику и ваше представление о комфорте.</p>
+            <div class="intro-features"><div><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="5" width="22" height="22" rx="3"/><path d="M16 5v22M5 16h11M16 12h11"/></svg><p>Индивидуальный проект<br /><span>под вашу жизнь и участок</span></p></div><div><svg viewBox="0 0 32 32" aria-hidden="true"><path d="m16 3 4 4 5 1 1 5 3 3-3 4-1 5-5 1-4 3-4-3-5-1-1-5-3-4 3-3 1-5 5-1Z"/><path d="m11 16 3 3 7-7"/></svg><p>Комплексный подход<br /><span>от фундамента до мебели</span></p></div></div>
           </div>
-          <ol class="steps steps--cycle">
-            <li><b>Проектирование и подготовка</b><span>Архитектура, расчёты, участок и план работ.</span></li>
-            <li><b>Строительство и монтаж</b><span>Фундамент, стены, перекрытия, фасад и кровля.</span></li>
-            <li><b>Отделка и инженерия</b><span>Сети, комфортный климат и готовый интерьер.</span></li>
-            <li><b>Благоустройство территории</b><span>Дорожки, растения, освещение и ландшафт.</span></li>
-          </ol>
-        </div>
-      </div>
-    </section>
-
-    <section class="section section--rail" aria-labelledby="rail-title">
-      <div class="container rail-head">
-        <h2 id="rail-title">Так это выглядит на объекте: <span class="dim">Пешково, 200&nbsp;м²</span></h2>
-      </div>
-      <ol class="rail" tabindex="0" aria-label="Этапы строительства дома в Пешково">
-          <li><figure><img src="/images/objects/peshkovo-etap-uchastok-700.webp" srcset="/images/objects/peshkovo-etap-uchastok-700.webp 700w, /images/objects/peshkovo-etap-uchastok-1200.webp 1200w" sizes="(max-width: 40rem) 82vw, 30vw" width="1200" height="541" alt="Экскаватор готовит участок под фундамент" loading="lazy" /><figcaption><b>Участок</b><span>Геодезия, разметка и земляные работы.</span></figcaption></figure></li>
-          <li><figure><img src="/images/objects/peshkovo-etap-plita-700.webp" srcset="/images/objects/peshkovo-etap-plita-700.webp 700w, /images/objects/peshkovo-etap-plita-1200.webp 1200w" sizes="(max-width: 40rem) 82vw, 30vw" width="1200" height="540" alt="Арматурный каркас фундаментной плиты на утеплителе" loading="lazy" /><figcaption><b>Фундамент</b><span>Утеплённая монолитная плита с армированием.</span></figcaption></figure></li>
-          <li><figure><img src="/images/objects/peshkovo-etap-steny-700.webp" srcset="/images/objects/peshkovo-etap-steny-700.webp 700w, /images/objects/peshkovo-etap-steny-1200.webp 1200w" sizes="(max-width: 40rem) 82vw, 30vw" width="1200" height="541" alt="Опалубка монолитных стен первого этажа" loading="lazy" /><figcaption><b>Стены</b><span>Монолитные стены в опалубке, перекрытия и армопояс.</span></figcaption></figure></li>
-          <li><figure><img src="/images/objects/peshkovo-etap-krovlya-700.webp" srcset="/images/objects/peshkovo-etap-krovlya-700.webp 700w, /images/objects/peshkovo-etap-krovlya-1200.webp 1200w" sizes="(max-width: 40rem) 82vw, 30vw" width="1200" height="541" alt="Стропильная система кровли над бетонной коробкой" loading="lazy" /><figcaption><b>Кровля</b><span>Стропильная система, утепление и покрытие.</span></figcaption></figure></li>
-          <li><figure><img src="/images/objects/peshkovo-etap-fasad-700.webp" srcset="/images/objects/peshkovo-etap-fasad-700.webp 700w, /images/objects/peshkovo-etap-fasad-1200.webp 1200w" sizes="(max-width: 40rem) 82vw, 30vw" width="1200" height="540" alt="Облицовка стен светлым кирпичом" loading="lazy" /><figcaption><b>Фасад</b><span>Облицовочный кирпич по утеплителю.</span></figcaption></figure></li>
-          <li><figure><img src="/images/objects/peshkovo-gotov-700.webp" srcset="/images/objects/peshkovo-gotov-700.webp 700w, /images/objects/peshkovo-gotov-1200.webp 1200w" sizes="(max-width: 40rem) 82vw, 30vw" width="1200" height="1600" alt="Готовый двухэтажный дом из светлого кирпича с террасой" loading="lazy" /><figcaption><b>Готовый дом</b><span>Дальше инженерные системы и отделка.</span></figcaption></figure></li>
-        </ol>
-    </section>
-
-    <section class="section" id="proekty" aria-labelledby="projects-title">
-      <div class="container">
-        <div class="section-head">
-          <div><p class="eyebrow">03 / Архитектура вашего дома</p><h2 id="projects-title">Наши проекты <br /><span class="dim">от&nbsp;бани до&nbsp;дома 805&nbsp;м²</span></h2></div>
-          <p>Дома и здания, которые построила компания. Нажмите на проект, чтобы открыть фотоотчёт.</p>
-        </div>
-        <ul class="cases">
-          <li class="case case--wide"><button class="case-btn" type="button" data-gallery="promenad:0"><img src="/images/objects/promenad-vecher-1571.webp" srcset="/images/objects/promenad-vecher-800.webp 800w, /images/objects/promenad-vecher-1571.webp 1571w" sizes="(max-width: 900px) 100vw, 60vw" width="1571" height="1098" alt="Дом в посёлке Променад вечером, подсветка фасада и дорожки" loading="lazy" /><span class="case-cap"><span><strong>Посёлок Променад</strong><small>Дом 510&nbsp;м², бассейн и баня 240&nbsp;м²</small></span><span class="case-arrow" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6"/></svg></span></span></button></li>
-          <li class="case"><button class="case-btn" type="button" data-gallery="malakhovka:0"><img src="/images/objects/malakhovka-800.webp" width="800" height="600" alt="Белый дом с графитовыми вставками среди сосен" loading="lazy" /><span class="case-cap"><span><strong>Посёлок Малаховка</strong><small>Дом 805&nbsp;м², гостевой дом 220&nbsp;м²</small></span><span class="case-arrow" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6"/></svg></span></span></button></li>
-          <li class="case"><button class="case-btn" type="button" data-gallery="nikolina:0"><img src="/images/objects/nikolina-gora-800.webp" width="800" height="600" alt="Дом в классическом стиле с колоннами и балконом" loading="lazy" /><span class="case-cap"><span><strong>Николина гора</strong><small>Дом 240&nbsp;м² в классическом стиле</small></span><span class="case-arrow" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6"/></svg></span></span></button></li>
-          <li class="case"><button class="case-btn" type="button" data-gallery="timurkino:0"><img src="/images/objects/timurkino-800.webp" width="800" height="360" alt="Двухэтажный дом из красного облицовочного кирпича" loading="lazy" /><span class="case-cap"><span><strong>Деревня Тимуркино</strong><small>Дом 200&nbsp;м², монолит и кирпич</small></span><span class="case-arrow" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6"/></svg></span></span></button></li>
-          <li class="case"><button class="case-btn" type="button" data-gallery="peshkovo:0"><img src="/images/objects/peshkovo-700.webp" width="700" height="933" alt="Двухэтажный дом из светлого кирпича с крыльцом" loading="lazy" /><span class="case-cap"><span><strong>Деревня Пешково</strong><small>Дом 200&nbsp;м², Ногинский район</small></span><span class="case-arrow" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6"/></svg></span></span></button></li>
-          <li class="case"><button class="case-btn" type="button" data-gallery="banya:0"><img src="/images/objects/banya-700.webp" width="700" height="933" alt="Одноэтажная баня с панорамным остеклением в саду" loading="lazy" /><span class="case-cap"><span><strong>Богородское</strong><small>Баня под ключ, Рузский район</small></span><span class="case-arrow" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6"/></svg></span></span></button></li>
-          <li class="case"><button class="case-btn" type="button" data-gallery="garazh:0"><img src="/images/objects/garazh-700.webp" width="700" height="933" alt="Двухэтажный гараж со светлым фасадом и деревянными вставками" loading="lazy" /><span class="case-cap"><span><strong>Богородское</strong><small>Гараж под ключ, полный цикл</small></span><span class="case-arrow" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6"/></svg></span></span></button></li>
-          <li class="case case--cta"><a class="case-btn" href="https://gkvesmir.ru/portfolio/" target="_blank" rel="noopener"><span class="case-cta-text"><span class="eyebrow">Портфолио</span><strong>Все проекты компании</strong><small>Фотоотчёты по каждому объекту на сайте gkvesmir.ru</small></span><span class="case-arrow" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6"/></svg></span></a></li>
-        </ul>
-      </div>
-    </section>
-
-    <section class="section" id="dogovor" aria-labelledby="why-title">
-      <div class="dark-band">
-        <div class="section-head">
-          <div><p class="eyebrow">04 / Почему выбирают нас</p><h2 id="why-title">Смета не&nbsp;меняется <br /><span class="dim">без вашей подписи</span></h2></div>
-          <p>Главный страх при стройке: бюджет растёт по ходу работ. Вот как мы это исключаем.</p>
-        </div>
-        <ul class="why">
-          <li><b>Индивидуальный проект</b><span>Проектируем под вашу жизнь и участок. При договоре на строительство проект входит в стоимость.</span></li>
-          <li><b>Договор с юрлицом</b><span>ООО «ГК ВЕСЬ МИР»: сроки, смета и порядок оплаты прописаны в договоре.</span></li>
-          <li><b>Фиксированная смета</b><span>Доплаты только по письменному согласованию с вами.</span></li>
-          <li><b>Поэтапная оплата</b><span>Платите за этапы по графику, а не всю сумму вперёд.</span></li>
-          <li><b>Технический надзор</b><span>Лазерный уровень и нивелир на каждом этапе, отклонение стен до 2&nbsp;мм на этаж.</span></li>
-          <li><b>Гарантия до 10 лет</b><span>Сроки по каждому виду работ указаны в договоре.</span></li>
-        </ul>
-      </div>
-    </section>
-
-    <section class="section" id="ceny" aria-labelledby="prices-title" data-goal-view="prices_view">
-      <div class="container">
-        <div class="section-head">
-          <div><p class="eyebrow">05 / Открытый ориентир</p><h2 id="prices-title">От 70&nbsp;000&nbsp;₽ за&nbsp;м²: <br /><span class="dim">из&nbsp;чего складывается цена</span></h2></div>
-          <p>Цены за работу, без материалов. Точную сумму даёт смета, её считаем бесплатно.</p>
-        </div>
-      </div>
-      <div class="prices">
-        <div class="price-card">
-          <table class="price-table">
-            <caption>Прайс на строительные работы</caption>
-            <thead><tr><th scope="col">Работа</th><th scope="col" class="num">Цена</th></tr></thead>
-            <tbody data-c-list="home.prices"></tbody>
-          </table>
-        </div>
-        <div class="calc-panel">
-          <div>
-            <p class="eyebrow">Расчёт за минуту</p>
-            <h3>Посчитайте <span>свой объект</span></h3>
-            <p>Тип объекта, площадь, материал стен и наличие проекта: покажем ориентир и пришлём смету.</p>
+          <div class="service-list">
+            <a class="service-row" href="/proektirovanie/"><span class="service-image"><img src="/images/planning.webp" alt="Чертеж индивидуального дома" width="120" height="120" loading="lazy" /></span><span class="service-text"><strong>Проектирование</strong><span>Архитектура, конструктив и инженерия.<br />Начинаем с того, что важно именно вам.</span></span><span class="row-arrow" aria-hidden="true"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg></span></a>
+            <button class="service-row" data-service="build"><span class="service-image"><img src="/images/objects/promenad-vecher-800.webp" alt="Дом в посёлке Променад вечером" width="800" height="559" loading="lazy" /></span><span class="service-text"><strong>Строительство под ключ</strong><span>Фундамент, стены, фасад и кровля.<br />Все этапы — в руках одной команды.</span></span><span class="row-arrow" aria-hidden="true"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg></span></button>
+            <a class="service-row" href="/otdelka/"><span class="service-image"><img src="/images/objects/otdelka-gostinaya-800.webp" alt="Гостиная в доме в посёлке Променад" width="800" height="597" loading="lazy" /></span><span class="service-text"><strong>Пространство для жизни</strong><span>Инженерные системы, отделка, мебель<br />и благоустройство вашего участка.</span></span><span class="row-arrow" aria-hidden="true"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg></span></a>
+            <p class="service-note"><span class="status-dot"></span> Частные дома и коммерческие объекты</p>
           </div>
-          <ul class="promo-list" data-c-list="home.promo"></ul>
-          <button class="btn btn--paper" type="button" data-open-calc>Рассчитать стоимость <svg class="arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6"/></svg></button>
-        </div>
-      </div>
-    </section>
+        </section>
 
-    <section class="section" id="voprosy" aria-labelledby="faq-title">
-      <div class="container faq">
-        <div><p class="eyebrow">06 / Вопросы</p><h2 id="faq-title">Наверняка <br /><span class="dim">есть вопросы</span></h2></div>
-        <div class="faq-list" data-c-list="home.faq"></div>
-      </div>
-    </section>
-
-    <section class="section" id="zayavka" aria-labelledby="request-title">
-      <div class="request">
-        <div class="request-intro">
-          <div>
-            <p class="eyebrow">07 / Начнём с вашей идеи</p>
-            <h2 id="request-title">Рассчитайте стоимость <br /><span class="dim">строительства</span></h2>
-            <p>Расскажите о задаче: обсудим проект, состав работ и подготовку сметы.</p>
+        <section class="quality section-pad" id="approach" aria-labelledby="quality-title">
+          <div class="section-heading"><div><p class="eyebrow">02 / ПРОДУМАНО ДО ДЕТАЛЕЙ</p><h2 id="quality-title">Красивый снаружи.<br /><span class="muted">Продуманный внутри.</span></h2></div></div>
+          <div class="quality-grid">
+            <article class="quality-card exterior-card"><span class="card-index">01</span><h3>Архитектура,<br />которая близка вам</h3><img src="/images/objects/malakhovka-fasad-1536.webp" width="1536" height="1152" alt="Фасад дома с панорамным остеклением, посёлок Малаховка" loading="lazy" /><span class="small-card-label">ИНДИВИДУАЛЬНОСТЬ</span></article>
+            <article class="quality-card plan-card"><span class="card-index">02</span><h3>Каждый метр<br />имеет значение</h3><img src="/images/planning.webp" width="460" height="530" alt="Архитектурный план дома с удобной планировкой" loading="lazy" /><span class="small-card-label">ПРОЕКТИРОВАНИЕ</span></article>
+            <article class="quality-card interior-card"><span class="card-index">03</span><h3>Комфорт,<br />который внутри</h3><img src="/images/objects/otdelka-kamin-800.webp" width="800" height="600" alt="Гостиная с камином и деревянным потолком, посёлок Променад" loading="lazy" /><span class="small-card-label">ИНТЕРЬЕР И ИНЖЕНЕРИЯ</span></article>
+            <article class="quality-card roof-card"><span class="card-index">04</span><h3>Внимание<br />к каждому узлу</h3><img src="/images/objects/timurkino-uteplenie-600.webp" width="600" height="1331" alt="Утеплитель между облицовочным кирпичом и стеной, деревня Тимуркино" loading="lazy" /><span class="small-card-label">СТРОИТЕЛЬСТВО</span></article>
           </div>
-          <div class="request-price">
-            <p class="request-price-value">от 70&nbsp;000&nbsp;₽<small>/м²</small></p>
-            <p>Работы без материалов. Точный расчёт по проекту.</p>
+        </section>
+
+        <section class="projects section-pad" id="projects" aria-labelledby="projects-title">
+          <div class="projects-heading"><div><p class="eyebrow">НАШИ ПРОЕКТЫ</p><h2 id="projects-title">Наши проекты</h2><p class="projects-description">Дома и здания, которые построила компания в Москве и Московской области</p></div><div class="projects-controls"><button class="project-control" data-project-direction="-1" aria-label="Предыдущие проекты" aria-controls="projects-track"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 12H5m6-6-6 6 6 6"/></svg></button><button class="project-control" data-project-direction="1" aria-label="Следующие проекты" aria-controls="projects-track"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></div></div>
+          <div class="projects-track" id="projects-track" role="group" aria-roledescription="карусель" aria-label="Построенные объекты компании" tabindex="0"><button class="project-card" data-gallery="promenad:0"><img src="/images/objects/promenad-vecher-800.webp" width="800" height="559" loading="lazy" alt="Дом в посёлке Променад вечером" /><span class="project-card-title">Посёлок Променад<br />дом 510 м²</span><span class="project-card-arrow" aria-hidden="true"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg></span></button><button class="project-card" data-gallery="malakhovka:0"><img src="/images/objects/malakhovka-800.webp" width="800" height="600" loading="lazy" alt="Белый дом с графитовыми вставками среди сосен" /><span class="project-card-title">Малаховка<br />дом 805 м²</span><span class="project-card-arrow" aria-hidden="true"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg></span></button><button class="project-card" data-gallery="nikolina:0"><img src="/images/objects/nikolina-gora-800.webp" width="800" height="600" loading="lazy" alt="Дом в классическом стиле с колоннами и балконом" /><span class="project-card-title">Николина гора<br />дом 240 м²</span><span class="project-card-arrow" aria-hidden="true"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg></span></button><button class="project-card" data-gallery="timurkino:0"><img src="/images/objects/timurkino-800.webp" width="800" height="360" loading="lazy" alt="Двухэтажный дом из красного облицовочного кирпича" /><span class="project-card-title">Тимуркино<br />дом 200 м²</span><span class="project-card-arrow" aria-hidden="true"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg></span></button><button class="project-card" data-gallery="peshkovo:0"><img src="/images/objects/peshkovo-700.webp" width="700" height="933" loading="lazy" alt="Двухэтажный дом из светлого кирпича с крыльцом" /><span class="project-card-title">Пешково<br />дом 200 м²</span><span class="project-card-arrow" aria-hidden="true"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg></span></button><button class="project-card" data-gallery="banya:0"><img src="/images/objects/banya-700.webp" width="700" height="933" loading="lazy" alt="Одноэтажная баня с панорамным остеклением в саду" /><span class="project-card-title">Богородское<br />баня под ключ</span><span class="project-card-arrow" aria-hidden="true"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg></span></button><button class="project-card" data-gallery="garazh:0"><img src="/images/objects/garazh-700.webp" width="700" height="933" loading="lazy" alt="Двухэтажный гараж со светлым фасадом и деревянными вставками" /><span class="project-card-title">Богородское<br />гараж под ключ</span><span class="project-card-arrow" aria-hidden="true"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg></span></button></div>
+          <p class="projects-note">На фото реальные объекты компании. Нажмите на проект, чтобы открыть фотоотчёт, или посмотрите <a href="https://gkvesmir.ru/portfolio/" target="_blank" rel="noopener noreferrer">все проекты на gkvesmir.ru</a>.</p>
+        </section>
+
+        <section class="homes section-pad" id="homes" aria-labelledby="homes-title">
+          <div class="section-heading"><div><p class="eyebrow">03 / ВАШ БУДУЩИЙ ДОМ</p><h2 id="homes-title">Какой он — ваш?</h2></div><button class="text-link" data-open="quiz">Найдем решение вместе <span aria-hidden="true"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg></span></button></div>
+          <div class="home-grid"><button class="home-card" data-open="quiz" data-quiz-scope="Строительство по проекту"><img src="/images/hero.webp" alt="Концепция загородного дома с двускатной крышей" width="800" height="460" loading="lazy" /><span class="home-caption"><span><strong>Ближе к природе</strong><small>Современная загородная архитектура</small></span><span class="circle-arrow" aria-hidden="true"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg></span></span></button><button class="home-card" data-service="interior"><img src="/images/interior-wide.webp" alt="Концепция светлого загородного интерьера" width="800" height="460" loading="lazy" /><span class="home-caption"><span><strong>Ближе к себе</strong><small>Пространство под ваш ритм жизни</small></span><span class="circle-arrow" aria-hidden="true"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg></span></span></button></div>
+          <div class="homes-footnote"><p>На фото — архитектурные и интерьерные визуализации для вдохновения.</p><a href="#projects">Реализованные объекты компании <svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg></a></div>
+        </section>
+
+        <section class="prices section-pad" aria-labelledby="prices-title"><div class="section-heading"><div><p class="eyebrow">04 / ОТКРЫТЫЙ ОРИЕНТИР</p><h2 id="prices-title">Начнем с понятных цифр</h2></div><p class="section-aside">Точный расчет — после знакомства<br />с участком и вашими пожеланиями.</p></div><div class="price-grid"><a class="price-item" href="/proektirovanie/"><span>Эскизный проект</span><strong>от 700 <small>₽/м²</small></strong><span class="price-arrow" aria-hidden="true"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg></span></a><button class="price-item" data-open="quiz" data-quiz-scope="Строительство по проекту"><span>Строительство по проекту</span><strong>от 70 000 <small>₽/м²</small></strong><span class="price-arrow" aria-hidden="true"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg></span></button><button class="price-item" data-service="engineering"><span>Проектирование инженерии</span><strong>от 1 500 <small>₽/м²</small></strong><span class="price-arrow" aria-hidden="true"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg></span></button></div><p class="price-note">Ориентировочные цены за работу, без материалов. Итог зависит от проекта, участка и состава работ. Расчет сметы — бесплатно в счет строительства.</p></section>
+
+        <section class="process reviews section-pad" id="reviews" aria-labelledby="reviews-title">
+          <div class="section-heading"><div><p class="eyebrow">05 / ОТЗЫВЫ КЛИЕНТОВ</p><h2 id="reviews-title">Главный показатель качества<br />нашей работы — довольный клиент</h2></div></div>
+          <div class="reviews-label"><span class="reviews-pill"><span class="status-dot"></span>Отзывы о нашей работе</span><span>Демонстрационные карточки</span></div>
+          <div class="reviews-grid">
+            <article class="review-card"><div class="review-person"><img class="review-avatar" src="/images/review-avatar-1.webp" alt="" width="42" height="42" loading="lazy" decoding="async" /><div><span class="review-stars" aria-hidden="true">☆☆☆☆☆</span><h3>Имя клиента</h3><span class="review-date">Дата публикации</span></div></div><p class="review-subject">Строительство дома</p><p class="review-copy">Здесь появится отзыв о строительстве дома: как проходила работа с командой, что было особенно важно для заказчика и каким получился результат.</p><span class="review-source">Место для ссылки на отзыв</span></article>
+            <article class="review-card"><div class="review-person"><img class="review-avatar" src="/images/review-avatar-2.webp" alt="" width="42" height="42" loading="lazy" decoding="async" /><div><span class="review-stars" aria-hidden="true">☆☆☆☆☆</span><h3>Имя клиента</h3><span class="review-date">Дата публикации</span></div></div><p class="review-subject">Индивидуальный проект</p><p class="review-copy">Здесь появится отзыв о проектировании: обсуждении пожеланий, выборе планировки и архитектурных решениях для будущего дома.</p><span class="review-source">Место для ссылки на отзыв</span></article>
+            <article class="review-card"><div class="review-person"><img class="review-avatar" src="/images/review-avatar-3.webp" alt="" width="42" height="42" loading="lazy" decoding="async" /><div><span class="review-stars" aria-hidden="true">☆☆☆☆☆</span><h3>Имя клиента</h3><span class="review-date">Дата публикации</span></div></div><p class="review-subject">Отделка и интерьер</p><p class="review-copy">Здесь появится отзыв об отделке: воплощении дизайн-проекта, внимании к деталям и впечатлениях от готового пространства.</p><span class="review-source">Место для ссылки на отзыв</span></article>
+            <article class="review-card"><div class="review-person"><img class="review-avatar" src="/images/review-avatar-4.webp" alt="" width="42" height="42" loading="lazy" decoding="async" /><div><span class="review-stars" aria-hidden="true">☆☆☆☆☆</span><h3>Имя клиента</h3><span class="review-date">Дата публикации</span></div></div><p class="review-subject">Благоустройство участка</p><p class="review-copy">Здесь появится отзыв о благоустройстве: организации участка, ландшафтных работах и том, как изменилось пространство вокруг дома.</p><span class="review-source">Место для ссылки на отзыв</span></article>
           </div>
-        </div>
-        <div class="lead-card">
-          <p class="eyebrow">Обсудим ваш проект</p>
-          <h3>Начнём <span>с разговора</span></h3>
-          <form class="lead-form ym-hide-content ym-disable-keys" data-lead-form="request-home" data-service-default="construction" novalidate>
-            <div class="field-row">
-              <div class="field"><label for="h-name">Как к вам обращаться</label><input id="h-name" name="name" autocomplete="name" maxlength="80" /><span class="field-error" id="h-name-error"></span></div>
-              <div class="field"><label for="h-phone">Телефон</label><input id="h-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7" required class="ym-hide-content" /><span class="field-error" id="h-phone-error"></span></div>
-            </div>
-            <div class="field-row">
-              <div class="field"><label for="h-object">Ваш объект</label>
-                <select id="h-object" name="object">
-                  <option value="Частный дом">Частный дом</option>
-                  <option value="Одноэтажный дом">Одноэтажный дом</option>
-                  <option value="Коммерческий объект" data-service="commercial">Коммерческий объект</option>
-                  <option value="Баня, гараж или гостевой дом">Баня, гараж или гостевой дом</option>
-                  <option value="Отделка или инженерия" data-service="finishing">Отделка или инженерия</option>
-                </select>
-              </div>
-              <div class="field"><label for="h-area">Площадь, м²</label><input id="h-area" name="area" inputmode="numeric" maxlength="6" placeholder="150" /></div>
-            </div>
-            <fieldset class="seg field">
-              <legend>Что уже есть</legend>
-              <input type="radio" name="has_project" id="h-p1" value="Есть участок и проект" /><label for="h-p1">Участок и проект</label>
-              <input type="radio" name="has_project" id="h-p2" value="Есть участок, нужен проект" /><label for="h-p2">Только участок</label>
-              <input type="radio" name="has_project" id="h-p3" value="Пока нет участка" /><label for="h-p3">Пока ничего</label>
-            </fieldset>
-            <div class="field"><label for="h-message">Опишите задачу</label><textarea id="h-message" name="message" maxlength="2000" placeholder="Где участок, сколько этажей, когда хотите начать"></textarea></div>
-            <fieldset class="seg field">
-              <legend>Как удобнее связаться</legend>
-              <input type="radio" name="contact_pref" id="h-c1" value="call" checked /><label for="h-c1">Звонок</label>
-              <input type="radio" name="contact_pref" id="h-c2" value="telegram" /><label for="h-c2">Telegram</label>
-              <input type="radio" name="contact_pref" id="h-c3" value="whatsapp" /><label for="h-c3">WhatsApp</label>
-              <input type="radio" name="contact_pref" id="h-c4" value="max" /><label for="h-c4">Max</label>
-            </fieldset>
-            <div class="hp" aria-hidden="true"><label for="h-website">Сайт</label><input id="h-website" name="website" tabindex="-1" autocomplete="off" /></div>
-            <label class="check"><input type="checkbox" name="consent" required /><span>Даю <a href="/soglasie/" target="_blank">согласие на обработку персональных данных</a> и принимаю <a href="/privacy/" target="_blank">политику конфиденциальности</a>.</span></label>
-            <span class="field-error" data-error-for="consent"></span>
-            <div class="form-actions">
-              <button class="btn btn--paper btn--block" type="submit">Обсудить проект <svg class="arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6"/></svg></button>
-              <p class="form-status" role="status" aria-live="polite"></p>
-            </div>
-          </form>
-        </div>
-      </div>
-    </section>
-  </main>
+          <p class="reviews-note">Карточки-заглушки со сгенерированными портретами. Имена, оценки и тексты будут заменены реальными отзывами.</p>
+        </section>
 
-  <!--#include footer-->
-  </div>
+        <section class="faq section-pad" aria-labelledby="faq-title"><div><p class="eyebrow">06 / ВАЖНОЕ ДО НАЧАЛА</p><h2 id="faq-title">Наверняка<br />есть вопросы</h2></div><div class="faq-list" data-c-list="home.faq"></div></section>
+      </main>
 
-  <dialog class="dialog" id="calc-dialog" aria-labelledby="calc-title"></dialog>
-  <dialog class="dialog lightbox" id="gallery-dialog" aria-label="Фото объекта"></dialog>
+      <!--#include footer-->
+    </div>
 
-  <script type="application/json" id="gallery-data">{
- "promenad": {
-  "title": "Посёлок Променад",
-  "text": "Посёлок Променад, дом 510 м², бассейн и баня 240 м²",
-  "photos": [
-   [
-    "promenad-vecher",
-    1571,
-    1098,
-    "Дом в посёлке Променад вечером, подсветка фасада и дорожки"
-   ],
-   [
-    "promenad-noch",
-    1468,
-    1098,
-    "Фасад дома с панорамными окнами ночью"
-   ],
-   [
-    "promenad-zima",
-    1417,
-    962,
-    "Дом с террасой и балконом зимой"
-   ],
-   [
-    "promenad-basseyn",
-    1417,
-    1130,
-    "Бассейн в доме с подсветкой стен"
-   ],
-   [
-    "promenad-lestnica",
-    1098,
-    1478,
-    "Винтовая лестница в холле"
-   ]
-  ]
- },
- "malakhovka": {
-  "title": "Посёлок Малаховка",
-  "text": "Посёлок Малаховка, дом 805 м² и гостевой дом 220 м²",
-  "photos": [
-   [
-    "malakhovka",
-    1536,
-    1152,
-    "Белый дом с графитовыми вставками среди сосен"
-   ],
-   [
-    "malakhovka-fasad",
-    1536,
-    1152,
-    "Фасад с панорамным остеклением первого этажа"
-   ],
-   [
-    "malakhovka-vhod",
-    1536,
-    1152,
-    "Входная группа с витражом во всю высоту"
-   ],
-   [
-    "malakhovka-do",
-    1536,
-    1152,
-    "Участок в начале работ"
-   ]
-  ]
- },
- "nikolina": {
-  "title": "Николина гора",
-  "text": "Николина гора, дом 240 м²",
-  "photos": [
-   [
-    "nikolina-gora",
-    1600,
-    1200,
-    "Дом в классическом стиле с колоннами и балконом"
-   ],
-   [
-    "nikolina-gora-vhod",
-    1024,
-    768,
-    "Парадный вход с лестницей и балюстрадой"
-   ],
-   [
-    "nikolina-gora-ugol",
-    1600,
-    1200,
-    "Боковой фасад дома среди сосен"
-   ]
-  ]
- },
- "timurkino": {
-  "title": "Деревня Тимуркино",
-  "text": "Деревня Тимуркино, дом 200 м²",
-  "photos": [
-   [
-    "timurkino",
-    1600,
-    721,
-    "Двухэтажный дом из красного облицовочного кирпича"
-   ],
-   [
-    "timurkino-gotov",
-    1600,
-    720,
-    "Дом с подъездной дорожкой"
-   ],
-   [
-    "timurkino-fasad",
-    1600,
-    721,
-    "Дом в тёмном облицовочном кирпиче"
-   ],
-   [
-    "timurkino-plita",
-    1600,
-    720,
-    "Фундаментная плита, залитая зимой"
-   ],
-   [
-    "timurkino-monolit",
-    1600,
-    721,
-    "Бетонирование монолитных стен зимой"
-   ]
-  ]
- },
- "peshkovo": {
-  "title": "Деревня Пешково",
-  "text": "Деревня Пешково, Ногинский район, дом 200 м²",
-  "photos": [
-   [
-    "peshkovo",
-    1200,
-    1600,
-    "Двухэтажный дом из светлого кирпича с крыльцом"
-   ],
-   [
-    "peshkovo-gotov",
-    1200,
-    1600,
-    "Готовый дом с террасой"
-   ],
-   [
-    "peshkovo-gotov-2",
-    1200,
-    1600,
-    "Дом с балконом и навесом над входом"
-   ],
-   [
-    "peshkovo-gotov-3",
-    1200,
-    1600,
-    "Угол дома с панорамными окнами"
-   ]
-  ]
- },
- "banya": {
-  "title": "Богородское",
-  "text": "Богородское, Рузский район, баня под ключ",
-  "photos": [
-   [
-    "banya",
-    1200,
-    1600,
-    "Одноэтажная баня с панорамным остеклением в саду"
-   ],
-   [
-    "banya-2",
-    1200,
-    1600,
-    "Баня с плоской кровлей и террасой"
-   ]
-  ]
- },
- "garazh": {
-  "title": "Гараж под ключ, Богородское",
-  "text": "Богородское, Рузский район, гараж под ключ: полный цикл работ",
-  "photos": [
-   [
-    "garazh",
-    1200,
-    1600,
-    "Двухэтажный гараж со светлым фасадом и деревянными вставками среди сосен"
-   ],
-   [
-    "garazh-2",
-    1200,
-    1600,
-    "Гараж с воротами и деревянной облицовкой, вид с участка"
-   ],
-   [
-    "garazh-3",
-    1200,
-    1600,
-    "Угол здания гаража с тёмной облицовкой"
-   ],
-   [
-    "garazh-otdelka",
-    960,
-    1280,
-    "Монтаж потолка из вагонки внутри гаража"
-   ],
-   [
-    "garazh-potolok",
-    960,
-    1280,
-    "Потолок с деревянными балками на втором этаже гаража"
-   ]
-  ]
- }
-}</script>
-  <script type="module" src="./src/site/main.js"></script>
-</body>
+    
+    <script type="application/json" id="gallery-data">{"promenad": {"title": "Посёлок Променад", "text": "Посёлок Променад, дом 510 м², бассейн и баня 240 м²", "photos": [["promenad-vecher", 1571, 1098, "Дом в посёлке Променад вечером, подсветка фасада и дорожки"], ["promenad-noch", 1468, 1098, "Фасад дома с панорамными окнами ночью"], ["promenad-zima", 1417, 962, "Дом с террасой и балконом зимой"], ["promenad-basseyn", 1417, 1130, "Бассейн в доме с подсветкой стен"], ["promenad-lestnica", 1098, 1478, "Винтовая лестница в холле"]]}, "malakhovka": {"title": "Посёлок Малаховка", "text": "Посёлок Малаховка, дом 805 м² и гостевой дом 220 м²", "photos": [["malakhovka", 1536, 1152, "Белый дом с графитовыми вставками среди сосен"], ["malakhovka-fasad", 1536, 1152, "Фасад с панорамным остеклением первого этажа"], ["malakhovka-vhod", 1536, 1152, "Входная группа с витражом во всю высоту"], ["malakhovka-do", 1536, 1152, "Участок в начале работ"]]}, "nikolina": {"title": "Николина гора", "text": "Николина гора, дом 240 м²", "photos": [["nikolina-gora", 1600, 1200, "Дом в классическом стиле с колоннами и балконом"], ["nikolina-gora-vhod", 1024, 768, "Парадный вход с лестницей и балюстрадой"], ["nikolina-gora-ugol", 1600, 1200, "Боковой фасад дома среди сосен"]]}, "timurkino": {"title": "Деревня Тимуркино", "text": "Деревня Тимуркино, дом 200 м², монолит и облицовочный кирпич", "photos": [["timurkino", 1600, 721, "Двухэтажный дом из красного облицовочного кирпича"], ["timurkino-gotov", 1600, 720, "Дом с подъездной дорожкой"], ["timurkino-fasad", 1600, 721, "Дом в тёмном облицовочном кирпиче"], ["timurkino-plita", 1600, 720, "Фундаментная плита, залитая зимой"], ["timurkino-monolit", 1600, 721, "Бетонирование монолитных стен зимой"]]}, "peshkovo": {"title": "Деревня Пешково", "text": "Деревня Пешково, Ногинский район, дом 200 м²", "photos": [["peshkovo", 1200, 1600, "Двухэтажный дом из светлого кирпича с крыльцом"], ["peshkovo-etap-plita", 1200, 540, "Арматурный каркас фундаментной плиты"], ["peshkovo-etap-steny", 1200, 541, "Опалубка монолитных стен первого этажа"], ["peshkovo-etap-krovlya", 1200, 541, "Стропильная система кровли"], ["peshkovo-gotov", 1200, 1600, "Готовый дом с террасой"]]}, "banya": {"title": "Богородское, баня", "text": "Богородское, Рузский район, баня под ключ", "photos": [["banya", 1200, 1600, "Одноэтажная баня с панорамным остеклением в саду"], ["banya-2", 1200, 1600, "Баня с плоской кровлей и террасой"]]}, "garazh": {"title": "Богородское, гараж", "text": "Богородское, Рузский район, гараж под ключ: полный цикл работ", "photos": [["garazh", 1200, 1600, "Двухэтажный гараж со светлым фасадом и деревянными вставками среди сосен"], ["garazh-2", 1200, 1600, "Гараж с воротами и деревянной облицовкой"], ["garazh-3", 1200, 1600, "Угол здания гаража с тёмной облицовкой"], ["garazh-otdelka", 960, 1280, "Монтаж потолка из вагонки внутри гаража"], ["garazh-potolok", 960, 1280, "Потолок с деревянными балками на втором этаже"]]}}</script>
+    <script type="module" src="./src/main.js"></script>
+  </body>
 </html>
+
+
+

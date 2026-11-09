@@ -1,5 +1,5 @@
 // Готовит главное фото для светлой и тёмной темы: WebP нужных ширин в public/images/hero/.
-// Дневное фото: public/images/construction-hero.webp и мобильная версия construction-hero-mobile.webp.
+// Дневное фото главной: public/images/hero.webp и мобильная версия hero-mobile.webp (исходный макет).
 // Ночное фото: лучший вариант из Codex кладётся в design/sources/hero-night/construction-hero-night.webp
 // (и construction-hero-night-mobile.png). Пока его нет, скрипт делает временную ночную версию
 // из дневного фото: затемняет и холодит кадр и оставляет тёплый свет окон. Звёзды рисует сайт поверх фото.
@@ -13,8 +13,9 @@ const out = `${root}public/images/hero/`;
 const exists = path => access(path).then(() => true, () => false);
 
 const SETS = [
-  {day: 'public/images/construction-hero.webp', night: 'design/sources/hero-night/construction-hero-night.webp', name: 'construction-hero', widths: [1792, 1200, 800], skyTop: 0.62},
-  {day: 'public/images/construction-hero-mobile.webp', night: 'design/sources/hero-night/construction-hero-night-mobile.webp', name: 'construction-hero-mobile', widths: [800], skyTop: 0.5}
+  // Главная страница: фото исходного макета «Твой дом, твой мир»
+  {day: 'public/images/hero.webp', night: 'design/sources/hero-night/hero-night.webp', name: 'hero', widths: [1660, 1200, 800], skyTop: 0.75},
+  {day: 'public/images/hero-mobile.webp', night: 'design/sources/hero-night/hero-night-mobile.webp', name: 'hero-mobile', widths: [800], skyTop: 0.45},
 ];
 
 async function standInNight(dayPath, skyTop) {

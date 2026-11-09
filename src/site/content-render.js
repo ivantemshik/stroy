@@ -17,7 +17,7 @@ export function telHref(phone) {
 const LISTS = {
   prices: rows => rows.map(row => `<tr><th scope="row">${escapeHtml(row.name)}</th><td>${escapeHtml(row.price)}</td></tr>`).join(''),
   promo: items => items.map(item => `<li><b>${escapeHtml(item.title)}</b><span>${escapeHtml(item.text)}</span></li>`).join(''),
-  faq: items => items.map(item => `<details data-faq><summary>${escapeHtml(item.q)}</summary><p>${escapeHtml(item.a)}</p></details>`).join('')
+  faq: items => items.map(item => `<details data-faq><summary>${escapeHtml(item.q)}<span aria-hidden="true">+</span></summary><p>${escapeHtml(item.a)}</p></details>`).join('')
 };
 
 export function listKind(key) {

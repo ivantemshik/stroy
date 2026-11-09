@@ -1,144 +1,36 @@
 :root {
-  --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 64px; --space-3xl: 96px;
+  --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 64px; --space-3xl: 96px; --space-4xl: 144px;
+  --text-xs: 0.8125rem; --text-sm: 0.9375rem; --text-md: 1.0625rem; --text-lg: 1.25rem; --text-xl: 1.5625rem; --text-2xl: 1.953rem; --text-3xl: 2.441rem;
+  --text-display: clamp(2.5rem, 3.6vw + 0.75rem, 4.5rem);
+  --text-section: clamp(2.125rem, 2.3vw + 1rem, 3.5rem); --text-title: clamp(1.25rem, 0.75vw + 0.875rem, 1.625rem); --text-lead: clamp(1.125rem, 0.35vw + 1rem, 1.375rem);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1); --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms; --dur-short: 220ms; --dur-long: 420ms;
+  --color-error: oklch(50% 0.17 27); --color-success: oklch(46% 0.1 150);
+  --container: 1440px; --gutter: 64px; --gap-columns: 32px; --section-gap-s: 120px; --section-gap: 144px; --section-gap-l: 176px;
+  --z-base: 1; --z-raised: 10; --z-sticky: 200; --z-sticky-nav: 300; --z-modal: 400; --z-toast: 500;
 
-  /* Шрифтовая шкала исходного макета «Дом Мира»: крупные заголовки с плотным трекингом, мелкие подписи капсом */
-  --text-eyebrow: 0.6875rem; --text-xs: 0.75rem; --text-sm: 0.875rem; --text-md: 1rem; --text-lg: 1.125rem; --text-title: 1.1875rem; --text-xl: 1.5rem; --text-2xl: 2rem;
-  --text-display: clamp(3.25rem, 4.4vw + 0.75rem, 5.25rem);
-  --text-section: clamp(1.875rem, 1.5vw + 1.15rem, 2.625rem);
-  --text-num: clamp(2.25rem, 1.9vw + 1.25rem, 3.25rem);
-  --tracking-display: -0.064em; --tracking-section: -0.044em; --tracking-title: -0.03em; --tracking-eyebrow: 0.075em;
-
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --dur-micro: 120ms; --dur-short: 200ms; --dur-long: 400ms;
-
-  /* Рамка сайта: голубое поле и скруглённый лист бумаги внутри, как в исходном макете */
-  --shell: 1360px; --frame-top: 32px; --frame-side: 34px; --frame-bottom: 24px;
-  --gutter: 56px; --inset: 16px; --gap: 12px; --gap-columns: 32px; --section-gap: 88px;
-  --radius-shell: 38px; --radius-band: 30px; --radius-card: 20px; --radius-tile: 10px; --radius-btn: 9px; --radius-chip: 999px;
-  --header-h: 96px;
-  --z-raised: 10; --z-sticky-nav: 300; --z-modal: 400; --z-toast: 500;
-
-  /* Палитра проекта: бумага #f7f7f5, графит #181918, небо #91b2bf, слива #51435a, медь #ad8371 */
+  /* Палитра текущего проекта «Дом Мира»: бумага #f7f7f5, графит #181918, небо #91b2bf, слива #51435a */
   --color-paper: oklch(97.6% 0.0026 106.4);
   --color-paper-2: oklch(95% 0.0054 117.9);
-  --color-paper-3: oklch(91.8% 0.0096 93.6);
-  --color-card: oklch(99.7% 0.0015 106.4);
+  --color-paper-3: oklch(91.4% 0.0055 117.9);
   --color-ink: oklch(21.2% 0.0025 145.5);
   --color-ink-2: oklch(35.4% 0.0043 145.5);
   --color-muted: oklch(49.2% 0.0073 137.8);
-  --color-head-2: oklch(59.2% 0.0083 132.5);
-  --color-rule: oklch(91.4% 0.0055 117.9);
-  --color-rule-2: oklch(85% 0.0084 121.6);
+  --color-rule: oklch(87.6% 0.0084 121.6);
   --color-sky: oklch(74.3% 0.0405 223.8);
-  --color-haze: oklch(50% 0.046 231);
-  --color-on-sky: oklch(99.2% 0.004 220);
-  --color-on-sky-2: oklch(91.3% 0.015 218.1);
-  --color-on-sky-3: oklch(87.8% 0.023 217.7);
+  --color-sky-2: oklch(92.5% 0.0105 219.6);
   --color-accent: oklch(40.6% 0.0417 312);
-  --color-accent-2: oklch(33.8% 0.0378 311.5);
+  --color-accent-2: oklch(34.2% 0.0377 311.5);
   --color-accent-ink: oklch(97.6% 0.0026 106.4);
-  --color-copper: oklch(64.6% 0.0584 44.3);
-  --color-copper-2: oklch(54.8% 0.0586 42.2);
-  --color-night: oklch(19.9% 0.0025 145.5);
-  --color-night-2: oklch(26.6% 0.0047 145.4);
-  --color-night-rule: oklch(35.4% 0.0043 145.5);
-  --color-night-muted: oklch(74% 0.0084 139.4);
-  --color-night-faint: oklch(63.9% 0.0149 134.9);
-  --color-on-night-focus: oklch(84.9% 0.0376 320.4);
-  --color-error: oklch(50% 0.17 27);
-  --color-error-on-night: oklch(79.2% 0.0971 36.6);
-  --color-success: oklch(46% 0.1 150);
-  --color-focus: oklch(33.8% 0.0378 311.5);
-  --color-scrim: oklch(97.6% 0.0026 106.4 / 0.92);
+  --color-focus: oklch(34.2% 0.0377 311.5);
+  --color-scrim: oklch(97.6% 0.0026 106.4 / 0.86);
   --color-shade: oklch(21.2% 0.0025 145.5 / 0.72);
-  --color-haze-0: oklch(50% 0.046 231 / 0);
-  --color-haze-90: oklch(50% 0.046 231 / 0.9);
-  --color-haze-70: oklch(50% 0.046 231 / 0.7);
-  --color-paper-0: oklch(97.6% 0.0026 106.4 / 0);
-  --color-on-sky-line: oklch(100% 0 0 / 0.55);
 
   --font-display: "Manrope", ui-sans-serif, sans-serif;
   --font-body: "Manrope", ui-sans-serif, system-ui, sans-serif;
-  --color-roof: var(--color-sky);
-  --color-on-night: oklch(97.6% 0.0026 106.4);
-  --color-star: oklch(98% 0.01 230);
-  color-scheme: light;
-}
-@media (max-width: 1100px) { :root { --gutter: 36px; --frame-top: 22px; --frame-side: 22px; --frame-bottom: 22px; --section-gap: 72px; } }
-@media (max-width: 760px) { :root { --gutter: 25px; --inset: 10px; --gap: 10px; --frame-top: 12px; --frame-side: 12px; --frame-bottom: 12px; --radius-shell: 25px; --radius-band: 24px; --section-gap: 60px; --gap-columns: 20px; --header-h: 80px; } }
-@media (max-width: 480px) { :root { --gutter: 20px; --inset: 8px; --frame-top: 8px; --frame-side: 8px; --frame-bottom: 8px; --radius-band: 20px; } }
+  --font-outlier: var(--font-body);
 
-:root[data-theme="dark"] {
-  /* Тёмная тема: ночное небо вместо голубого поля, тёмный лист, светлый текст */
-  --color-paper: oklch(17.5% 0.006 250);
-  --color-paper-2: oklch(21% 0.008 250);
-  --color-paper-3: oklch(25% 0.01 250);
-  --color-card: oklch(21.5% 0.009 250);
-  --color-ink: oklch(95% 0.005 100);
-  --color-ink-2: oklch(85% 0.006 120);
-  --color-muted: oklch(72% 0.01 140);
-  --color-head-2: oklch(62% 0.012 140);
-  --color-rule: oklch(29% 0.008 250);
-  --color-rule-2: oklch(38% 0.01 250);
-  --color-sky: oklch(24% 0.035 252);
-  --color-haze: oklch(30% 0.045 255);
-  --color-haze-0: oklch(30% 0.045 255 / 0);
-  --color-haze-90: oklch(30% 0.045 255 / 0.9);
-  --color-haze-70: oklch(30% 0.045 255 / 0.7);
-  --color-accent: oklch(52% 0.065 312);
-  --color-accent-2: oklch(46% 0.06 312);
-  --color-accent-ink: oklch(98% 0.003 106);
-  --color-copper: oklch(74% 0.06 45);
-  --color-copper-2: oklch(79% 0.06 45);
-  --color-night: oklch(25% 0.035 252);
-  --color-night-2: oklch(30% 0.035 252);
-  --color-night-rule: oklch(37% 0.03 252);
-  --color-night-muted: oklch(81% 0.015 240);
-  --color-night-faint: oklch(70% 0.02 240);
-  --color-error: oklch(72% 0.15 27);
-  --color-success: oklch(74% 0.12 150);
-  --color-focus: oklch(82% 0.05 312);
-  --color-scrim: oklch(17.5% 0.006 250 / 0.88);
-  --color-shade: oklch(8% 0.01 250 / 0.72);
-  --color-paper-0: oklch(17.5% 0.006 250 / 0);
-  --color-roof: var(--color-on-sky-3);
-  --color-on-night: oklch(95% 0.005 100);
-  color-scheme: dark;
+  --radius-stage: 38px; --radius-card: 24px; --radius-input: 14px; --radius-pill: 999px; --rule-hair: 1px; --shadow-card: none;
+  --tracking-display: -0.025em;
+  --header-h: 84px;
 }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  /* Тёмная тема: ночное небо вместо голубого поля, тёмный лист, светлый текст */
-  --color-paper: oklch(17.5% 0.006 250);
-  --color-paper-2: oklch(21% 0.008 250);
-  --color-paper-3: oklch(25% 0.01 250);
-  --color-card: oklch(21.5% 0.009 250);
-  --color-ink: oklch(95% 0.005 100);
-  --color-ink-2: oklch(85% 0.006 120);
-  --color-muted: oklch(72% 0.01 140);
-  --color-head-2: oklch(62% 0.012 140);
-  --color-rule: oklch(29% 0.008 250);
-  --color-rule-2: oklch(38% 0.01 250);
-  --color-sky: oklch(24% 0.035 252);
-  --color-haze: oklch(30% 0.045 255);
-  --color-haze-0: oklch(30% 0.045 255 / 0);
-  --color-haze-90: oklch(30% 0.045 255 / 0.9);
-  --color-haze-70: oklch(30% 0.045 255 / 0.7);
-  --color-accent: oklch(52% 0.065 312);
-  --color-accent-2: oklch(46% 0.06 312);
-  --color-accent-ink: oklch(98% 0.003 106);
-  --color-copper: oklch(74% 0.06 45);
-  --color-copper-2: oklch(79% 0.06 45);
-  --color-night: oklch(25% 0.035 252);
-  --color-night-2: oklch(30% 0.035 252);
-  --color-night-rule: oklch(37% 0.03 252);
-  --color-night-muted: oklch(81% 0.015 240);
-  --color-night-faint: oklch(70% 0.02 240);
-  --color-error: oklch(72% 0.15 27);
-  --color-success: oklch(74% 0.12 150);
-  --color-focus: oklch(82% 0.05 312);
-  --color-scrim: oklch(17.5% 0.006 250 / 0.88);
-  --color-shade: oklch(8% 0.01 250 / 0.72);
-  --color-paper-0: oklch(17.5% 0.006 250 / 0);
-  --color-roof: var(--color-on-sky-3);
-  --color-on-night: oklch(95% 0.005 100);
-  color-scheme: dark;
-} }

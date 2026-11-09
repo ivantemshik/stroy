@@ -4,7 +4,7 @@
 
 Опубликованная версия: https://dom-mira-landing.vercel.app
 
-GitHub Pages: https://annanekofa-eng.github.io/Stroy/ (публикация из ветки `main` через GitHub Actions).
+GitHub Pages: https://ivantemshik.github.io/Stroy/ (публикация из ветки `main` через GitHub Actions).
 
 Отдельная страница услуги «Строительство домов»: https://dom-mira-landing.vercel.app/stroitelstvo-domov/. Исходник — `stroitelstvo-domov/index.html`, стили — `src/construction.css`, дополнительная логика — `src/construction.js`. Референс и промпты фотографий — `design/construction-page.md`.
 

@@ -1,0 +1,18 @@
+{
+  "name": "dom-mira-landing",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "check": "node scripts/check.mjs",
+    "check:construction": "node scripts/check-construction.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "sharp": "^0.35.5",
+    "vite": "^7.2.0"
+  }
+}

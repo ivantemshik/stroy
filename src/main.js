@@ -1,3 +1,5 @@
+import {postLead} from './site/forms.js';
+import {goal} from './site/analytics.js';
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const quiz = $('#quiz-dialog');
@@ -98,7 +100,7 @@ function renderQuiz() {
   if (state.step === 2) inner = `<p>Выберите задачу для предварительного ориентира.</p><div class="quiz-options">${['Строительство по проекту','Эскизный проект','Проектирование инженерии','Отделка по дизайн-проекту'].map(value=>`<button class="quiz-option ${state.scope === value ? 'selected' : ''}" data-scope="${value}" aria-pressed="${state.scope === value}"><span>${value}</span><span aria-hidden="true">${state.scope === value ? '<svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="m5 12 4 4L19 6"/></svg>' : '<svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg>'}</span></button>`).join('')}</div>`;
   if (state.step === 3) {
     const rate = {'Строительство по проекту':70000,'Эскизный проект':700,'Проектирование инженерии':1500,'Отделка по дизайн-проекту':60000}[state.scope];
-    inner = `<div class="quiz-summary"><p>Ориентировочная стоимость работ</p><strong class="estimate">от ${rub(state.area * rate)} ₽</strong><p>${rub(state.area)} м² × ${rub(rate)} ₽/м² · без материалов</p></div><dl class="summary-dl"><dt>Ваш объект</dt><dd>${state.type}</dd><dt>Задача</dt><dd>${state.scope}</dd><dt>Площадь</dt><dd>${state.area} м²</dd></dl><p class="small-print">Это предварительный ориентир по опубликованному прайсу, а не смета. Для отделки инженерные системы не включены. Итог зависит от проекта, участка и состава работ.</p><label class="modal-field-label" for="quiz-email">Ваш e-mail (необязательно)</label><input class="modal-input" id="quiz-email" type="email" autocomplete="email" placeholder="name@example.ru" value="${escapeHtml(state.email)}" /><a class="button plum mail-link" id="mail-link" href="${mailto()}">Открыть письмо <span aria-hidden="true"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg></span></a><p class="small-print" id="mail-hint">Откроется ваша почтовая программа. Проверьте текст и отправьте письмо самостоятельно.</p>`;
+    inner = `<div class="quiz-summary"><p>Ориентировочная стоимость работ</p><strong class="estimate">от ${rub(state.area * rate)} ₽</strong><p>${rub(state.area)} м² × ${rub(rate)} ₽/м² · без материалов</p></div><dl class="summary-dl"><dt>Ваш объект</dt><dd>${state.type}</dd><dt>Задача</dt><dd>${state.scope}</dd><dt>Площадь</dt><dd>${state.area} м²</dd></dl><p class="small-print">Это предварительный ориентир по опубликованному прайсу, а не смета. Для отделки инженерные системы не включены. Итог зависит от проекта, участка и состава работ.</p><label class="modal-field-label" for="quiz-name">Имя</label><input class="modal-input" id="quiz-name" autocomplete="name" maxlength="80" /><label class="modal-field-label" for="quiz-phone">Телефон</label><input class="modal-input ym-hide-content" id="quiz-phone" type="tel" autocomplete="tel" placeholder="+7" /><label class="quiz-consent"><input type="checkbox" id="quiz-consent" /> Даю <a href="/soglasie/" target="_blank">согласие на обработку персональных данных</a></label><button class="button plum" type="button" id="quiz-send">Получить смету</button><p class="small-print" id="quiz-hint" role="status"></p>`;
   }
   content.innerHTML = `${progress}<p class="eyebrow">ВАШ БУДУЩИЙ ДОМ / 0${state.step+1}</p><h2 id="quiz-title">${titles[state.step]}</h2>${inner}<div class="quiz-actions">${state.step > 0 ? '<button class="quiz-back"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M19 12H5m6-6-6 6 6 6"/></svg> Назад</button>' : ''}${state.step < 3 ? '<button class="button plum quiz-next">Продолжить <span aria-hidden="true"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></button>' : '<button class="quiz-back quiz-reset">Начать заново <svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M20 7v5h-5M19 12a7 7 0 1 0-2 5M20 7l-3-3"/></svg></button>'}</div>`;
   $$('[data-type]', content).forEach(button=>button.addEventListener('click',()=>{state.type=button.dataset.type;renderQuiz();$('.quiz-option.selected',content)?.focus();}));
@@ -107,8 +109,18 @@ function renderQuiz() {
   $('.quiz-back:not(.quiz-reset)',content)?.addEventListener('click',()=>{state.step=Math.max(0,state.step-1);renderQuiz();});
   $('.quiz-reset',content)?.addEventListener('click',()=>{state.step=0;renderQuiz();});
   $('#area',content)?.addEventListener('input',event=>{state.area=Number(event.target.value);$('#area-value').textContent=state.area;});
-  $('#quiz-email',content)?.addEventListener('input',event=>{state.email=event.target.value;$('#mail-link').href=mailto();});
-  $('#mail-link',content)?.addEventListener('click',event=>{if(!$('#quiz-email').reportValidity())event.preventDefault();});
+  $('#quiz-send',content)?.addEventListener('click',async()=>{
+    const hint=$('#quiz-hint'),phone=$('#quiz-phone').value.trim();
+    if(phone.replace(/\D/g,'').length<10){hint.textContent='Укажите телефон с кодом города.';$('#quiz-phone').focus();return;}
+    if(!$('#quiz-consent').checked){hint.textContent='Отметьте согласие на обработку данных.';return;}
+    const button=$('#quiz-send');button.disabled=true;hint.textContent='Отправляем...';
+    try{
+      const data=await postLead({form:'calc-design',page:location.pathname,service:state.scope.includes('Отделка')?'finishing':state.scope.includes('Строительство')?'construction':'design',
+        name:$('#quiz-name').value.trim(),phone,consent:true,details:{object:state.type,area:String(state.area),scope:state.scope}});
+      goal('lead_sent',{form:'calc-design'});
+      hint.textContent=`Заявка${data.id?` №${data.id}`:''} принята. Мы свяжемся с вами в ближайшее рабочее время.`;
+    }catch(error){hint.textContent=`${error.status&&error.message?error.message:'Не получилось отправить.'} Напишите на info@gkvesmir.ru.`;button.disabled=false;}
+  });
 }
 function mailto() {
   const body = `Здравствуйте! Хочу обсудить проект с «Дом Мира».\n\nОбъект: ${state.type}\nПлощадь: около ${state.area} м²\nЗадача: ${state.scope}\n${state.email ? `Мой e-mail: ${state.email}\n` : ''}\nУчасток и пожелания: [расскажите о вашем проекте]`;

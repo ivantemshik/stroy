@@ -1,0 +1,60 @@
+[
+ {
+  "shape": "Ledger of real houses",
+  "theme": "custom (inherited Дом Мира brand)",
+  "axes": "light/grotesk-medium/chromatic-plum",
+  "hero": "Stage",
+  "nav": "wordmark, inline links, Telegram, one action",
+  "footer": "contacts and requisites in unequal columns over documents",
+  "imagery": "user photographs",
+  "photos": [
+   "promenad-zima",
+   "promenad-vecher",
+   "malakhovka",
+   "nikolina-gora",
+   "timurkino",
+   "peshkovo",
+   "banya",
+   "peshkovo-etap-uchastok",
+   "peshkovo-etap-plita",
+   "peshkovo-etap-steny",
+   "peshkovo-etap-krovlya",
+   "peshkovo-etap-fasad",
+   "peshkovo-gotov",
+   "timurkino-uteplenie",
+   "otdelka-gostinaya",
+   "otdelka-chernovaya",
+   "otdelka-stolovaya",
+   "rekonstrukciya",
+   "otdelka-vannaya",
+   "otdelka-kamin",
+   "otdelka-spalnya",
+   "otdelka-kuhnya",
+   "otdelka-stolovaya-2",
+   "otdelka-shkafy",
+   "otdelka-lestnica",
+   "promenad-basseyn"
+  ],
+  "entry": "index.html",
+  "fingerprint": "stage-hero/index-objects/rail-stages/price-table/facts/switcher/faq/request",
+  "sections": [
+   "hero",
+   "objects index",
+   "stages rail",
+   "prices",
+   "contract facts",
+   "materials switcher",
+   "faq",
+   "request",
+   "footer"
+  ],
+  "signature": "one house in Peshkovo shown stage by stage in site photos",
+  "waived": [
+   "39b",
+   "49b"
+  ],
+  "prompt": "Строительство домов под ключ и отделочные работы, Дом Мира, сохранить стиль проекта",
+  "date": "2026-11-09",
+  "mode": "build"
+ }
+]

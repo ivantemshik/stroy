@@ -238,3 +238,29 @@
   .pj-spec td{font-size:12px}
   .pj-spec td:last-child{font-size:14px}
 }
+
+/* Согласие в форме, сообщение об успехе и уведомление о cookie (общая система заявок сайта) */
+.pj-consent{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.4;color:var(--muted)}
+.pj-consent input{width:20px;height:20px;margin:0;flex:none;accent-color:var(--plum)}
+.pj-consent a{color:var(--ink)}
+.pj-done{font-size:18px;line-height:1.5}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.quiz-consent{display:flex;gap:8px;align-items:flex-start;margin:12px 0;font-size:14px}
+.quiz-consent a{color:var(--ink)}
+.cookie{position:fixed;left:16px;right:16px;bottom:16px;z-index:500;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px 24px;align-items:center;max-width:920px;margin-inline:auto;padding:24px;border:1px solid var(--line);border-radius:24px;background:var(--paper)}
+.cookie p{font-size:15px;color:var(--ink)}
+.cookie-actions{display:flex;flex-wrap:wrap;gap:8px}
+.cookie .btn,.dialog .btn{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border:1px solid var(--plum);border-radius:999px;background:var(--plum);color:var(--paper);font:600 15px/1 var(--font);cursor:pointer}
+.cookie .btn--quiet,.dialog .btn--quiet{background:transparent;color:var(--ink);border-color:var(--ink)}
+.cookie .btn:focus-visible,.dialog .btn:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.dialog{width:min(560px,calc(100% - 32px));padding:0;border:0;border-radius:24px;background:var(--paper)}
+.dialog::backdrop{background:rgba(24,25,24,.6)}
+.dialog-inner{display:grid;gap:16px;padding:32px}
+.dialog-head{display:flex;justify-content:space-between;gap:16px}
+.dialog .icon-btn{width:44px;height:44px;border:1px solid var(--line);border-radius:999px;background:none;cursor:pointer}
+.dialog .icon-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6}
+.cookie-option{display:grid;grid-template-columns:24px minmax(0,1fr);gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.cookie-option span span{display:block;color:var(--muted);font-size:14px}
+.dialog-actions{display:flex;justify-content:space-between;gap:8px}
+.link{color:var(--ink)}
+@media (max-width:640px){.cookie{grid-template-columns:1fr}}

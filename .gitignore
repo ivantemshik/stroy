@@ -6,3 +6,7 @@ qa/
 recordings/
 photos/
 .vercel
+.cache/
+.hallmark/shots/
+.claude/
+!.env.example

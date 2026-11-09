@@ -13,6 +13,9 @@
   --shade: rgba(24, 25, 24, 0.72);
   --soft: #e7eae2;
   --body: #3a3c3a;
+  --menu-glass: rgba(247, 247, 245, 0.98);
+  --menu-shadow: rgba(0, 0, 0, 0.07);
+  --plum-link: #796480;
 }
 
 /* ---------- Шапка: переключатель светлой и тёмной темы рядом с «Обсудить проект» ---------- */
@@ -25,26 +28,45 @@ html:not(.js) .theme-toggle { display: none; }
 .js .theme-toggle .i-sun { opacity: 0; transform: rotate(-90deg) scale(0.6); }
 .js[data-theme="dark"] .theme-toggle .i-moon { opacity: 0; transform: rotate(90deg) scale(0.6); }
 .js[data-theme="dark"] .theme-toggle .i-sun { opacity: 1; transform: none; }
+.theme-toggle { flex-shrink: 0; }
+/* Планшет в портрете: полное меню вместе с переключателем не помещается, логотип и кнопка переносились.
+   Здесь меню открывается кнопкой, как на телефоне (те же стили, что у исходного макета до 760px). */
+@media (min-width: 761px) and (max-width: 940px) {
+  .desktop-nav { display: none; }
+  .header-actions { margin-left: auto; }
+  .menu-toggle { display: flex; flex-direction: column; justify-content: center; gap: 5px; width: 32px; height: 32px; padding: 5px; background: none; color: inherit; }
+  .menu-toggle span { width: 22px; height: 1px; background: currentColor; transition: transform 0.2s; }
+  .menu-toggle[aria-expanded="true"] span:first-child { transform: translateY(3px) rotate(45deg); }
+  .menu-toggle[aria-expanded="true"] span:last-child { transform: translateY(-3px) rotate(-45deg); }
+  .mobile-menu:not([hidden]) { display: flex; flex-direction: column; position: absolute; top: 84px; left: 40px; right: 40px; z-index: 10; padding: 20px; border-radius: 12px; background: var(--menu-glass); backdrop-filter: blur(15px); color: var(--ink); box-shadow: 0 20px 40px var(--menu-shadow); }
+  .mobile-menu a, .mobile-menu button { padding: 12px; background: none; font-size: 16px; text-align: left; }
+  .mobile-menu button { color: var(--plum-link); }
+}
 @media (max-width: 760px) { .header-actions { margin-left: auto; gap: 14px; } .header-actions .header-contact { margin-left: 0; } }
 @media (max-width: 480px) { .header-actions { margin-left: auto; } .menu-toggle { margin-left: 8px; } }
 
 /* ---------- Первый экран: дневное фото плавно сменяется ночным, загораются звёзды ---------- */
 .hero-photo--night { opacity: 0; transition: opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1); }
-.hero-stars { position: absolute; inset: 0 0 42% 0; z-index: -1; opacity: 0; pointer-events: none; transition: opacity 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.5s; }
+/* Градиент первого экрана лежит под звёздами, иначе на телефоне сплошная полоса неба их закрывает */
+.hero::after { z-index: -2; }
+.hero-stars { position: absolute; inset: 0; z-index: -1; opacity: 0; pointer-events: none; transition: opacity 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.5s; }
 :root[data-theme="dark"] .hero-photo--night, :root[data-theme="dark"] .hero-stars { opacity: 1; }
-.hero-stars i { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: var(--star); opacity: 0.6; animation: twinkle var(--d, 3.2s) ease-in-out var(--delay, 0s) infinite; }
+/* Звёзды трёх размеров, часть мерцает. Места и яркость раздаёт theme.js, только по небу дневного фото */
+.hero-stars i { position: absolute; width: 1.5px; height: 1.5px; border-radius: 50%; background: var(--star); opacity: var(--o, 0.6); }
+.hero-stars i.mid { width: 2px; height: 2px; }
 .hero-stars i.big { width: 3px; height: 3px; box-shadow: 0 0 6px var(--star); }
-.hero-stars .shooting { top: 12%; left: 78%; width: 130px; height: 1.5px; border-radius: 2px; background: linear-gradient(90deg, var(--star), var(--night-sky-0)); box-shadow: none; opacity: 0; transform: rotate(-24deg); transform-origin: left center; animation: shooting 1.3s cubic-bezier(0.16, 1, 0.3, 1) 0.9s 1 forwards; }
-@keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+.hero-stars i.tw { animation: twinkle var(--d, 3.2s) ease-in-out var(--delay, 0s) infinite; }
+:root:not([data-theme="dark"]) .hero-stars i { animation-play-state: paused; }
+.hero-stars .shooting { top: 8%; left: 40%; width: 130px; height: 1.5px; border-radius: 2px; background: linear-gradient(90deg, var(--star), var(--night-sky-0)); box-shadow: none; opacity: 0; transform: rotate(-24deg); transform-origin: left center; animation: shooting 1.3s cubic-bezier(0.16, 1, 0.3, 1) 0.9s 1 forwards; }
+@keyframes twinkle { 50% { opacity: calc(var(--o, 0.6) * 0.25); } }
 @keyframes shooting { 0% { opacity: 0; transform: rotate(-24deg) translateX(0) scaleX(0.3); } 15% { opacity: 1; } 100% { opacity: 0; transform: rotate(-24deg) translateX(-420px) scaleX(1); } }
 @media (prefers-reduced-motion: reduce) {
   .hero-photo--night, .hero-stars, .theme-toggle svg { transition: none; }
-  .hero-stars i { animation: none; opacity: 0.7; }
+  .hero-stars i { animation: none; }
   .hero-stars .shooting { display: none; }
 }
 /* На телефоне сверху голубая полоса под текстом, ночью она становится ночным небом */
 @media (max-width: 480px) {
-  .hero-stars { inset: 0 0 55% 0; }
   :root[data-theme="dark"] .hero { background: var(--night-sky); }
   :root[data-theme="dark"] .hero::after { background: linear-gradient(180deg, var(--night-sky) 0%, var(--night-sky) 30%, var(--night-sky-68) 42%, var(--night-sky-0) 63%); }
 }

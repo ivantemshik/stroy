@@ -12,6 +12,7 @@ import {enqueueForStatus} from './metrika.js';
 import {claimUpdate, checkWebhookSecret, runInBackground, sendManagerReply} from './client-bot.js';
 import {formatPhone} from './validate.js';
 import {computeStats} from './stats.js';
+import {runTick} from './cron.js';
 
 const token = () => config.telegram.adminToken;
 const say = (chatId, text, extra = {}) => tg(token(), 'sendMessage', {chat_id: chatId, text: clip(text), parse_mode: 'HTML', link_preview_options: {is_disabled: true}, ...extra});
@@ -23,7 +24,7 @@ export async function adminWebhook({request}) {
   const task = handleUpdate(update).catch(error => {
     console.error('admin bot', error);
     return alertError('Админ-бот', error.message);
-  });
+  }).then(() => runTick().catch(() => {}));
   runInBackground(task);
   if (!process.env.VERCEL) await task;
   return json({ok: true});

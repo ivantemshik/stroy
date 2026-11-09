@@ -56,6 +56,12 @@ function sitePlugin() {
           .replaceAll('%ROBOTS%', indexable() ? 'index, follow' : 'noindex, nofollow')
           .replaceAll('%YM_ID%', process.env.VITE_YM_ID || process.env.YM_COUNTER_ID || '');
         if (!ctx.filename.includes(`${root}admin`)) out = bakeHtml(out, content);
+        // Подтверждение прав в Яндекс Вебмастере и Google Search Console (задаётся после подключения домена).
+        const verify = [
+          process.env.YANDEX_VERIFICATION && `<meta name="yandex-verification" content="${process.env.YANDEX_VERIFICATION}" />`,
+          process.env.GOOGLE_SITE_VERIFICATION && `<meta name="google-site-verification" content="${process.env.GOOGLE_SITE_VERIFICATION}" />`
+        ].filter(Boolean).join('\n  ');
+        if (verify && ctx.filename.endsWith(`${root}index.html`)) out = out.replace('</head>', `  ${verify}\n</head>`);
         if (process.env.GITHUB_PAGES) {
           out = out.replace(/(href|src)="\/(?!\/)/g, '$1="/stroy/').replace(/(srcset|imagesrcset)="([^"]+)"/g, (m, attr, value) =>
             `${attr}="${value.replace(/(^|,\s*)\/(?!\/)/g, '$1/stroy/')}"`);

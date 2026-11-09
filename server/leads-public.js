@@ -10,6 +10,7 @@ import {pushToCrm} from './crm.js';
 import {config} from './env.js';
 import {tg, esc} from './telegram.js';
 import {getSetting} from './settings.js';
+import {runTick} from './cron.js';
 
 export const CONSENT_VERSION = '2026-11-09';
 
@@ -100,6 +101,7 @@ export async function submitLead({request}) {
       const result = await notifyNewLead(lead);
       if (!result.sent) await alertError('Доставка заявок', `Заявка №${lead.id} не ушла в Telegram: ${result.errors.join('; ')}`);
       await pushToCrm(lead);
+      await runTick().catch(() => {});
     })());
   }
   return json({ok: true, id: lead.id});

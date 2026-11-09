@@ -9,7 +9,7 @@ function stems(text) {
 }
 
 // Простой поиск статей: базовые статьи всегда, остальные по совпадению слов и тегов.
-export async function pickKnowledge(queryText, {maxChars = 6500} = {}) {
+export async function pickKnowledge(queryText, {maxChars = 11000} = {}) {
   const articles = await db()`select id, title, body, tags from kb_articles where is_active order by sort, id`;
   const query = new Set(stems(queryText));
   const core = articles.filter(a => a.tags.includes('core'));

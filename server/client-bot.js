@@ -62,8 +62,17 @@ export async function clientWebhook({request}) {
   return json({ok: true});
 }
 
+// Ошибка отправки (клиент заблокировал бота, чат удалён) не должна ронять обработку диалога и заявки.
 async function send(chatId, text, extra = {}) {
-  return tg(token(), 'sendMessage', {chat_id: chatId, text: clip(text, 3900), link_preview_options: {is_disabled: true}, ...extra});
+  try {
+    return await tg(token(), 'sendMessage', {chat_id: chatId, text: clip(text, 3900), link_preview_options: {is_disabled: true}, ...extra});
+  } catch (error) {
+    if (/blocked|deactivated|chat not found/i.test(error.description || '')) {
+      await db()`update conversations set blocked = ${/blocked|deactivated/i.test(error.description)} where tg_chat_id = ${chatId}`.catch(() => {});
+      return null;
+    }
+    throw error;
+  }
 }
 
 async function getConversation(chatId, from) {

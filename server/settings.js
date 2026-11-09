@@ -10,11 +10,11 @@ export const DEFAULT_SETTINGS = {
   'leads.duplicate_window_minutes': 30,
   'ai.enabled': true,
   'ai.providers': [
-    {provider: 'groq', model: 'openai/gpt-oss-120b', enabled: true},
-    {provider: 'openrouter', model: 'deepseek/deepseek-chat-v3-0324:free', enabled: true},
-    {provider: 'cerebras', model: 'gpt-oss-120b', enabled: true},
     {provider: 'yandex', model: 'aliceai-llm', enabled: true},
-    {provider: 'groq', model: 'llama-3.3-70b-versatile', enabled: true}
+    {provider: 'yandex', model: 'aliceai-llm-flash', enabled: true},
+    {provider: 'groq', model: 'openai/gpt-oss-120b', enabled: true},
+    {provider: 'openrouter', model: 'nvidia/nemotron-3-ultra-550b-a55b:free', enabled: true},
+    {provider: 'openrouter', model: 'google/gemma-4-31b-it:free', enabled: true}
   ],
   'ai.temperature': 0.4,
   'ai.max_messages_per_day': 80,

@@ -1,5 +1,5 @@
-/* Дополнения к исходному стилю «Дом Мира» (src/style.css): ночное фото первого экрана, галерея проектов,
-   уведомление о cookie, поля заявки, страницы документов. Сам исходный стиль не меняется. */
+/* Дополнения к исходному стилю «Дом Мира» (src/style.css): тёмная тема всего сайта и ночное фото первого экрана,
+   галерея проектов, уведомление о cookie, поля заявки, страницы документов. Сам исходный стиль не меняется. */
 :root {
   --night: #151615;
   --night-2: #232523;
@@ -15,7 +15,7 @@
   --body: #3a3c3a;
 }
 
-/* ---------- Шапка: переключатель ночного фото рядом с «Обсудить проект» ---------- */
+/* ---------- Шапка: переключатель светлой и тёмной темы рядом с «Обсудить проект» ---------- */
 .header-actions { display: flex; align-items: center; gap: 22px; }
 .theme-toggle { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 1px solid var(--white-line); border-radius: 50%; background: none; color: inherit; cursor: pointer; transition: background-color 0.2s, border-color 0.2s; }
 .theme-toggle:hover { border-color: currentColor; background: rgba(255, 255, 255, 0.12); }
@@ -25,10 +25,6 @@ html:not(.js) .theme-toggle { display: none; }
 .js .theme-toggle .i-sun { opacity: 0; transform: rotate(-90deg) scale(0.6); }
 .js[data-theme="dark"] .theme-toggle .i-moon { opacity: 0; transform: rotate(90deg) scale(0.6); }
 .js[data-theme="dark"] .theme-toggle .i-sun { opacity: 1; transform: none; }
-@media (prefers-color-scheme: dark) {
-  .js:not([data-theme="light"]) .theme-toggle .i-moon { opacity: 0; transform: rotate(90deg) scale(0.6); }
-  .js:not([data-theme="light"]) .theme-toggle .i-sun { opacity: 1; transform: none; }
-}
 @media (max-width: 760px) { .header-actions { margin-left: auto; gap: 14px; } .header-actions .header-contact { margin-left: 0; } }
 @media (max-width: 480px) { .header-actions { margin-left: auto; } .menu-toggle { margin-left: 8px; } }
 
@@ -36,7 +32,6 @@ html:not(.js) .theme-toggle { display: none; }
 .hero-photo--night { opacity: 0; transition: opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1); }
 .hero-stars { position: absolute; inset: 0 0 42% 0; z-index: -1; opacity: 0; pointer-events: none; transition: opacity 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.5s; }
 :root[data-theme="dark"] .hero-photo--night, :root[data-theme="dark"] .hero-stars { opacity: 1; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .hero-photo--night, :root:not([data-theme="light"]) .hero-stars { opacity: 1; } }
 .hero-stars i { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: var(--star); opacity: 0.6; animation: twinkle var(--d, 3.2s) ease-in-out var(--delay, 0s) infinite; }
 .hero-stars i.big { width: 3px; height: 3px; box-shadow: 0 0 6px var(--star); }
 .hero-stars .shooting { top: 12%; left: 78%; width: 130px; height: 1.5px; border-radius: 2px; background: linear-gradient(90deg, var(--star), var(--night-sky-0)); box-shadow: none; opacity: 0; transform: rotate(-24deg); transform-origin: left center; animation: shooting 1.3s cubic-bezier(0.16, 1, 0.3, 1) 0.9s 1 forwards; }
@@ -52,10 +47,6 @@ html:not(.js) .theme-toggle { display: none; }
   .hero-stars { inset: 0 0 55% 0; }
   :root[data-theme="dark"] .hero { background: var(--night-sky); }
   :root[data-theme="dark"] .hero::after { background: linear-gradient(180deg, var(--night-sky) 0%, var(--night-sky) 30%, var(--night-sky-68) 42%, var(--night-sky-0) 63%); }
-}
-@media (max-width: 480px) and (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .hero { background: var(--night-sky); }
-  :root:not([data-theme="light"]) .hero::after { background: linear-gradient(180deg, var(--night-sky) 0%, var(--night-sky) 30%, var(--night-sky-68) 42%, var(--night-sky-0) 63%); }
 }
 
 /* ---------- Наши проекты: карточки открывают фотоотчёт ---------- */
@@ -173,3 +164,154 @@ html:not(.js) .theme-toggle { display: none; }
 }
 @media (max-width: 760px) { .pj-model { display: none; } .pj-tiles { grid-template-rows: auto; } }
 .doc .crumbs li { color: inherit; font-size: inherit; line-height: 1.5; max-width: none; }
+
+/* =====================================================================
+   Тёмная тема всего сайта. Включается атрибутом data-theme="dark" на <html>
+   (ставит скрипт в <head> по выбору посетителя или настройке системы).
+   Ночное синее поле вместо голубого, тёмный лист, светлый текст, сливовые кнопки.
+   Исходный стиль задаёт часть цветов прямо в правилах, поэтому у каждого такого правила здесь ночная пара.
+   ===================================================================== */
+[data-theme="dark"] {
+  --blue: #1b2b3a;
+  --paper: #111315;
+  --ink: #e9ebe6;
+  --muted: #9aa096;
+  --line: #2a2e31;
+  --plum: #6f5c80;
+  --body: #c9ccc6;
+  --soft: #23282c;
+  --shade: rgba(5, 8, 12, 0.78);
+  --white-line: rgba(255, 255, 255, 0.45);
+  --card: #1a1d20;
+  --card-2: #1f2327;
+  --card-hover: #252a2f;
+  --band: #18212b;
+  --plum-text: #c2acd3;
+  --copper: #d0a28d;
+  --input-line: #3a4045;
+  --night-chip: rgba(17, 19, 21, 0.88);
+  --night-fade: rgba(17, 19, 21, 0.97);
+  --night-fade-85: rgba(17, 19, 21, 0.85);
+  --night-fade-0: rgba(17, 19, 21, 0);
+  --card-fade-dd: rgba(29, 33, 37, 0.87);
+  --card-fade-0: rgba(29, 33, 37, 0);
+  --sky-fade-88: rgba(27, 43, 58, 0.88);
+  --sky-fade-92: rgba(27, 43, 58, 0.92);
+  --sky-fade-0: rgba(27, 43, 58, 0);
+  --haze-night-82: rgba(16, 28, 42, 0.84);
+  --haze-night-55: rgba(16, 28, 42, 0.6);
+  --haze-night-0: rgba(16, 28, 42, 0);
+  color-scheme: dark;
+}
+[data-theme="dark"] body { background: var(--blue); }
+[data-theme="dark"] .site-shell { background: var(--paper); color: var(--ink); }
+[data-theme="dark"] :is(button, a, input, summary):focus-visible { outline-color: var(--plum-text); }
+
+/* Плавная смена темы: на 0,9 секунды цвета перетекают (класс ставит theme.js) */
+.theme-anim *:not(.hero-photo--night):not(.hero-stars):not(.hero-stars *):not(.theme-toggle svg),
+.theme-anim *::before, .theme-anim *::after { transition: background-color 0.6s ease, color 0.6s ease, border-color 0.6s ease, fill 0.6s ease, stroke 0.6s ease !important; }
+@media (prefers-reduced-motion: reduce) { .theme-anim *, .theme-anim *::before, .theme-anim *::after { transition: none !important; } }
+
+/* Шапка на бумаге, меню, кнопки */
+[data-theme="dark"] .pj-masthead .desktop-nav a[aria-current] { color: var(--plum-text); }
+[data-theme="dark"] .mobile-menu:not([hidden]) { background: rgba(17, 19, 21, 0.97); color: var(--ink); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); }
+[data-theme="dark"] .mobile-menu button { color: var(--plum-text); }
+[data-theme="dark"] .plum:hover { background: #806b93; }
+[data-theme="dark"] .status-dot { background: #6f93a5; }
+[data-theme="dark"] .dark-brand { color: var(--ink); }
+
+/* Первый экран отделки и мобильная полоса под текстом */
+[data-theme="dark"] .hero { background: var(--night-sky); }
+[data-theme="dark"] .hero--interior::after { background: linear-gradient(90deg, var(--haze-night-82) 0%, var(--haze-night-55) 36%, var(--haze-night-0) 62%), linear-gradient(180deg, var(--haze-night-55) 0, var(--haze-night-0) 160px); }
+@media (max-width: 480px) { [data-theme="dark"] .hero--interior::after { background: linear-gradient(180deg, var(--night-sky) 0%, var(--night-sky) 30%, var(--night-sky-68) 42%, var(--night-sky-0) 63%); } }
+
+/* 01: услуги */
+[data-theme="dark"] .service-row { background: var(--card); color: var(--ink); }
+[data-theme="dark"] .service-row:hover { box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35); }
+[data-theme="dark"] .service-note { color: var(--muted); }
+
+/* 02: карточки с фото, светлая дымка сверху становится тёмной */
+[data-theme="dark"] .quality-card, [data-theme="dark"] .plan-card { background: var(--card-2); color: var(--ink); }
+[data-theme="dark"] .quality-card::after, [data-theme="dark"] .interior-card::after, [data-theme="dark"] .plan-card::after, [data-theme="dark"] .roof-card::after { background: linear-gradient(180deg, var(--card-2) 0%, var(--card-fade-dd) 25%, var(--card-fade-0) 62%); }
+[data-theme="dark"] .card-index, [data-theme="dark"] .interior-card .card-index { color: var(--muted); }
+[data-theme="dark"] .plan-card .small-card-label { color: var(--ink); text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6); }
+
+/* Наши проекты */
+[data-theme="dark"] .projects-heading .eyebrow, [data-theme="dark"] .projects-note { color: var(--muted); }
+[data-theme="dark"] .project-control { border-color: var(--input-line); color: var(--muted); }
+[data-theme="dark"] .project-control:hover { background: var(--card-hover); border-color: var(--muted); }
+
+/* 03: ваш будущий дом */
+[data-theme="dark"] .home-card, [data-theme="dark"] .home-caption { background: var(--card-2); color: var(--ink); }
+[data-theme="dark"] .home-caption .circle-arrow { color: var(--muted); }
+[data-theme="dark"] .homes-footnote { color: var(--muted); }
+
+/* 04: цены */
+[data-theme="dark"] .price-item { background: var(--card); color: var(--ink); }
+[data-theme="dark"] .price-item:hover { background: var(--card-hover); }
+[data-theme="dark"] .price-item > span:first-child, [data-theme="dark"] .price-arrow, [data-theme="dark"] .price-note, [data-theme="dark"] .section-aside { color: var(--muted); }
+
+/* 05: тёмный блок (отзывы, этапы) чуть синее листа, карточки внутри тёмные */
+[data-theme="dark"] .process { background: var(--band); }
+[data-theme="dark"] .process-grid article, [data-theme="dark"] .review-card { background: var(--paper); color: var(--ink); }
+[data-theme="dark"] .process-grid p, [data-theme="dark"] .review-copy, [data-theme="dark"] .review-date, [data-theme="dark"] .review-source, [data-theme="dark"] .reviews-note, [data-theme="dark"] .reviews-label, [data-theme="dark"] .step-caption, [data-theme="dark"] .process-bottom { color: var(--muted); }
+[data-theme="dark"] .reviews-pill { background: var(--card-2); color: var(--ink); }
+
+/* 06: вопросы */
+[data-theme="dark"] .faq-list summary span { color: var(--muted); }
+
+/* Контакты и подвал */
+[data-theme="dark"] .email-link { color: var(--copper); }
+[data-theme="dark"] .address > a, [data-theme="dark"] .contact-grid .eyebrow, [data-theme="dark"] .contact-request > p, [data-theme="dark"] .legal, [data-theme="dark"] .legal-link { color: var(--muted); }
+[data-theme="dark"] .contact-request form { border-bottom-color: var(--input-line); }
+[data-theme="dark"] .contact-request input::placeholder { color: #7d837a; }
+[data-theme="dark"] .contact-request button { background: var(--ink); color: var(--paper); }
+[data-theme="dark"] .back-top { border-color: var(--input-line); color: var(--muted); }
+
+/* Окна: расчёт, услуги, «О работе сайта» */
+[data-theme="dark"] .modal { background: var(--paper); color: var(--ink); box-shadow: 0 30px 120px rgba(0, 0, 0, 0.6); }
+[data-theme="dark"] .modal::backdrop { background: var(--shade); }
+[data-theme="dark"] .modal-close { color: var(--muted); }
+[data-theme="dark"] .modal-close:hover { background: var(--card-hover); }
+[data-theme="dark"] .modal-input { background: var(--card); border-color: var(--input-line); color: var(--ink); }
+[data-theme="dark"] .quiz-option { background: var(--card); border-color: var(--input-line); color: var(--ink); }
+[data-theme="dark"] .quiz-option:hover, [data-theme="dark"] .quiz-option.selected { background: var(--card-hover); border-color: #8fa486; }
+[data-theme="dark"] .quiz-option span:last-child, [data-theme="dark"] .area-output small { color: #9db592; }
+[data-theme="dark"] .quiz-progress span { background: var(--line); }
+[data-theme="dark"] .quiz-summary { background: var(--card-2); }
+[data-theme="dark"] .quiz-summary .estimate { color: #cfe0c4; }
+[data-theme="dark"] .service-scope span { background: var(--card-hover); }
+[data-theme="dark"] .service-source { color: var(--muted); }
+[data-theme="dark"] .quiz-consent a, [data-theme="dark"] #privacy-dialog a { color: var(--ink); }
+
+/* Уведомление о cookie и окно настроек */
+[data-theme="dark"] .cookie { background: var(--card); border-color: var(--line); color: var(--ink); box-shadow: 0 30px 120px rgba(0, 0, 0, 0.5); }
+[data-theme="dark"] .cookie .btn--quiet, [data-theme="dark"] .dialog .btn--quiet { color: var(--ink); border-color: var(--input-line); }
+[data-theme="dark"] .cookie .btn--quiet:hover, [data-theme="dark"] .dialog .btn--quiet:hover { background: var(--card-hover); }
+[data-theme="dark"] .dialog { background: var(--paper); color: var(--ink); }
+[data-theme="dark"] .dialog .icon-btn { color: var(--ink); border-color: var(--input-line); }
+
+/* Проектирование: мозаика, состав проекта, участок, этапы, стоимость и заявка */
+[data-theme="dark"] .pj-sky::after { background: linear-gradient(90deg, var(--sky-fade-88) 42%, var(--sky-fade-0) 62%); }
+@media (max-width: 760px) { [data-theme="dark"] .pj-sky::after { background: linear-gradient(180deg, var(--sky-fade-92) 46%, var(--sky-fade-0) 66%); } }
+[data-theme="dark"] .pj-model, [data-theme="dark"] .pj-gallery-photo, [data-theme="dark"] .pj-site-frame { background: var(--card-2); }
+[data-theme="dark"] .pj-model::after { background: linear-gradient(180deg, var(--night-fade-0) 45%, rgba(17, 19, 21, 0.9) 78%, var(--paper) 100%); }
+[data-theme="dark"] .pj-scale, [data-theme="dark"] .pj-gallery-photo figcaption, [data-theme="dark"] .pj-callouts span { background: var(--night-chip); color: var(--ink); }
+[data-theme="dark"] .pj-price-tile, [data-theme="dark"] .pj-spec { background: var(--card); color: var(--ink); }
+[data-theme="dark"] .pj-catalog-tile, [data-theme="dark"] .pj-form { background: var(--band); }
+[data-theme="dark"] .pj-catalog-tile:hover .pj-circle { background: var(--ink); color: var(--paper); }
+[data-theme="dark"] .pj-item { background: rgba(255, 255, 255, 0.04); }
+[data-theme="dark"] .pj-item:not(.is-open):hover, [data-theme="dark"] .pj-item.is-open { background: var(--card); }
+[data-theme="dark"] .pj-item.is-open .pj-item-title small, [data-theme="dark"] .pj-item-link, [data-theme="dark"] .pj-spec th { color: var(--plum-text); }
+[data-theme="dark"] .pj-site-frame::after { background: linear-gradient(90deg, var(--night-fade) 0, var(--night-fade-85) 30%, var(--night-fade-0) 50%); }
+[data-theme="dark"] .pj-submit { background: var(--ink); color: var(--paper); }
+[data-theme="dark"] .pj-submit:hover { background: #ffffff; }
+
+/* Документы и 404 */
+[data-theme="dark"] .doc a, [data-theme="dark"] .doc .crumbs a { color: var(--ink); }
+[data-theme="dark"] .doc-actions .button.white { background: var(--card); color: var(--ink); border-color: var(--line); }
+[data-theme="dark"] .contact-extra a { color: var(--ink); }
+[data-theme="dark"] .pj-masthead .theme-toggle { border-color: var(--input-line); }
+/* Светлый текст на тёмных блоках: в исходном стиле он задан цветом бумаги, ночью бумага тёмная */
+[data-theme="dark"] .process, [data-theme="dark"] .pj-catalog-tile, [data-theme="dark"] .pj-form, [data-theme="dark"] .pj-catalog-value strong, [data-theme="dark"] .pj-fields input, [data-theme="dark"] .pj-consent a { color: var(--ink); }
+[data-theme="dark"] .pj-fields input:focus { border-bottom-color: var(--ink); }

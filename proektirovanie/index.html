@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="../src/style.css" />
   <link rel="stylesheet" href="../src/proektirovanie.css" />
   <link rel="stylesheet" href="../src/addons.css" />
-  <script>document.documentElement.classList.add('js');try{var t=localStorage.getItem('dm_theme');if(t==='dark'||t==='light')document.documentElement.dataset.theme=t}catch(e){}</script>
+  <script>document.documentElement.classList.add('js');var t;try{t=localStorage.getItem('dm_theme')}catch(e){}if(t!=='dark'&&t!=='light')t=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;</script>
 </head>
 <body class="design-page" data-page="proektirovanie">
   <a class="skip-link" href="#main">К содержанию</a>
@@ -59,7 +59,7 @@
       </section>
 
       <section class="pj-sections section-pad" id="sections" aria-labelledby="sections-title">
-        <div class="section-heading"><div><p class="eyebrow">01 / СОСТАВ ПРОЕКТА</p><h2 id="sections-title">Пять разделов —<br /><span class="muted">берите нужные</span></h2></div><p class="section-aside">Цены — за работу, без материалов</p></div>
+        <div class="section-heading"><div><p class="eyebrow">01 / СОСТАВ ПРОЕКТА</p><h2 id="sections-title">Пять разделов — <br /><span class="muted">берите нужные</span></h2></div><p class="section-aside">Цены — за работу, без материалов</p></div>
         <div class="pj-gallery">
           <figure class="pj-gallery-photo">
             <img id="section-photo" src="/images/proektirovanie/arhitektor.webp" alt="Архитектор показывает план дома на столе с образцами материалов" width="1400" height="1040" loading="lazy" />
@@ -95,7 +95,7 @@
           <picture class="pj-site-photo"><source media="(max-width: 760px)" srcset="/images/proektirovanie/uchastok-mobile.webp" /><img src="/images/proektirovanie/uchastok.webp" alt="Геодезист с тахеометром на будущем участке дома" width="1800" height="680" loading="lazy" /></picture>
           <div class="pj-site-copy">
             <p class="eyebrow">02 / ПРИВЯЗКА К УЧАСТКУ</p>
-            <h2 id="site-title">Сначала —<br /><span class="muted">участок.</span></h2>
+            <h2 id="site-title">Сначала — <br /><span class="muted">участок.</span></h2>
             <p>Солнце, рельеф, виды и сети<br />определяют дом раньше, чем фасад.</p>
           </div>
           <ul class="pj-callouts" aria-label="Что изучаем на участке">
@@ -109,7 +109,7 @@
 
       <section class="pj-stages" aria-labelledby="stages-title">
         <div class="pj-stages-band">
-          <div class="pj-stages-head"><div><p class="eyebrow">03 / КАК ИДЕТ РАБОТА</p><h2 id="stages-title">От разговора<br /><span>до комплекта чертежей</span></h2></div><p>Каждый этап заканчивается <br />вашим «да» — дальше идем вместе.</p></div>
+          <div class="pj-stages-head"><div><p class="eyebrow">03 / КАК ИДЕТ РАБОТА</p><h2 id="stages-title">От разговора <br /><span>до комплекта чертежей</span></h2></div><p>Каждый этап заканчивается <br />вашим «да» — дальше идем вместе.</p></div>
           <ol class="pj-chain">
             <li style="--w:1"><span class="pj-chain-num">01</span><strong>Разговор</strong><span class="pj-chain-line" aria-hidden="true"></span><span class="pj-chain-note">как вы живете</span></li>
             <li style="--w:1"><span class="pj-chain-num">02</span><strong>Участок</strong><span class="pj-chain-line" aria-hidden="true"></span><span class="pj-chain-note">выезд и изыскания</span></li>
@@ -123,7 +123,7 @@
       <section class="pj-cost" id="request" aria-labelledby="cost-title">
         <div class="pj-spec">
           <p class="eyebrow">04 / ОТКРЫТЫЙ ОРИЕНТИР</p>
-          <h2 id="cost-title">Цена — за работу,<br /><span class="muted">без материалов</span></h2>
+          <h2 id="cost-title">Цена — за работу, <br /><span class="muted">без материалов</span></h2>
           <table>
             <caption class="visually-hidden">Ориентировочная стоимость разделов проекта</caption>
             <tbody>
@@ -139,7 +139,7 @@
         <form class="pj-form ym-hide-content ym-disable-keys" id="design-form" novalidate>
           <div>
             <p class="eyebrow">ОБСУДИМ ВАШ ДОМ</p>
-            <h2>Начнем<br /><span>с разговора</span></h2>
+            <h2>Начнем <br /><span>с разговора</span></h2>
           </div>
           <div class="pj-fields">
             <label><span>Имя <i aria-hidden="true">*</i></span><input id="design-name" name="name" autocomplete="given-name" required maxlength="80" /></label>

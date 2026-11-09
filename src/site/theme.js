@@ -1,12 +1,19 @@
-// Светлая и тёмная тема. По умолчанию сайт следует настройке системы, переключатель в шапке
-// запоминает выбор в браузере посетителя. При смене темы цвета перетекают, на главной дневное фото
-// плавно сменяется ночным, загораются звёзды и пролетает падающая звезда.
+// Светлая и тёмная тема всего сайта. Тему ставит маленький скрипт в <head> до отрисовки: выбор посетителя
+// из браузера, иначе настройка системы. Переключатель в шапке запоминает выбор. При смене темы цвета
+// перетекают, на главной дневное фото плавно сменяется ночным, загораются звёзды и пролетает падающая звезда.
 const root = document.documentElement;
 const media = window.matchMedia('(prefers-color-scheme: dark)');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 let animTimer;
 
 const effective = () => root.dataset.theme || (media.matches ? 'dark' : 'light');
+const stored = () => { try { return localStorage.getItem('dm_theme'); } catch { return null; } };
+
+// Если посетитель сам не выбирал тему, сайт идёт за системой и при её смене на лету.
+function followSystem() {
+  if (stored() === 'dark' || stored() === 'light') return;
+  applyTheme(media.matches ? 'dark' : 'light');
+}
 
 function sync() {
   const dark = effective() === 'dark';
@@ -51,22 +58,27 @@ function shootingStar() {
   box.append(star);
 }
 
-function setTheme(next) {
+function applyTheme(next) {
+  if (root.dataset.theme === next) return;
   if (!reducedMotion.matches) {
     root.classList.add('theme-anim');
     clearTimeout(animTimer);
     animTimer = setTimeout(() => root.classList.remove('theme-anim'), 900);
   }
   root.dataset.theme = next;
-  try { localStorage.setItem('dm_theme', next); } catch { /* приватный режим: выбор живёт до закрытия страницы */ }
   sync();
   if (next === 'dark') shootingStar();
+}
+
+function setTheme(next) {
+  try { localStorage.setItem('dm_theme', next); } catch { /* приватный режим: выбор живёт до закрытия страницы */ }
+  applyTheme(next);
 }
 
 export function initTheme() {
   makeStars();
   sync();
-  media.addEventListener?.('change', sync);
+  media.addEventListener?.('change', followSystem);
   document.querySelectorAll('[data-theme-toggle]').forEach(button =>
     button.addEventListener('click', () => setTheme(effective() === 'dark' ? 'light' : 'dark')));
 }

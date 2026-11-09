@@ -96,7 +96,7 @@ export function initCalc() {
         <div class="dialog-head"><div><p class="dialog-progress">Готово</p><h2 id="calc-title" tabindex="-1">Ориентир по стоимости работ</h2></div>
           <button class="icon-btn" type="button" data-close aria-label="Закрыть"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
         <div class="calc-result"><strong>${escapeHtml(estimateText)}</strong><span>${escapeHtml(result.note)}</span></div>
-        <form class="lead-form" data-lead-form="calc-${config.service}" novalidate>
+        <form class="lead-form ym-hide-content ym-disable-keys" data-lead-form="calc-${config.service}" novalidate>
           <p>Оставьте телефон: инженер уточнит детали и пришлёт смету бесплатно.</p>
           <div class="field-row">
             <div class="field"><label for="c-name">Имя</label><input id="c-name" name="name" autocomplete="name" maxlength="80" /></div>

@@ -33,7 +33,8 @@ export async function pickKnowledge(queryText, {maxChars = 6500} = {}) {
 export async function buildSystemPrompt({knowledge, fields, consent}) {
   const extra = String(await getSetting('ai.extra_instructions') || '').trim();
   const kbText = knowledge.map(a => `## ${a.title}\n${a.body}`).join('\n\n');
-  const known = Object.entries(fields || {}).filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`).join('; ') || 'пока ничего';
+  // Телефон в модель не передаём: ей достаточно знать, что контакт уже есть.
+  const known = Object.entries(fields || {}).filter(([, v]) => v).map(([k, v]) => `${k}: ${k === 'phone' ? 'получен' : v}`).join('; ') || 'пока ничего';
   return `Ты консультант компании «Дом Мира» в Telegram. Компания строит частные дома под ключ, делает отделку, проектирование, инженерные системы и благоустройство в Москве и Московской области.
 
 Задачи:

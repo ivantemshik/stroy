@@ -3,6 +3,8 @@ import {goal} from './analytics.js';
 import {escapeHtml} from './content-render.js';
 
 const src = (id, width) => `/images/objects/${id}-${width}.webp`;
+// Миниатюра для ленты под фото (scripts/prepare-thumbs.mjs). Если её нет, берём полное фото.
+const thumb = id => `/images/objects/${id}-thumb.webp`;
 
 export function openGallery(object, startIndex = 0) {
   const dialog = document.getElementById('gallery-dialog');
@@ -19,7 +21,15 @@ export function openGallery(object, startIndex = 0) {
         </div>
         <button class="icon-btn" type="button" data-close aria-label="Закрыть"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
       <figure><img src="${src(id, width)}" width="${width}" height="${height}" alt="${escapeHtml(alt)}" />
-        <figcaption><span>${escapeHtml(object.text)}</span><span>Фото ${index + 1} из ${photos.length}</span></figcaption></figure></div>`;
+        <figcaption><span>${escapeHtml(object.text)}</span><span>Фото ${index + 1} из ${photos.length}</span></figcaption></figure>
+      ${photos.length > 1 ? `<div class="lightbox-thumbs" role="group" aria-label="Все фото объекта">${photos.map(([thumbId, thumbWidth, , thumbAlt], i) => `<button class="lightbox-thumb" type="button" data-thumb="${i}" aria-label="Фото ${i + 1}: ${escapeHtml(thumbAlt)}"${i === index ? ' aria-current="true"' : ''}><img src="${thumb(thumbId)}" data-fallback="${src(thumbId, thumbWidth)}" alt="" loading="lazy" decoding="async" /></button>`).join('')}</div>` : ''}</div>`;
+    dialog.querySelectorAll('.lightbox-thumb img').forEach(img => img.addEventListener('error', () => { if (img.dataset.fallback) { img.src = img.dataset.fallback; delete img.dataset.fallback; } }, {once: true}));
+    dialog.querySelectorAll('[data-thumb]').forEach(button => button.addEventListener('click', () => {
+      index = Number(button.dataset.thumb);
+      render();
+      dialog.querySelector(`[data-thumb="${index}"]`)?.focus();
+    }));
+    dialog.querySelector('.lightbox-thumb[aria-current]')?.scrollIntoView({block: 'nearest', inline: 'center'});
     dialog.querySelector('[data-close]').addEventListener('click', () => dialog.close());
     dialog.querySelector('[data-prev]').addEventListener('click', () => { index = (index - 1 + photos.length) % photos.length; render(); dialog.querySelector('[data-prev]').focus(); });
     dialog.querySelector('[data-next]').addEventListener('click', () => { index = (index + 1) % photos.length; render(); dialog.querySelector('[data-next]').focus(); });

@@ -96,6 +96,72 @@ projectsTrack?.addEventListener('keydown',event=>{
     event.preventDefault();moveProjects(event.key==='ArrowRight'?1:-1);
   }
 });
+
+/* «Наши проекты»: бесконечная автопрокрутка по кругу.
+   Слева и справа от карточек стоят их копии, поэтому лента не кончается:
+   когда прокрутка уходит на целый набор вперёд или назад, мы незаметно
+   возвращаем её на набор обратно. Листать самому можно всегда: на время
+   свайпа, колеса, наведения или фокуса автопрокрутка встаёт на паузу. */
+if (projectsTrack) {
+  const originals = $$('.project-card', projectsTrack);
+  const makeClone = card => {
+    const clone = card.cloneNode(true);
+    clone.setAttribute('aria-hidden', 'true');
+    clone.tabIndex = -1;
+    clone.dataset.clone = '';
+    return clone;
+  };
+  projectsTrack.prepend(...originals.map(makeClone));
+  projectsTrack.append(...originals.map(makeClone));
+  projectsTrack.classList.add('is-looping');
+
+  // Ширина одного полного набора карточек вместе с промежутком.
+  const setWidth = () => {
+    const after = originals.at(-1).nextElementSibling;
+    return after ? after.offsetLeft - originals[0].offsetLeft : 0;
+  };
+  const wrap = () => {
+    const w = setWidth();
+    if (!w) return;
+    if (projectsTrack.scrollLeft < w * 0.5) projectsTrack.scrollLeft += w;
+    else if (projectsTrack.scrollLeft > w * 1.5) projectsTrack.scrollLeft -= w;
+  };
+  const toStart = () => { projectsTrack.scrollLeft = originals[0].offsetLeft - projectsTrack.firstElementChild.offsetLeft; };
+  toStart();
+  window.addEventListener('load', toStart, {once: true});
+  projectsTrack.addEventListener('scroll', wrap, {passive: true});
+
+  const SPEED = 32; // пикселей в секунду
+  let hovering = false, touching = false, visible = true, resumeAt = 0;
+  const pause = (ms = 2500) => { resumeAt = performance.now() + ms; };
+  projectsTrack.addEventListener('mouseenter', () => { hovering = true; });
+  projectsTrack.addEventListener('mouseleave', () => { hovering = false; pause(600); });
+  projectsTrack.addEventListener('touchstart', () => { touching = true; }, {passive: true});
+  projectsTrack.addEventListener('touchend', () => { touching = false; pause(); }, {passive: true});
+  projectsTrack.addEventListener('wheel', () => pause(), {passive: true});
+  projectsTrack.addEventListener('keydown', () => pause(4000));
+  new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; }).observe(projectsTrack);
+
+  let position = projectsTrack.scrollLeft;
+  let last = performance.now();
+  const tick = now => {
+    const dt = Math.min(now - last, 100) / 1000;
+    last = now;
+    const running = visible && !hovering && !touching && now >= resumeAt && !document.hidden
+      && !reducedMotion.matches && !projectsTrack.matches(':focus-within');
+    if (running) {
+      if (Math.abs(position - projectsTrack.scrollLeft) > 2) position = projectsTrack.scrollLeft;
+      position += SPEED * dt;
+      projectsTrack.scrollLeft = position;
+      wrap();
+      if (Math.abs(position - projectsTrack.scrollLeft) > 2) position = projectsTrack.scrollLeft;
+    } else {
+      position = projectsTrack.scrollLeft;
+    }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
 function renderQuiz() {
   const content = $('#quiz-content');
   const titles = ['Что будем строить?', 'Какая нужна площадь?', 'Какие работы нужны?', 'Примерная стоимость'];

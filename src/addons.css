@@ -81,6 +81,10 @@ html:not(.js) .theme-toggle { display: none; }
   :root[data-theme="dark"] [data-page="home"] .hero::after { background: none; }
 }
 
+@media (min-width: 481px) and (max-width: 600px) {
+  [data-page="home"] .hero { height: calc(550px + 42vw); }
+}
+
 /* ---------- Наши проекты: карточки открывают фотоотчёт ---------- */
 .project-card[data-gallery] { cursor: zoom-in; }
 .projects-note a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }

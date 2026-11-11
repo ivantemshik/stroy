@@ -381,3 +381,6 @@ html:not(.js) .theme-toggle { display: none; }
   .price-grid .price-item { min-height: 168px; padding: 20px; }
   .price-grid .price-item strong { font-size: 36px; }
 }
+
+/* Карточки «Снаружи красиво»: без номеров, заголовок сразу сверху */
+.quality-card h3 { margin-top: 0; }

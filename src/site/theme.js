@@ -7,12 +7,15 @@ const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 let animTimer;
 
 const effective = () => root.dataset.theme || (media.matches ? 'dark' : 'light');
-const stored = () => { try { return localStorage.getItem('dm_theme'); } catch { return null; } };
+const system = () => (media.matches ? 'dark' : 'light');
+const forget = () => { try { localStorage.removeItem('dm_theme'); localStorage.removeItem('dm_theme_sys'); } catch { /* хранилище недоступно */ } };
 
-// Если посетитель сам не выбирал тему, сайт идёт за системой и при её смене на лету.
+// Главная тема у сайта та, что стоит в системе посетителя. Выбор переключателем действует,
+// только пока система не поменяется: при смене системной темы сайт сразу идёт за ней
+// и забывает ручной выбор. Скрипт в <head> делает то же при следующем заходе.
 function followSystem() {
-  if (stored() === 'dark' || stored() === 'light') return;
-  applyTheme(media.matches ? 'dark' : 'light');
+  forget();
+  applyTheme(system());
 }
 
 function sync() {
@@ -162,8 +165,13 @@ function applyTheme(next) {
   if (next === 'dark') shootingStar();
 }
 
+// Ручной выбор запоминается вместе с системной темой, при которой его сделали.
+// Если посетитель вернул ту же тему, что в системе, хранить нечего: сайт снова просто идёт за системой.
 function setTheme(next) {
-  try { localStorage.setItem('dm_theme', next); } catch { /* приватный режим: выбор живёт до закрытия страницы */ }
+  try {
+    if (next === system()) forget();
+    else { localStorage.setItem('dm_theme', next); localStorage.setItem('dm_theme_sys', system()); }
+  } catch { /* приватный режим: выбор живёт до закрытия страницы */ }
   applyTheme(next);
 }
 

@@ -652,3 +652,7 @@ html:not(.js) .theme-toggle { display: none; }
 /* Кнопка «Обсудить проект» в мобильном меню: без стрелки, текст по центру и крупнее */
 #mobile-menu .mobile-menu-cta { justify-content: center; font-size: 16px; }
 #mobile-menu .mobile-menu-cta::after { content: none; }
+/* Кнопка «Рассчитать мой дом» на первом экране: без стрелки, текст по центру и крупнее */
+.hero .hero-content .button { justify-content: center; gap: 0; min-width: 220px; font-size: 15px; }
+.hero .hero-content .button > span { display: none; }
+@media (max-width: 480px) { .hero .hero-content .button { min-width: 200px; min-height: 52px; font-size: 14px; } }

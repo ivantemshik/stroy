@@ -39,7 +39,7 @@ function includePartials(html) {
     const cta = flags.has('doc')
       ? '<a class="header-contact" href="/#contacts">Обсудить проект</a>'
       : '<button class="header-contact" data-open="quiz">Обсудить проект</button>';
-    const ctaMobile = flags.has('doc') ? '<a href="/#contacts">Обсудить проект</a>' : '<button data-open="quiz">Обсудить проект</button>';
+    const ctaMobile = flags.has('doc') ? '<a class="mobile-menu-cta" href="/#contacts">Обсудить проект</a>' : '<button class="mobile-menu-cta" data-open="quiz">Обсудить проект</button>';
     const part = readFileSync(`${PARTIALS_DIR}${name}.html`, 'utf8')
       .replaceAll('{{page}}', page)
       .replaceAll('{{themeToggle}}', THEME_TOGGLE)

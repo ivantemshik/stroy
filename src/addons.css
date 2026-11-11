@@ -384,3 +384,46 @@ html:not(.js) .theme-toggle { display: none; }
 
 /* Карточки «Снаружи красиво»: без номеров, заголовок сразу сверху */
 .quality-card h3 { margin-top: 0; }
+
+/* Заголовок первого экрана: всегда две строки, на узких телефонах шрифт меньше */
+@media (max-width: 380px) { .hero h1 { font-size: 15vw; letter-spacing: -0.05em; } }
+
+/* ==========================================================================
+   Мобильное меню в стиле главной: крупные пункты с номерами, линии,
+   круглые стрелки и фиолетовая кнопка, как в плитках и карточках сайта
+   ========================================================================== */
+#mobile-menu:not([hidden]) { padding: 26px 28px 28px; border-radius: 30px; counter-reset: nav; box-shadow: 0 30px 70px rgba(24, 25, 24, 0.22); animation: menu-in 0.32s cubic-bezier(0.2, 0.7, 0.2, 1); transform-origin: top right; }
+#mobile-menu::before { content: "МЕНЮ"; display: block; margin-bottom: 10px; font-size: 10px; font-weight: 650; letter-spacing: 0.075em; color: var(--muted); }
+#mobile-menu a:not(.mobile-menu-cta) { counter-increment: nav; display: grid; grid-template-columns: 38px 1fr 34px; align-items: center; gap: 8px; padding: 13px 0; border-bottom: 1px solid var(--line); font-size: 26px; font-weight: 450; line-height: 1.15; letter-spacing: -1px; color: var(--ink); transition: color 0.2s, padding 0.25s; }
+#mobile-menu a:not(.mobile-menu-cta)::before { content: counter(nav, decimal-leading-zero); font-size: 10px; font-weight: 600; letter-spacing: 0.075em; color: var(--muted); }
+#mobile-menu a:not(.mobile-menu-cta)::after { content: "↗"; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 50%; font-size: 16px; letter-spacing: 0; color: var(--ink); transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.25s; }
+#mobile-menu a:not(.mobile-menu-cta):hover, #mobile-menu a:not(.mobile-menu-cta):focus-visible { padding-left: 6px; }
+#mobile-menu a:not(.mobile-menu-cta):hover::after, #mobile-menu a:not(.mobile-menu-cta):focus-visible::after { background: var(--ink); border-color: var(--ink); color: var(--paper); transform: rotate(45deg); }
+#mobile-menu a:not(.mobile-menu-cta)[aria-current]::before, #mobile-menu a:not(.mobile-menu-cta)[aria-current] { color: var(--plum-link); }
+#mobile-menu .mobile-menu-cta { display: flex; align-items: center; justify-content: space-between; min-height: 56px; margin-top: 22px; padding: 0 24px; border-radius: 12px; background: var(--plum); color: #fff; font-size: 13px; font-weight: 550; letter-spacing: 0; transition: background 0.2s; }
+#mobile-menu .mobile-menu-cta::after { content: "↗"; font-size: 16px; }
+#mobile-menu .mobile-menu-cta:hover { background: #5f4f69; }
+#mobile-menu .mobile-menu-cta svg { display: none; }
+
+[data-theme="dark"] #mobile-menu:not([hidden]) { box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5); }
+[data-theme="dark"] #mobile-menu a:not(.mobile-menu-cta), [data-theme="dark"] #mobile-menu a:not(.mobile-menu-cta)::after { border-color: var(--line); color: var(--ink); }
+[data-theme="dark"] #mobile-menu a:not(.mobile-menu-cta)::after { border-color: var(--input-line); }
+[data-theme="dark"] #mobile-menu a:not(.mobile-menu-cta):hover::after { background: var(--ink); color: var(--paper); }
+[data-theme="dark"] #mobile-menu a:not(.mobile-menu-cta)[aria-current] { color: var(--plum-text); }
+[data-theme="dark"] #mobile-menu .mobile-menu-cta { background: var(--plum); color: #fff; }
+
+@keyframes menu-in { from { opacity: 0; transform: translateY(-8px) scale(0.98); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { #mobile-menu:not([hidden]) { animation: none; } }
+@media (max-width: 480px) {
+  #mobile-menu:not([hidden]) { padding: 22px 20px 22px; border-radius: 24px; }
+  #mobile-menu a:not(.mobile-menu-cta) { grid-template-columns: 28px 1fr 30px; padding: 11px 0; font-size: 21px; letter-spacing: -0.8px; }
+  #mobile-menu a:not(.mobile-menu-cta)::after { width: 30px; height: 30px; font-size: 12px; }
+  #mobile-menu .mobile-menu-cta { min-height: 52px; margin-top: 18px; }
+}
+@media (max-width: 380px) { #mobile-menu a:not(.mobile-menu-cta) { font-size: 19px; grid-template-columns: 24px 1fr 30px; } }
+
+/* Пункты мобильного меню без круглых кнопок со стрелкой */
+#mobile-menu a:not(.mobile-menu-cta)::after { content: none; }
+#mobile-menu a:not(.mobile-menu-cta) { grid-template-columns: 38px 1fr; }
+@media (max-width: 480px) { #mobile-menu a:not(.mobile-menu-cta) { grid-template-columns: 28px 1fr; } }
+@media (max-width: 380px) { #mobile-menu a:not(.mobile-menu-cta) { grid-template-columns: 24px 1fr; } }

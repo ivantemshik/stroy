@@ -649,3 +649,6 @@ html:not(.js) .theme-toggle { display: none; }
 @media (max-width: 760px) { .reviews #reviews-title { font-size: 30px; letter-spacing: -1.2px; } .reviews .review-card { min-height: 340px; } }
 @media (max-width: 400px) { .reviews #reviews-title { font-size: 25px; letter-spacing: -1px; } }
 @media (max-width: 340px) { .reviews #reviews-title { font-size: 21px; letter-spacing: -0.8px; } }
+/* Кнопка «Обсудить проект» в мобильном меню: без стрелки, текст по центру и крупнее */
+#mobile-menu .mobile-menu-cta { justify-content: center; font-size: 16px; }
+#mobile-menu .mobile-menu-cta::after { content: none; }

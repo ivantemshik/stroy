@@ -13,15 +13,14 @@ export function openGallery(object, startIndex = 0) {
   const photos = object.photos;
   const render = () => {
     const [id, width, height, alt] = photos[index];
+    const many = photos.length > 1;
     dialog.innerHTML = `<div class="dialog-inner">
-      <div class="dialog-head"><h2 class="visually-hidden">${escapeHtml(object.title)}</h2>
-        <div class="lightbox-nav">
-          <button class="icon-btn" type="button" data-prev aria-label="Предыдущее фото" ${photos.length < 2 ? 'disabled' : ''}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg></button>
-          <button class="icon-btn" type="button" data-next aria-label="Следующее фото" ${photos.length < 2 ? 'disabled' : ''}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
-        </div>
+      <div class="dialog-head"><div class="lightbox-title"><h2>${escapeHtml(object.title)}</h2><p>${escapeHtml(object.text)}</p></div>
         <button class="icon-btn" type="button" data-close aria-label="Закрыть"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
-      <figure><img src="${src(id, width)}" width="${width}" height="${height}" alt="${escapeHtml(alt)}" />
-        <figcaption><span>${escapeHtml(object.text)}</span><span>Фото ${index + 1} из ${photos.length}</span></figcaption></figure>
+      <figure class="lightbox-stage"><img src="${src(id, width)}" width="${width}" height="${height}" alt="${escapeHtml(alt)}" />
+        ${many ? `<button class="lightbox-arrow is-prev" type="button" data-prev aria-label="Предыдущее фото"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg></button>
+        <button class="lightbox-arrow is-next" type="button" data-next aria-label="Следующее фото"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
+        <span class="lightbox-count">${index + 1} / ${photos.length}</span>` : ''}</figure>
       ${photos.length > 1 ? `<div class="lightbox-thumbs" role="group" aria-label="Все фото объекта">${photos.map(([thumbId, thumbWidth, , thumbAlt], i) => `<button class="lightbox-thumb" type="button" data-thumb="${i}" aria-label="Фото ${i + 1}: ${escapeHtml(thumbAlt)}"${i === index ? ' aria-current="true"' : ''}><img src="${thumb(thumbId)}" data-fallback="${src(thumbId, thumbWidth)}" alt="" loading="lazy" decoding="async" /></button>`).join('')}</div>` : ''}</div>`;
     dialog.querySelectorAll('.lightbox-thumb img').forEach(img => img.addEventListener('error', () => { if (img.dataset.fallback) { img.src = img.dataset.fallback; delete img.dataset.fallback; } }, {once: true}));
     dialog.querySelectorAll('[data-thumb]').forEach(button => button.addEventListener('click', () => {
@@ -31,8 +30,8 @@ export function openGallery(object, startIndex = 0) {
     }));
     dialog.querySelector('.lightbox-thumb[aria-current]')?.scrollIntoView({block: 'nearest', inline: 'center'});
     dialog.querySelector('[data-close]').addEventListener('click', () => dialog.close());
-    dialog.querySelector('[data-prev]').addEventListener('click', () => { index = (index - 1 + photos.length) % photos.length; render(); dialog.querySelector('[data-prev]').focus(); });
-    dialog.querySelector('[data-next]').addEventListener('click', () => { index = (index + 1) % photos.length; render(); dialog.querySelector('[data-next]').focus(); });
+    dialog.querySelector('[data-prev]')?.addEventListener('click', () => { index = (index - 1 + photos.length) % photos.length; render(); dialog.querySelector('[data-prev]').focus(); });
+    dialog.querySelector('[data-next]')?.addEventListener('click', () => { index = (index + 1) % photos.length; render(); dialog.querySelector('[data-next]').focus(); });
     const next = photos[(index + 1) % photos.length];
     if (next) new Image().src = src(next[0], next[1]);
   };

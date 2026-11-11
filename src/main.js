@@ -228,4 +228,31 @@ initConsent({onAnalytics: () => loadMetrika(updateTelegramLinks)});
 initTheme();
 initPhotoLinks();
 initContent();
+
+/* Плавное появление блоков главной при прокрутке.
+   Наблюдаем за группой целиком (заголовок, сетка карточек), а карточки внутри
+   появляются по очереди. Так карточки в горизонтальных лентах тоже не теряются. */
+function initReveal() {
+  const main = $('#main');
+  if (!main || !('IntersectionObserver' in window) || reducedMotion.matches) return;
+  const groups = new Map();
+  const add = (trigger, items) => { if (trigger && items.length) groups.set(trigger, items); };
+  $$('.section-heading, .projects-heading, .intro-copy, .faq > div:first-child, .projects-track', main).forEach(el => add(el, [el]));
+  ['.service-list', '.quality-grid', '.home-grid', '.price-grid', '.reviews-grid', '.faq-list'].forEach(selector => {
+    $$(selector, main).forEach(parent => add(parent, [...parent.children].filter(child => !child.matches('[data-clone]'))));
+  });
+  $$('.footer-title, .contact-grid').forEach(el => add(el, [el]));
+  groups.forEach(items => items.forEach((item, i) => { item.dataset.reveal = ''; item.style.setProperty('--reveal-i', Math.min(i, 6)); }));
+  const lines = $$(':scope > .quality, :scope > .projects, :scope > .homes, :scope > .prices', main);
+  lines.forEach(section => { section.dataset.revealLine = ''; });
+  const observer = new IntersectionObserver(entries => entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    observer.unobserve(entry.target);
+    if (entry.target.dataset.revealLine !== undefined) entry.target.classList.add('is-line-in');
+    groups.get(entry.target)?.forEach(item => item.classList.add('is-in'));
+  }), {rootMargin: '0px 0px -8% 0px', threshold: 0.12});
+  groups.forEach((_, trigger) => observer.observe(trigger));
+  lines.forEach(section => observer.observe(section));
+}
+initReveal();
 export {openModal,closeModal};

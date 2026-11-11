@@ -626,3 +626,26 @@ html:not(.js) .theme-toggle { display: none; }
   .js [data-reveal] { opacity: 1; transform: none; transition: none; }
   .js #main > .section-pad[data-reveal-line]::before { transform: none; transition: none; }
 }
+
+/* Фото в скруглённых карточках: без светлой каймы по краю угла.
+   Фон карточки просвечивал на сглаженном крае скругления, поэтому фон убираем,
+   а само фото обрезаем по тому же радиусу */
+.quality-card, .project-card, .service-image { background: transparent; }
+[data-theme="dark"] .quality-card, [data-theme="dark"] .plan-card { background: transparent; }
+.quality-card img, .project-card img { border-radius: inherit; }
+.quality-card, .project-card { clip-path: inset(0 round 11px); }
+.projects-track .project-card { clip-path: inset(0 round 12px); }
+/* Отзыв: тема и текст сразу под человеком, шрифт крупнее */
+.reviews .review-subject { margin-top: 30px; padding-top: 0; margin-bottom: 12px; font-size: 20px; letter-spacing: -0.4px; line-height: 1.25; }
+.reviews .review-copy { font-size: 16px; line-height: 1.6; }
+@media (max-width: 760px) {
+  .reviews .review-subject { margin-top: 26px; font-size: 19px; }
+  .reviews .review-copy { font-size: 15.5px; }
+}
+/* Заголовок отзывов в одну строку и крупнее; карточки по высоте содержимого */
+.reviews #reviews-title { font-size: 44px; letter-spacing: -1.8px; line-height: 1.1; }
+.reviews .review-card { min-height: 340px; }
+@media (max-width: 1100px) { .reviews #reviews-title { font-size: 40px; } .reviews .review-card { min-height: 360px; } }
+@media (max-width: 760px) { .reviews #reviews-title { font-size: 30px; letter-spacing: -1.2px; } .reviews .review-card { min-height: 340px; } }
+@media (max-width: 400px) { .reviews #reviews-title { font-size: 25px; letter-spacing: -1px; } }
+@media (max-width: 340px) { .reviews #reviews-title { font-size: 21px; letter-spacing: -0.8px; } }

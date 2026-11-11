@@ -337,3 +337,47 @@ html:not(.js) .theme-toggle { display: none; }
 /* Светлый текст на тёмных блоках: в исходном стиле он задан цветом бумаги, ночью бумага тёмная */
 [data-theme="dark"] .process, [data-theme="dark"] .pj-catalog-tile, [data-theme="dark"] .pj-form, [data-theme="dark"] .pj-catalog-value strong, [data-theme="dark"] .pj-fields input, [data-theme="dark"] .pj-consent a { color: var(--ink); }
 [data-theme="dark"] .pj-fields input:focus { border-bottom-color: var(--ink); }
+
+/* ==========================================================================
+   Карточки цен на главной: плитки в стиле страницы «Проектирование»
+   ========================================================================== */
+.price-grid .price-item { display: flex; flex-direction: column; justify-content: space-between; align-items: stretch; text-align: left; gap: 28px; min-height: 236px; padding: 24px 26px; border-radius: 30px; background: #fff; color: var(--ink); transition: background 0.2s; }
+.price-grid .price-item:hover { background: #f0f1ee; }
+.price-grid .price-item > .price-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; max-width: none; font-size: inherit; }
+.price-top .eyebrow { margin: 0; max-width: 160px; line-height: 1.6; text-transform: uppercase; color: var(--muted); }
+.price-grid .price-arrow { position: static; flex: none; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 50%; color: var(--ink); transition: background 0.2s, color 0.2s, border-color 0.2s; }
+.price-grid .price-item:hover .price-arrow { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.price-value small { display: block; font-size: 12px; letter-spacing: 0; color: var(--muted); }
+.price-value small:last-child { font-size: 11px; }
+.price-grid .price-item strong { display: block; margin: 2px 0; font-size: 52px; line-height: 1.1; letter-spacing: -2.6px; font-weight: 450; white-space: nowrap; }
+.price-value strong span { color: var(--muted); }
+
+.price-grid .price-item.is-dark { background: #151615; color: var(--paper); }
+.price-grid .price-item.is-dark:hover { background: #1f211f; }
+.price-item.is-dark .price-top .eyebrow { color: #888e85; }
+.price-grid .price-item.is-dark .price-arrow { border-color: rgba(247, 247, 245, 0.4); color: var(--paper); }
+.price-grid .price-item.is-dark:hover .price-arrow { background: var(--paper); border-color: var(--paper); color: #151615; }
+.price-item.is-dark .price-value small, .price-item.is-dark .price-value strong span { color: #a8aca7; }
+
+[data-theme="dark"] .price-grid .price-item { background: var(--card); color: var(--ink); }
+[data-theme="dark"] .price-grid .price-item:hover { background: var(--card-hover); }
+[data-theme="dark"] .price-grid .price-item.is-dark { background: var(--band); }
+[data-theme="dark"] .price-grid .price-arrow { border-color: var(--input-line); color: var(--ink); }
+[data-theme="dark"] .price-grid .price-item:hover .price-arrow { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+[data-theme="dark"] .price-grid .price-item.is-dark .price-arrow { border-color: var(--input-line); color: var(--ink); }
+[data-theme="dark"] .price-grid .price-item.is-dark:hover .price-arrow { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+[data-theme="dark"] .price-grid .price-item.is-dark:hover { background: var(--card-hover); }
+
+@media (max-width: 1100px) {
+  .price-grid .price-item { min-height: 210px; padding: 22px; }
+  .price-grid .price-item strong { font-size: 42px; letter-spacing: -1.9px; }
+}
+@media (max-width: 760px) {
+  .price-grid { grid-template-columns: 1fr; gap: 10px; }
+  .price-grid .price-item { min-height: 180px; padding: 22px; border-radius: 24px; gap: 22px; }
+  .price-grid .price-item strong { margin: 2px 0; font-size: 40px; letter-spacing: -1.8px; }
+}
+@media (max-width: 480px) {
+  .price-grid .price-item { min-height: 168px; padding: 20px; }
+  .price-grid .price-item strong { font-size: 36px; }
+}

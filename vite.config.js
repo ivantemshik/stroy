@@ -1,7 +1,8 @@
 import {defineConfig} from 'vite';
 import react from '@vitejs/plugin-react';
 import {fileURLToPath} from 'node:url';
-import {readFileSync, existsSync} from 'node:fs';
+import {readFileSync, existsSync, readdirSync, statSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 import {bakeHtml} from './src/site/content-render.js';
 import {CONTENT_DEFAULTS} from './server/content-defaults.js';
 
@@ -103,6 +104,41 @@ function sitePlugin() {
   };
 }
 
+// Метка версии у адресов фото. Фото хранятся в браузере год (vercel.json), поэтому файл, заменённый
+// под тем же именем, посетитель увидел бы только через год. Метка берётся из содержимого файла:
+// заменили фото, и адрес сам стал новым, браузер скачает свежий файл.
+const versions = new Map();
+function fileVersion(rel) {
+  const file = `${root}public/${rel}`;
+  if (!existsSync(file)) return '';
+  const {mtimeMs, size} = statSync(file);
+  const key = `${rel}|${mtimeMs}|${size}`;
+  if (!versions.has(key)) versions.set(key, createHash('sha1').update(readFileSync(file)).digest('hex').slice(0, 8));
+  return versions.get(key);
+}
+const versionImages = html => html.replace(/((?:\/stroy)?\/(images\/[\w\-/.]+?\.(?:webp|png|jpe?g|svg|avif|gif)))(?![\w?])/g,
+  (match, url, rel) => { const version = fileVersion(rel); return version ? `${url}?v=${version}` : url; });
+
+// Фото объектов собираются в адреса прямо в скрипте фотоотчёта (src/site/objects.js),
+// для них одна метка на всю папку: меняется, если заменили любое фото объекта.
+function folderVersion(dir) {
+  const hash = createHash('sha1');
+  const walk = folder => readdirSync(folder, {withFileTypes: true})
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .forEach(entry => entry.isDirectory() ? walk(`${folder}/${entry.name}`) : hash.update(entry.name).update(readFileSync(`${folder}/${entry.name}`)));
+  if (existsSync(dir)) walk(dir);
+  return hash.digest('hex').slice(0, 8);
+}
+
+// Метка ставится до обработки страницы сборщиком: адреса в srcset он подставляет в самом конце,
+// и метка, добавленная позже, в них бы не попала.
+function imageVersionPlugin() {
+  return {
+    name: 'dom-mira-image-version',
+    transformIndexHtml: {order: 'pre', handler: versionImages}
+  };
+}
+
 // В режиме разработки /api/* обслуживает тот же код, что и функция Vercel.
 function devApiPlugin() {
   return {
@@ -140,7 +176,8 @@ function devApiPlugin() {
 
 export default defineConfig({
   base: process.env.GITHUB_PAGES ? '/stroy/' : '/',
-  plugins: [react(), sitePlugin(), devApiPlugin()],
+  plugins: [react(), sitePlugin(), imageVersionPlugin(), devApiPlugin()],
+  define: {__IMAGES_V__: JSON.stringify(folderVersion(`${root}public/images/objects`))},
   build: {
     rollupOptions: {
       input: Object.fromEntries(Object.entries(PAGES).map(([key, path]) => [key, fileURLToPath(new URL(`./${path}`, import.meta.url))]))

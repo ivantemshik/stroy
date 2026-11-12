@@ -2,9 +2,11 @@
 import {goal} from './analytics.js';
 import {escapeHtml} from './content-render.js';
 
-const src = (id, width) => `/images/objects/${id}-${width}.webp`;
+// Метка версии фото объектов (vite.config.js): после замены фото браузер скачает новое, а не покажет старое из памяти.
+const version = typeof __IMAGES_V__ === 'string' && __IMAGES_V__ ? `?v=${__IMAGES_V__}` : '';
+const src = (id, width) => `/images/objects/${id}-${width}.webp${version}`;
 // Миниатюра для ленты под фото (scripts/prepare-thumbs.mjs). Если её нет, берём полное фото.
-const thumb = id => `/images/objects/${id}-thumb.webp`;
+const thumb = id => `/images/objects/${id}-thumb.webp${version}`;
 
 export function openGallery(object, startIndex = 0) {
   const dialog = document.getElementById('gallery-dialog');

@@ -1,6 +1,7 @@
 // Общие блоки страниц «Проектирование» и «Отделка» (по макету «Проектирование домов»):
 // состав работ с переключением фото и форма заявки. Меню, расчёт, окна, cookie и Метрику подключает main.js.
-// Настройки формы берутся из её атрибутов: data-form, data-service, data-message, data-done.
+// Настройки формы берутся из её атрибутов: data-form, data-lead-service, data-message, data-done
+// (не data-service: по нему main.js открывает окно услуги при клике).
 import './main.js';
 import {postLead, warmUpProtection} from './site/forms.js';
 import {goal} from './site/analytics.js';
@@ -39,7 +40,7 @@ items.forEach(item => item.querySelector('.pj-item-head').addEventListener('clic
 const form = document.querySelector('.pj-form');
 if (form) {
   const formName = form.dataset.form || 'request';
-  const service = form.dataset.service || 'other';
+  const service = form.dataset.leadService || 'other';
   const doneText = form.dataset.done || 'Заявка принята. Мы свяжемся с вами в ближайшее рабочее время.';
   const field = name => form.elements.namedItem(name);
   const nameInput = field('name');

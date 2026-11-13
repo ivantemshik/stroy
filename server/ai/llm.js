@@ -63,17 +63,25 @@ async function callOne({provider, model}, {messages, json, temperature, maxToken
 }
 
 // Перебирает провайдеров по порядку. Временные ошибки (429, 5xx) ставят провайдера на паузу.
-export async function chat({messages, json = false, temperature, maxTokens = 900, purpose = 'chat', timeoutMs = 25000, only} = {}) {
+// На всю цепочку один общий лимит ожидания (по умолчанию 35 секунд): функция на хостинге живёт 60 секунд,
+// и после отказа всех моделей должно остаться время передать вопрос менеджеру.
+export async function chat({messages, json = false, temperature, maxTokens = 900, purpose = 'chat', timeoutMs = 25000, totalMs = 35000, only} = {}) {
   const configured = only ? [only] : (await getSetting('ai.providers')) || [];
   const temp = temperature ?? Number(await getSetting('ai.temperature')) ?? 0.4;
   const errors = [];
+  const deadline = Date.now() + totalMs;
   for (const entry of configured) {
     if (!entry || entry.enabled === false || !isAvailable(entry.provider)) continue;
     const id = `${entry.provider}:${entry.model}`;
     if (!only && (cooldown.get(id) || 0) > Date.now()) continue;
+    const left = deadline - Date.now();
+    if (left < 3000) {
+      errors.push('общий лимит ожидания исчерпан');
+      break;
+    }
     const started = Date.now();
     try {
-      const result = await callOne(entry, {messages, json, temperature: temp, maxTokens, timeoutMs});
+      const result = await callOne(entry, {messages, json, temperature: temp, maxTokens, timeoutMs: Math.min(timeoutMs, left)});
       await logUsage({provider: entry.provider, model: entry.model, purpose, ok: true, latency: Date.now() - started,
         promptTokens: result.usage.prompt_tokens, completionTokens: result.usage.completion_tokens});
       return {...result, provider: entry.provider, model: entry.model, latency: Date.now() - started};

@@ -21,6 +21,16 @@ function write(analytics) {
   return value;
 }
 
+// Разрешена ли сейчас аналитика: без этого ClientID Метрики не уходит ни с формами, ни в ссылке на бота.
+export function analyticsConsented() {
+  return Boolean(read()?.analytics);
+}
+
+// При отзыве согласия стираем и сохранённый ClientID (analytics.js хранит его в sessionStorage).
+function forgetClientId() {
+  try { sessionStorage.removeItem('dm_cid'); } catch { /* хранилище недоступно */ }
+}
+
 function clearMetrikaCookies() {
   for (const part of document.cookie.split(';')) {
     const name = part.split('=')[0].trim();
@@ -43,7 +53,10 @@ export function initConsent({onAnalytics}) {
     banner?.remove();
     banner = null;
     if (analytics) onAnalytics();
-    else if (before?.analytics) { clearMetrikaCookies(); location.reload(); }
+    else {
+      forgetClientId();
+      if (before?.analytics) { clearMetrikaCookies(); location.reload(); }
+    }
   };
 
   const settings = () => {

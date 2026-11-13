@@ -1,5 +1,7 @@
 // Яндекс Метрика загружается только после согласия на аналитические cookie.
 // UTM метки и источник первого захода хранятся в sessionStorage и уходят вместе с заявкой.
+// ClientID Метрики уходит с заявкой и в ссылке на бота, только пока посетитель разрешает аналитику.
+import {analyticsConsented} from './consent.js';
 
 const meta = document.querySelector('meta[name="ym-counter"]');
 const COUNTER = /^\d+$/.test(meta?.content?.trim() || '') ? Number(meta.content.trim()) : null;
@@ -34,12 +36,13 @@ export function captureAttribution() {
 export function attribution() {
   let data = {};
   try { data = JSON.parse(store.get(ATTR_KEY) || '{}'); } catch { data = {}; }
-  const cid = clientId || store.get(CID_KEY);
+  const cid = getClientId();
   if (cid) data.ym_client_id = cid;
   return data;
 }
 
 export function getClientId() {
+  if (!analyticsConsented()) return null;
   return clientId || store.get(CID_KEY);
 }
 

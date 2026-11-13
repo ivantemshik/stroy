@@ -11,7 +11,8 @@ const CONTACT_LABELS = {call: 'звонок', telegram: 'Telegram', whatsapp: 'W
 const DETAIL_LABELS = {
   object: 'Объект', area: 'Площадь', floors: 'Этажность', material: 'Материал', has_project: 'Есть проект',
   has_plot: 'Есть участок', location: 'Где', budget: 'Бюджет', timing: 'Сроки', stage: 'Стадия',
-  design_project: 'Дизайн проект', scope: 'Состав работ', estimate: 'Предварительный расчёт', rooms: 'Помещения'
+  design_project: 'Дизайн проект', scope: 'Состав работ', estimate: 'Предварительный расчёт', rooms: 'Помещения',
+  repeat_of: 'Возможный повтор заявки'
 };
 
 const adminToken = () => config.telegram.adminToken;
@@ -72,6 +73,8 @@ export async function leadRecipients(lead) {
   return [...chats];
 }
 
+// Карточка новой заявки уходит каждому получателю. Результат хранится по каждому чату (tg_messages):
+// повторная отправка идёт только тем, до кого карточка не дошла, а не останавливается после первого успеха.
 export async function notifyNewLead(lead) {
   const sql = db();
   const chats = await leadRecipients(lead);
@@ -80,9 +83,11 @@ export async function notifyNewLead(lead) {
       delivery_attempts = delivery_attempts + 1 where id = ${lead.id}`;
     return {sent: 0, errors: ['нет получателей']};
   }
+  const already = Array.isArray(lead.tg_messages) ? lead.tg_messages : [];
+  const delivered = new Set(already.map(item => String(item.chat_id)));
   const sent = [];
   const errors = [];
-  for (const chatId of chats) {
+  for (const chatId of chats.filter(chatId => !delivered.has(String(chatId)))) {
     try {
       const message = await tg(adminToken(), 'sendMessage', {
         chat_id: chatId, text: formatLead(lead), parse_mode: 'HTML',
@@ -93,11 +98,14 @@ export async function notifyNewLead(lead) {
       errors.push(`${chatId}: ${error.description || error.message}`);
     }
   }
-  const status = sent.length ? 'sent' : 'failed';
+  const all = [...already, ...sent];
+  const status = errors.length ? (all.length ? 'partial' : 'failed') : 'sent';
   await sql`update leads set delivery_status = ${status}, delivery_error = ${errors.join('; ') || null},
-    delivery_attempts = delivery_attempts + 1, tg_messages = ${sql.json(sent)} where id = ${lead.id}`;
-  await addEvent(lead.id, 'delivery', {text: sent.length ? `Отправлено в Telegram: ${sent.length}` : 'Не удалось отправить в Telegram', data: {sent: sent.length, errors}});
-  return {sent: sent.length, errors};
+    delivery_attempts = delivery_attempts + 1, tg_messages = ${sql.json(all)} where id = ${lead.id}`;
+  if (sent.length || errors.length) {
+    await addEvent(lead.id, 'delivery', {text: errors.length ? `Отправлено в Telegram: ${all.length}, не доставлено: ${errors.length}` : `Отправлено в Telegram: ${all.length}`, data: {sent: sent.length, errors}});
+  }
+  return {sent: all.length, errors};
 }
 
 // Обновляет уже отправленные карточки заявки после смены статуса или ответственного.
@@ -160,7 +168,8 @@ export async function processReminders() {
   const sql = db();
   const result = {retried: 0, reminded: 0, escalated: 0};
 
-  const failed = await sql`select * from leads where delivery_status in ('failed', 'pending') and delivery_attempts < 6
+  // Спам и ручные заявки без уведомления (delivery_status = skipped) не отправляются никогда.
+  const failed = await sql`select * from leads where delivery_status in ('failed', 'pending', 'partial') and status <> 'spam' and delivery_attempts < 6
     and created_at > now() - interval '2 days' and created_at < now() - interval '1 minute' order by id limit 20`;
   for (const lead of failed) {
     const {sent} = await notifyNewLead(lead);

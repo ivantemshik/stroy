@@ -72,3 +72,30 @@ export const DEFAULT_REJECT_REASONS = [
 export function can(user, permission) {
   return Boolean(user?.permissions?.includes(permission));
 }
+
+// Одно правило доступа для веб-админки и админ-бота.
+// Заявку видит тот, кто видит все заявки, или её ответственный.
+export function canAccessLead(user, lead) {
+  if (!user || !lead) return false;
+  return can(user, 'leads.view_all') || (lead.manager_id !== null && lead.manager_id !== undefined && lead.manager_id === user.id);
+}
+
+// Свободную заявку (без ответственного) может взять себе любой, кто может менять заявки.
+export function canTakeLead(user, lead) {
+  return Boolean(lead) && can(user, 'leads.edit') && (!lead.manager_id || lead.manager_id === user.id);
+}
+
+// Менять статус и поля: право менять заявки и доступ к этой заявке (или она свободна и её можно взять).
+export function canEditLead(user, lead) {
+  return can(user, 'leads.edit') && (canAccessLead(user, lead) || canTakeLead(user, lead));
+}
+
+// Переписку с клиентом видит тот, кто видит её заявку; диалог без заявки видят только те, кто видит все заявки.
+// Отвечать может тот же круг людей, если у него есть право отвечать клиентам.
+export function canSeeConversation(user, lead) {
+  return can(user, 'conversations.view') && (can(user, 'leads.view_all') || canAccessLead(user, lead));
+}
+
+export function canReplyConversation(user, lead) {
+  return can(user, 'conversations.reply') && (can(user, 'leads.view_all') || canAccessLead(user, lead));
+}

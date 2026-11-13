@@ -4,15 +4,15 @@ import {HttpError, json, readJson, clientIp, hashIp, assertSameOrigin} from './h
 import {verifyChallenge, honeypotTriggered, tooFast} from './antispam.js';
 import {rateLimited} from './security.js';
 import {cleanText, cleanLine, normalizePhone, normalizeEmail, normalizeTelegram, normalizeService, normalizeContactPref, cleanDetails, cleanAttribution, deviceFromUa, spamScore} from './validate.js';
-import {insertLead, findRecentDuplicate, addEvent, getLead} from './lead-core.js';
+import {insertLead, findRecentDuplicate, addEvent} from './lead-core.js';
 import {notifyNewLead, alertError, formatLead} from './notify.js';
 import {pushToCrm} from './crm.js';
 import {config} from './env.js';
-import {tg, esc} from './telegram.js';
+import {tg} from './telegram.js';
 import {getSetting} from './settings.js';
 import {runTick} from './cron.js';
 
-export const CONSENT_VERSION = '2026-11-09';
+export const CONSENT_VERSION = '2026-11-13';
 
 function inBackground(promise) {
   try { waitUntil(promise); } catch { /* локальный сервер: промис и так завершится */ }
@@ -25,7 +25,7 @@ export async function submitLead({request}) {
   const ip = clientIp(request);
   const ipHash = hashIp(ip);
 
-  if (honeypotTriggered(body)) return json({ok: true, id: null});
+  if (honeypotTriggered(body)) return json({ok: true});
 
   const powError = await verifyChallenge(body.pow);
   if (powError) throw new HttpError(400, 'Проверка формы не пройдена, отправьте ещё раз', {code: 'challenge', reason: powError});
@@ -64,23 +64,31 @@ export async function submitLead({request}) {
     device: deviceFromUa(userAgent),
     consent_at: new Date(),
     consent_version: CONSENT_VERSION,
+    consent_channel: 'site_form',
+    // Ключ одной отправки формы: повтор той же отправки не создаёт вторую заявку.
+    submission_key: /^[A-Za-z0-9-]{16,64}$/.test(String(body.submission_key || '')) ? String(body.submission_key) : null,
     is_test: body.test === true && !config.isProduction
   };
 
   const suspicious = tooFast(body) || spamScore({name, message}) >= 4;
-  if (suspicious) fields.status = 'spam';
+  if (suspicious) {
+    fields.status = 'spam';
+    fields.delivery_status = 'skipped';
+  }
 
+  // Ответ форме всегда одинаковый и без номера заявки: по нему нельзя узнать, оставлял ли кто-то
+  // заявку с этим телефоном или почтой. Новое обращение с тем же контактом не дописывается в чужую
+  // заявку, а становится отдельной заявкой с пометкой «возможный повтор», связь проверяет менеджер.
   let lead;
+  let previousId = null;
   try {
-    const duplicateId = suspicious ? null : await findRecentDuplicate({phone: fields.phone, email: fields.email});
-    if (duplicateId) {
-      await addEvent(duplicateId, 'repeat', {text: `Повторная отправка формы «${fields.form}»${message ? `: ${message}` : ''}`, data: {page: fields.page, details: fields.details}});
-      const existing = await getLead(duplicateId);
-      const chat = await getSetting('notify.admin_chat_id');
-      if (chat) inBackground(tg(config.telegram.adminToken, 'sendMessage', {chat_id: String(chat), parse_mode: 'HTML', text: `Клиент повторно отправил форму, заявка №${duplicateId}: ${esc(existing?.name || '')}`}));
-      return json({ok: true, id: duplicateId, repeat: true});
-    }
+    previousId = suspicious ? null : await findRecentDuplicate({phone: fields.phone, email: fields.email});
+    if (previousId) fields.details = {...fields.details, repeat_of: `№${previousId}`};
     lead = await insertLead(fields);
+    if (lead.existed) return json({ok: true});
+    if (previousId) {
+      await addEvent(lead.id, 'repeat', {text: `Возможный повтор заявки №${previousId}: тот же телефон или почта. Проверьте и при необходимости закройте одну из заявок.`, data: {possible_duplicate_of: previousId}});
+    }
   } catch (error) {
     // База недоступна: заявка всё равно уходит в Telegram, чтобы не потерять клиента.
     console.error('lead insert failed', error);
@@ -90,7 +98,7 @@ export async function submitLead({request}) {
       try {
         await tg(config.telegram.adminToken, 'sendMessage', {chat_id: String(chat), parse_mode: 'HTML', text: `${formatLead(fallback, {title: 'Заявка (база недоступна, сохраните вручную)'})}`});
         inBackground(alertError('База данных', `Заявка не сохранена в базу: ${error.message}`));
-        return json({ok: true, id: null});
+        return json({ok: true});
       } catch { /* падаем ниже */ }
     }
     throw new HttpError(503, 'Не получилось отправить заявку. Напишите нам на почту или в Telegram');
@@ -104,5 +112,5 @@ export async function submitLead({request}) {
       await runTick().catch(() => {});
     })());
   }
-  return json({ok: true, id: lead.id});
+  return json({ok: true});
 }

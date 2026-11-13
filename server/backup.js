@@ -32,15 +32,18 @@ export function decrypt(buffer, secret = config.backupKey) {
   return Buffer.concat([decipher.update(buffer.subarray(32)), decipher.final()]);
 }
 
+// Все таблицы читаются в одной транзакции «только чтение» с изоляцией repeatable read:
+// копия описывает базу на один момент, даже если в это время приходят заявки.
 export async function createBackup() {
-  const sql = db();
   const tables = {};
   const counts = {};
-  for (const table of BACKUP_TABLES) {
-    const rows = await sql`select * from ${sql(table)}`;
-    tables[table] = rows;
-    counts[table] = rows.length;
-  }
+  await db().begin('isolation level repeatable read read only', async tx => {
+    for (const table of BACKUP_TABLES) {
+      const rows = await tx`select * from ${tx(table)}`;
+      tables[table] = rows;
+      counts[table] = rows.length;
+    }
+  });
   const payload = Buffer.from(JSON.stringify({format: 'dom-mira-backup', version: 1, created_at: new Date().toISOString(), tables}));
   const bytes = encrypt(Buffer.from(gzipSync(payload, {level: 9})));
   const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');

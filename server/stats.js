@@ -45,7 +45,10 @@ export async function computeStats({from, to, includeTest = false}) {
       coalesce(sum(l.contract_amount) filter (where l.status = 'contract'), 0)::float as contracts_amount,
       avg(extract(epoch from (l.first_response_at - l.created_at)) / 60) filter (where l.first_response_at is not null and l.status <> 'spam')::float as avg_response_min,
       percentile_cont(0.5) within group (order by extract(epoch from (l.first_response_at - l.created_at)) / 60)
-        filter (where l.first_response_at is not null and l.status <> 'spam')::float as median_response_min
+        filter (where l.first_response_at is not null and l.status <> 'spam')::float as median_response_min,
+      -- Первое действие сотрудника (взял, сменил статус) и настоящий ответ клиенту (ответ в Telegram, звонок, письмо, встреча) считаются отдельно.
+      avg(extract(epoch from (l.first_contact_at - l.created_at)) / 60) filter (where l.first_contact_at is not null and l.status <> 'spam')::float as avg_contact_min,
+      count(*) filter (where l.first_contact_at is null and l.status not in ('spam', 'rejected'))::int as without_contact
     from leads l where ${base}`,
     sql`select to_char(date_trunc('day', l.created_at at time zone 'Europe/Moscow'), 'YYYY-MM-DD') as day, count(*)::int as count
     from leads l where ${real} group by 1 order by 1`,

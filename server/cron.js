@@ -23,10 +23,39 @@ async function finishJob(name, ok, error = null) {
   await db()`update job_runs set last_ok = ${ok}, last_error = ${error} where name = ${name}`;
 }
 
+// Повтор упавших обновлений Telegram: до трёх попыток, потом обновление снимается с повтора.
+async function retryFailedUpdates(limit = 10) {
+  const sql = db();
+  const result = {retried: 0, failed: 0, dropped: 0};
+  const dead = await sql`update tg_updates set status = 'dead', payload = null, updated_at = now()
+    where status = 'failed' and attempts >= 3 returning bot, update_id`;
+  result.dropped = dead.length;
+  if (dead.length) await alertError('Обновления Telegram', `Не удалось обработать после трёх попыток: ${dead.map(d => `${d.bot} ${d.update_id}`).join(', ')}`);
+  const rows = await sql`select bot, update_id, payload from tg_updates where status = 'failed' and payload is not null
+    and updated_at < now() - interval '1 minute' order by updated_at limit ${limit}`;
+  if (!rows.length) return result;
+  const client = await import('./client-bot.js');
+  const admin = await import('./admin-bot.js');
+  for (const row of rows) {
+    if (!await client.claimUpdate(row.bot, row.update_id)) continue;
+    try {
+      await (row.bot === 'client' ? client.handleClientUpdate(row.payload) : admin.handleAdminUpdate(row.payload));
+      await client.finishUpdate(row.bot, row.update_id);
+      result.retried += 1;
+    } catch (error) {
+      console.error('retry update', row.bot, row.update_id, error.message);
+      await client.failUpdate(row.bot, row.payload);
+      result.failed += 1;
+    }
+  }
+  return result;
+}
+
 export async function runTick() {
   if (!await claimJob('tick', 240)) return {skipped: 'недавно запускался'};
   try {
     const result = await processReminders();
+    result.updates = await retryFailedUpdates().catch(error => ({error: error.message}));
     await finishJob('tick', true);
     return result;
   } catch (error) {
@@ -36,7 +65,10 @@ export async function runTick() {
   }
 }
 
-export async function tickRoute() {
+// Внешний запуск проверки (GitHub Actions или крон хостинга) только с тем же служебным ключом, что и ежедневная задача.
+export async function tickRoute({request}) {
+  const auth = request.headers.get('authorization') || '';
+  if (!config.cronSecret || !safeEqual(auth, `Bearer ${config.cronSecret}`)) throw new HttpError(401, 'Нет доступа');
   return json(await runTick());
 }
 
@@ -72,6 +104,7 @@ export async function dailyRoute({request}) {
     await sql`delete from rate_events where at < now() - interval '2 days'`;
     await sql`delete from pow_used where expires_at < now()`;
     await sql`delete from tg_updates where at < now() - interval '7 days'`;
+    await sql`update tg_updates set payload = null where payload is not null and updated_at < now() - interval '2 days'`;
     await sql`delete from sessions where expires_at < now()`;
     await sql`delete from link_tokens where expires_at < now()`;
     await sql`delete from relay_map where created_at < now() - interval '90 days'`;

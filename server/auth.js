@@ -18,7 +18,7 @@ export async function currentUser(request) {
   const [id, signature] = raw.split('.');
   if (!id || !signature || !safeEqual(signature, sign(id))) return null;
   const rows = await db()`
-    select u.id, u.login, u.name, u.email, u.tg_chat_id, u.tg_username, u.notify_new_leads, u.is_active,
+    select u.id, u.login, u.name, u.email, u.tg_chat_id, u.tg_username, u.notify_new_leads, u.is_active, u.role_id,
       r.key as role, r.name as role_name, r.permissions, s.id as session_id
     from sessions s join users u on u.id = s.user_id join roles r on r.id = u.role_id
     where s.id = ${id} and s.expires_at > now() and u.is_active`;

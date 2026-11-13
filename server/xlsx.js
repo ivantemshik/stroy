@@ -74,8 +74,10 @@ export function buildXlsx(sheets) {
 export function toCsv(columns, rows) {
   const escape = value => {
     if (value === null || value === undefined) return '';
-    const textValue = value instanceof Date ? value.toISOString() : String(value);
-    return /[",\n;]/.test(textValue) ? `"${textValue.replace(/"/g, '""')}"` : textValue;
+    let textValue = value instanceof Date ? value.toISOString() : String(value);
+    // Текст из формы клиента не должен стать формулой в Excel или Google Таблицах.
+    if (typeof value === 'string' && /^[=+\-@\t\r]/.test(textValue)) textValue = `'${textValue}`;
+    return /[",\n;']/.test(textValue) ? `"${textValue.replace(/"/g, '""')}"` : textValue;
   };
   return [columns.map(col => escape(col.title)).join(','), ...rows.map(row => columns.map(col => escape(row[col.key])).join(','))].join('\n');
 }

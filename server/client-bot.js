@@ -1,5 +1,7 @@
 // Клиентский Telegram бот: ИИ-консультант «Дом Мира».
-// Отвечает по базе знаний, уточняет задачу, собирает заявку и передаёт её в админ-бот.
+// Сначала клиент отмечает согласие на обработку данных. До этого бот хранит только технические
+// идентификаторы чата: не сохраняет текст и контакты, не передаёт их модели и менеджерам, не создаёт заявку.
+// После согласия отвечает по базе знаний, уточняет задачу, собирает заявку и передаёт её в админ-бот.
 import {waitUntil} from '@vercel/functions';
 import {db} from './db.js';
 import {config} from './env.js';
@@ -9,15 +11,19 @@ import {getSetting} from './settings.js';
 import {rateLimited, audit} from './security.js';
 import {chat, parseJsonLoose} from './ai/llm.js';
 import {pickKnowledge, buildSystemPrompt} from './ai/prompt.js';
-import {insertLead, getLead, addEvent} from './lead-core.js';
-import {notifyNewLead, alertError, leadUrl} from './notify.js';
+import {insertLead, getLead, addEvent, markFirstContact} from './lead-core.js';
+import {notifyNewLead, alertError, leadUrl, refreshLeadMessages, notifyOwners} from './notify.js';
 import {enqueueConversion} from './metrika.js';
 import {pushToCrm} from './crm.js';
-import {normalizePhone, normalizeService, cleanLine, cleanText} from './validate.js';
-import {CONSENT_VERSION} from './leads-public.js';
+import {normalizePhone, normalizeEmail, normalizeService, cleanLine, cleanText} from './validate.js';
 
 const token = () => config.telegram.clientToken;
 const adminToken = () => config.telegram.adminToken;
+
+// Версия текста согласия в чате: хранится в диалоге и в заявке вместе с датой и каналом подтверждения.
+export const BOT_CONSENT_VERSION = 'bot-2026-11-13';
+const LEGACY_CONSENT_VERSION = '2026-11-09';
+const CONSENT_TEXT = 'Даю ООО «ГК ВЕСЬ МИР» согласие на обработку моих персональных данных, включая их сбор и передачу для консультации и обработки заявки.';
 
 const SERVICE_BUTTONS = [
   [{text: 'Строительство дома', callback_data: 'svc:construction'}, {text: 'Отделка', callback_data: 'svc:finishing'}],
@@ -32,10 +38,34 @@ const SERVICE_TEXT = {
 };
 const FIELD_KEYS = ['name', 'phone', 'service', 'object', 'area', 'location', 'budget', 'timing', 'has_project', 'has_plot', 'material', 'notes'];
 
+// ---------- Обновления Telegram ----------
+// Обновление помечается processing и после обработки done. Упавшее сохраняется (failed) и повторяется
+// плановой проверкой, всего не больше трёх попыток. Повтор уже взятого в работу обновления отбрасывается.
 export async function claimUpdate(bot, updateId) {
   if (updateId === undefined || updateId === null) return true;
-  const rows = await db()`insert into tg_updates (bot, update_id) values (${bot}, ${updateId}) on conflict do nothing returning update_id`;
+  const rows = await db()`
+    insert into tg_updates (bot, update_id, status, attempts) values (${bot}, ${updateId}, 'processing', 1)
+    on conflict (bot, update_id) do update set status = 'processing', attempts = tg_updates.attempts + 1, updated_at = now()
+      where tg_updates.status = 'failed' and tg_updates.attempts < 3
+    returning update_id`;
   return rows.length > 0;
+}
+
+export async function finishUpdate(bot, updateId) {
+  if (updateId === undefined || updateId === null) return;
+  await db()`update tg_updates set status = 'done', payload = null, updated_at = now() where bot = ${bot} and update_id = ${updateId}`.catch(() => {});
+}
+
+// Упавшее обновление сохраняется для повтора. Пока клиент не дал согласие, текст и контакт в нём не храним.
+export async function failUpdate(bot, update) {
+  if (update?.update_id === undefined || update?.update_id === null) return;
+  let payload = update;
+  if (bot === 'client' && update.message) {
+    const [conv] = await db()`select consent_at from conversations where tg_chat_id = ${update.message.chat?.id ?? 0}`.catch(() => []);
+    if (!conv?.consent_at) payload = {...update, message: {...update.message, text: undefined, caption: undefined, contact: undefined}};
+  }
+  await db()`update tg_updates set status = 'failed', payload = ${db().json(payload)}, updated_at = now()
+    where bot = ${bot} and update_id = ${update.update_id}`.catch(() => {});
 }
 
 export function checkWebhookSecret(request) {
@@ -53,14 +83,20 @@ export async function clientWebhook({request}) {
   checkWebhookSecret(request);
   const update = await readJson(request, 512 * 1024);
   if (!await claimUpdate('client', update.update_id)) return json({ok: true});
-  const task = handleUpdate(update).catch(error => {
-    console.error('client bot', error);
-    return alertError('ИИ-консультант', error.message);
-  });
+  const task = handleUpdate(update)
+    .then(() => finishUpdate('client', update.update_id))
+    .catch(async error => {
+      console.error('client bot', error);
+      await failUpdate('client', update);
+      return alertError('ИИ-консультант', error.message);
+    });
   runInBackground(task);
   if (!process.env.VERCEL) await task;
   return json({ok: true});
 }
+
+// Для повтора упавших обновлений из плановой проверки.
+export const handleClientUpdate = update => handleUpdate(update);
 
 // Ошибка отправки (клиент заблокировал бота, чат удалён) не должна ронять обработку диалога и заявки.
 async function send(chatId, text, extra = {}) {
@@ -75,14 +111,19 @@ async function send(chatId, text, extra = {}) {
   }
 }
 
+// До согласия храним только технические идентификаторы чата. Имя и ник пишем после согласия.
 async function getConversation(chatId, from) {
   const sql = db();
   const [conv] = await sql`
-    insert into conversations (tg_user_id, tg_chat_id, tg_username, first_name, last_name, last_message_at)
-    values (${from.id}, ${chatId}, ${from.username || null}, ${from.first_name || null}, ${from.last_name || null}, now())
-    on conflict (tg_chat_id) do update set tg_username = excluded.tg_username, first_name = excluded.first_name,
-      last_name = excluded.last_name, updated_at = now()
+    insert into conversations (tg_user_id, tg_chat_id, last_message_at) values (${from.id}, ${chatId}, now())
+    on conflict (tg_chat_id) do update set updated_at = now()
     returning *`;
+  const changed = conv.tg_username !== (from.username || null) || conv.first_name !== (from.first_name || null) || conv.last_name !== (from.last_name || null);
+  if (conv.consent_at && changed) {
+    const [fresh] = await sql`update conversations set tg_username = ${from.username || null}, first_name = ${from.first_name || null},
+      last_name = ${from.last_name || null} where id = ${conv.id} returning *`;
+    return fresh;
+  }
   return conv;
 }
 
@@ -103,6 +144,43 @@ export function parseStartParam(param) {
   return {source: value.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 40) || 'telegram'};
 }
 
+// ---------- Контакты в тексте клиента ----------
+// Телефон и почту из сообщения сохраняем сами, а в модель отправляем текст без них:
+// для ответа консультанту контакты не нужны.
+const PHONE_CANDIDATE = /\+?\d[\d\s()-]{8,}\d/g;
+const EMAIL_PATTERN = /[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g;
+
+export function extractContacts(text) {
+  const out = {};
+  for (const match of String(text || '').match(PHONE_CANDIDATE) || []) {
+    const phone = normalizePhone(match);
+    if (phone) { out.phone = phone; break; }
+  }
+  const email = (String(text || '').match(EMAIL_PATTERN) || [])[0];
+  if (email && normalizeEmail(email)) out.email = normalizeEmail(email);
+  return out;
+}
+
+export function maskContacts(text) {
+  return String(text || '').replace(EMAIL_PATTERN, '[почта]').replace(PHONE_CANDIDATE, match => normalizePhone(match) ? '[телефон]' : match);
+}
+
+// ---------- Согласие ----------
+
+const consentText = done => `${done ? '☑' : '☐'} ${CONSENT_TEXT}\n\nТекст согласия: ${config.siteUrl}/soglasie/\nПолитика обработки данных: ${config.siteUrl}/privacy/`;
+
+async function askConsent(conv, intro = '') {
+  await send(conv.tg_chat_id, `${intro ? `${intro}\n\n` : ''}${consentText(false)}`, {
+    reply_markup: {inline_keyboard: [[{text: '☐ Даю согласие', callback_data: 'consent:yes'}, {text: 'Не согласен', callback_data: 'consent:no'}]]}
+  });
+}
+
+async function applyStartParam(conv) {
+  const info = parseStartParam(conv.start_param);
+  await db()`update conversations set source = coalesce(source, ${info.source}), landing_page = coalesce(landing_page, ${info.landing || null}),
+    ym_client_id = coalesce(${info.clientId || null}, ym_client_id) where id = ${conv.id}`;
+}
+
 async function handleUpdate(update) {
   if (update.callback_query) return handleCallback(update.callback_query);
   const message = update.message;
@@ -111,15 +189,8 @@ async function handleUpdate(update) {
   const conv = await getConversation(chatId, message.from);
   if (conv.blocked) return;
 
-  if (message.contact) return handleContact(conv, message);
   const text = cleanText(message.text || message.caption || '', 2000);
-  if (!text) {
-    await send(chatId, 'Я понимаю только текст. Опишите задачу словами, а фото и проект удобнее отправить менеджеру: нажмите /manager.');
-    return;
-  }
-
   if (text.startsWith('/start')) return handleStart(conv, text.split(/\s+/)[1]);
-  if (text === '/manager') return handover(conv, 'клиент попросил менеджера');
   if (text === '/delete') {
     await send(chatId, 'Удалить переписку и ваши контакты из нашей базы? Это нельзя отменить.', {
       reply_markup: {inline_keyboard: [[{text: 'Да, удалить', callback_data: 'delete:yes'}, {text: 'Отмена', callback_data: 'delete:no'}]]}
@@ -131,35 +202,61 @@ async function handleUpdate(update) {
     return;
   }
 
-  await saveMessage(conv.id, 'user', text, {tgMessageId: message.message_id});
+  // Без согласия ничего не сохраняем и никуда не передаём, а показываем отметку согласия.
+  if (!conv.consent_at) {
+    if (message.contact) return askConsent(conv, 'Номер не сохранён: сначала нужно согласие на обработку данных.');
+    if (text === '/manager') return askConsent(conv, 'Чтобы подключить менеджера, нужно согласие на обработку данных.');
+    if (text) {
+      await db()`update conversations set consent_pending = true where id = ${conv.id}`;
+      return askConsent(conv, 'Чтобы ответить, нужно согласие на обработку данных. После отметки отправьте вопрос ещё раз: до согласия мы его не сохраняем.');
+    }
+    return askConsent(conv);
+  }
 
+  if (message.contact) return handleContact(conv, message);
+  if (!text) {
+    await send(chatId, 'Я понимаю только текст. Опишите задачу словами, а фото и проект удобнее отправить менеджеру: нажмите /manager.');
+    return;
+  }
+  if (text === '/manager') return handover(conv, 'клиент попросил менеджера');
+
+  await saveMessage(conv.id, 'user', text, {tgMessageId: message.message_id});
+  await routeUserText(conv, text);
+}
+
+// Ручной режим и выключенный ИИ действуют одинаково для текста и кнопок услуг.
+async function routeUserText(conv, text) {
   if (conv.human_mode) {
     const timeout = Number(await getSetting('ai.human_timeout_hours')) || 12;
     const since = conv.human_since ? new Date(conv.human_since).getTime() : 0;
     if (Date.now() - since < timeout * 3600 * 1000) {
-      await forwardToManagers(conv, text);
+      const delivered = await forwardToManagers(conv, text);
+      if (!delivered) await send(conv.tg_chat_id, 'Сейчас не получилось передать сообщение менеджеру. Напишите нам на info@gkvesmir.ru, мы ответим в рабочее время.');
       return;
     }
     await db()`update conversations set human_mode = false, human_since = null where id = ${conv.id}`;
     conv.human_mode = false;
   }
   if (!await getSetting('ai.enabled')) {
-    await forwardToManagers(conv, text);
-    await send(chatId, 'Спасибо! Передал сообщение менеджеру, он ответит здесь в рабочее время.');
+    const delivered = await forwardToManagers(conv, text);
+    await send(conv.tg_chat_id, delivered
+      ? 'Спасибо! Передал сообщение менеджеру, он ответит здесь в рабочее время.'
+      : 'Спасибо! Сейчас не получилось передать сообщение менеджеру. Напишите нам на info@gkvesmir.ru, мы ответим в рабочее время.');
     return;
   }
   await aiTurn(conv, text);
 }
 
 async function handleStart(conv, param) {
-  const info = parseStartParam(param);
   const sql = db();
-  if (!conv.start_param) {
-    await sql`update conversations set start_param = ${param || null}, source = ${info.source}, landing_page = ${info.landing || null},
-      ym_client_id = coalesce(ym_client_id, ${info.clientId || null}) where id = ${conv.id}`;
-  } else if (info.clientId) {
-    await sql`update conversations set ym_client_id = ${info.clientId} where id = ${conv.id}`;
+  if (!conv.start_param && param) {
+    await sql`update conversations set start_param = ${cleanLine(param, 64)} where id = ${conv.id}`;
+    conv.start_param = cleanLine(param, 64);
   }
+  if (!conv.consent_at) {
+    return askConsent(conv, 'Здравствуйте! Я ИИ-консультант компании «Дом Мира»: отвечу на вопросы о строительстве, отделке, проектировании и ценах. Перед началом отметьте согласие на обработку данных.');
+  }
+  await applyStartParam(conv);
   const greeting = await getSetting('ai.greeting');
   await saveMessage(conv.id, 'assistant', greeting);
   await send(conv.tg_chat_id, greeting, {reply_markup: {inline_keyboard: SERVICE_BUTTONS}});
@@ -173,6 +270,40 @@ async function handleCallback(query) {
   const conv = await getConversation(chatId, query.from);
   const sql = db();
 
+  if (data === 'consent:yes') {
+    if (!conv.consent_at) {
+      const [fresh] = await sql`update conversations set consent_at = now(), consent_version = ${BOT_CONSENT_VERSION}, consent_channel = 'telegram_button',
+        tg_username = ${query.from.username || null}, first_name = ${query.from.first_name || null}, last_name = ${query.from.last_name || null}
+        where id = ${conv.id} returning *`;
+      Object.assign(conv, fresh);
+      await applyStartParam(conv);
+      await saveMessage(conv.id, 'system', `Клиент дал согласие на обработку персональных данных: кнопка в Telegram, версия ${BOT_CONSENT_VERSION}`);
+    }
+    await tg(token(), 'editMessageText', {chat_id: chatId, message_id: query.message.message_id, text: `${consentText(true)}\n\nСогласие получено.`,
+      link_preview_options: {is_disabled: true}}).catch(() => {});
+    // Диалог из прежней версии бота, где согласие спрашивали перед заявкой: сразу оформляем её.
+    if (conv.fields?.phone && !conv.lead_id) return createOrUpdateLead(conv, {announce: true});
+    const pending = conv.consent_pending;
+    if (pending) await sql`update conversations set consent_pending = false where id = ${conv.id}`;
+    const greeting = await getSetting('ai.greeting');
+    const reply = pending ? 'Спасибо! Теперь отправьте ваш вопрос ещё раз, до согласия мы его не сохраняли.' : greeting;
+    await saveMessage(conv.id, 'assistant', reply);
+    await send(chatId, reply, {reply_markup: {inline_keyboard: SERVICE_BUTTONS}});
+    return;
+  }
+  if (data === 'consent:no') {
+    await tg(token(), 'editMessageText', {chat_id: chatId, message_id: query.message.message_id, link_preview_options: {is_disabled: true},
+      text: `Без согласия консультант не может принять ваши вопросы и контакты. Цены, проекты и контакты компании есть на сайте ${config.siteUrl}, написать нам можно на info@gkvesmir.ru. Если передумаете, нажмите /start.`}).catch(() => {});
+    return;
+  }
+  if (data === 'delete:yes') return deleteMyData(conv, query.message.message_id);
+  if (data === 'delete:no') {
+    await tg(token(), 'editMessageText', {chat_id: chatId, message_id: query.message.message_id, text: 'Хорошо, ничего не удаляю.'}).catch(() => {});
+    return;
+  }
+
+  // Кнопки услуг и «Позвать менеджера» работают только после согласия.
+  if (!conv.consent_at) return askConsent(conv, data === 'manager' ? 'Чтобы подключить менеджера, нужно согласие на обработку данных.' : 'Перед началом отметьте согласие на обработку данных.');
   if (data.startsWith('svc:')) {
     const key = data.slice(4);
     const text = SERVICE_TEXT[key] || SERVICE_TEXT.other;
@@ -182,25 +313,9 @@ async function handleCallback(query) {
       conv.fields = fields;
     }
     await saveMessage(conv.id, 'user', text);
-    return aiTurn(conv, text);
+    return routeUserText(conv, text);
   }
   if (data === 'manager') return handover(conv, 'клиент нажал «Позвать менеджера»');
-  if (data === 'consent:yes') {
-    await sql`update conversations set consent_at = now() where id = ${conv.id}`;
-    conv.consent_at = new Date();
-    await saveMessage(conv.id, 'system', 'Клиент дал согласие на обработку персональных данных');
-    await tg(token(), 'editMessageReplyMarkup', {chat_id: chatId, message_id: query.message.message_id, reply_markup: {inline_keyboard: []}}).catch(() => {});
-    return createOrUpdateLead(conv, {announce: true});
-  }
-  if (data === 'consent:no') {
-    await tg(token(), 'editMessageReplyMarkup', {chat_id: chatId, message_id: query.message.message_id, reply_markup: {inline_keyboard: []}}).catch(() => {});
-    await send(chatId, 'Понял, контакты не сохраняю. Можете продолжать задавать вопросы, а написать нам можно на info@gkvesmir.ru.');
-    return;
-  }
-  if (data === 'delete:yes') return deleteMyData(conv, query.message.message_id);
-  if (data === 'delete:no') {
-    await tg(token(), 'editMessageText', {chat_id: chatId, message_id: query.message.message_id, text: 'Хорошо, ничего не удаляю.'}).catch(() => {});
-  }
 }
 
 async function handleContact(conv, message) {
@@ -278,15 +393,20 @@ async function aiTurn(conv, userText) {
   await tg(token(), 'sendChatAction', {chat_id: chatId, action: 'typing'}).catch(() => {});
 
   const sql = db();
+  // Телефон и почту из сообщения сохраняем сами, в модель они не уходят.
+  const before = conv.fields || {};
+  const contacts = extractContacts(userText);
+  let fields = {...before, ...contacts};
   const history = (await sql`select role, text from messages where conversation_id = ${conv.id} and role in ('user', 'assistant', 'manager')
     order by created_at desc limit 14`).reverse();
-  const recentUser = history.filter(m => m.role === 'user').slice(-3).map(m => m.text).join(' ');
-  const knowledge = await pickKnowledge(`${recentUser} ${userText}`);
-  const system = await buildSystemPrompt({knowledge, fields: conv.fields, consent: Boolean(conv.consent_at)});
+  const recentUser = history.filter(m => m.role === 'user').slice(-3).map(m => maskContacts(m.text)).join(' ');
+  const safeText = maskContacts(userText);
+  const knowledge = await pickKnowledge(`${recentUser} ${safeText}`);
+  const system = await buildSystemPrompt({knowledge, fields, consent: true});
   const messages = [
     {role: 'system', content: system},
-    ...history.slice(0, -1).map(m => ({role: m.role === 'user' ? 'user' : 'assistant', content: clip(m.text, 700)})),
-    {role: 'user', content: userText}
+    ...history.slice(0, -1).map(m => ({role: m.role === 'user' ? 'user' : 'assistant', content: clip(maskContacts(m.text), 700)})),
+    {role: 'user', content: safeText}
   ];
 
   let result;
@@ -294,15 +414,17 @@ async function aiTurn(conv, userText) {
     result = await chat({messages, json: true, purpose: 'consultant', maxTokens: 900});
   } catch (error) {
     await alertError('ИИ-модели', error.message);
-    await send(chatId, 'Не могу ответить автоматически прямо сейчас. Передал вопрос менеджеру, он ответит здесь в рабочее время.');
-    await handover(conv, 'ИИ недоступен', {silent: true});
+    const delivered = await handover(conv, 'ИИ недоступен', {silent: true});
+    await send(chatId, delivered
+      ? 'Не могу ответить автоматически прямо сейчас. Передал вопрос менеджеру, он ответит здесь в рабочее время.'
+      : 'Не могу ответить автоматически прямо сейчас. Напишите нам на info@gkvesmir.ru, мы ответим в рабочее время.');
     return;
   }
 
   const parsed = parseJsonLoose(result.content) || {reply: result.content};
   const reply = cleanReply(parsed.reply) || 'Уточните, пожалуйста, что именно вас интересует: строительство дома, отделка или проектирование?';
-  const fields = mergeFields(conv.fields, parsed.fields);
-  const phoneAdded = fields.phone && fields.phone !== conv.fields?.phone;
+  fields = mergeFields(fields, parsed.fields);
+  const contactAdded = Boolean((fields.phone && fields.phone !== before.phone) || (fields.email && fields.email !== before.email));
   await sql`update conversations set fields = ${sql.json(fields)} where id = ${conv.id}`;
   conv.fields = fields;
   await saveInsights(conv.id, parsed.insights, fields.service);
@@ -320,20 +442,13 @@ async function aiTurn(conv, userText) {
     await handover(conv, 'ИИ предложил менеджера', {silent: true});
     return;
   }
-  if (parsed.ready_for_lead || phoneAdded) await createOrUpdateLead(conv, {announce: phoneAdded || parsed.ready_for_lead});
-}
-
-async function askConsent(conv) {
-  const site = config.siteUrl;
-  await send(conv.tg_chat_id,
-    `Чтобы передать заявку менеджеру, нужно ваше согласие на обработку персональных данных (имя, телефон, переписка) по нашей политике: ${site}/privacy/ и тексту согласия: ${site}/soglasie/`,
-    {reply_markup: {inline_keyboard: [[{text: 'Согласен', callback_data: 'consent:yes'}, {text: 'Не согласен', callback_data: 'consent:no'}]]}});
+  if (parsed.ready_for_lead || contactAdded) await createOrUpdateLead(conv, {announce: contactAdded || parsed.ready_for_lead});
 }
 
 async function createOrUpdateLead(conv, {announce = false, removeKeyboard = false} = {}) {
   const sql = db();
   const fields = conv.fields || {};
-  const hasContact = Boolean(fields.phone || conv.tg_username);
+  const hasContact = Boolean(fields.phone || fields.email || conv.tg_username);
   if (!hasContact) {
     await send(conv.tg_chat_id, 'Оставьте, пожалуйста, телефон, чтобы инженер мог связаться и уточнить детали.', {
       reply_markup: {keyboard: [[{text: 'Отправить номер телефона', request_contact: true}]], resize_keyboard: true, one_time_keyboard: true}
@@ -341,34 +456,43 @@ async function createOrUpdateLead(conv, {announce = false, removeKeyboard = fals
     return null;
   }
   if (!conv.consent_at) {
-    await askConsent(conv);
+    await askConsent(conv, 'Чтобы передать заявку менеджеру, нужно согласие на обработку данных.');
     return null;
   }
   const details = {};
   for (const key of ['object', 'area', 'location', 'budget', 'timing', 'has_project', 'has_plot', 'material']) if (fields[key]) details[key] = fields[key];
   const name = fields.name || [conv.first_name, conv.last_name].filter(Boolean).join(' ') || null;
   const summary = fields.notes || null;
+  const keyboard = removeKeyboard || fields.phone ? {reply_markup: {remove_keyboard: true}} : {};
+
+  const updateExisting = async lead => {
+    const merged = {...lead.details, ...details};
+    await sql`update leads set phone = coalesce(${fields.phone || null}, phone), email = coalesce(${fields.email || null}, email), name = coalesce(name, ${name}),
+      details = ${sql.json(merged)}, message = coalesce(${summary}, message), updated_at = now() where id = ${lead.id}`;
+    await addEvent(lead.id, 'note', {text: 'ИИ-консультант обновил данные заявки из диалога'});
+    refreshLeadMessages(lead.id).catch(() => {});
+    if (announce) await send(conv.tg_chat_id, 'Обновил заявку, менеджер увидит новые данные.', keyboard);
+    return lead;
+  };
 
   if (conv.lead_id) {
     const lead = await getLead(conv.lead_id);
-    if (lead) {
-      const merged = {...lead.details, ...details};
-      await sql`update leads set phone = coalesce(${fields.phone || null}, phone), name = coalesce(name, ${name}),
-        details = ${sql.json(merged)}, message = coalesce(${summary}, message), updated_at = now() where id = ${lead.id}`;
-      await addEvent(lead.id, 'note', {text: 'ИИ-консультант обновил данные заявки из диалога'});
-      if (announce) await send(conv.tg_chat_id, 'Обновил заявку, менеджер увидит новые данные.', removeKeyboard ? {reply_markup: {remove_keyboard: true}} : {});
-      return lead;
-    }
+    if (lead) return updateExisting(lead);
   }
   const lead = await insertLead({
     channel: 'telegram_bot', form: 'telegram', page: conv.landing_page, landing_page: conv.landing_page,
-    service: fields.service || 'other', name, phone: fields.phone || null, tg_username: conv.tg_username, tg_user_id: conv.tg_user_id,
-    contact_pref: fields.phone ? 'call' : 'telegram', message: summary, details,
+    service: fields.service || 'other', name, phone: fields.phone || null, email: fields.email || null,
+    tg_username: conv.tg_username, tg_user_id: conv.tg_user_id,
+    contact_pref: fields.phone ? 'call' : fields.email ? 'email' : 'telegram', message: summary, details,
     utm_source: conv.source === 'site' ? 'site' : conv.source, utm_medium: 'telegram_bot', ym_client_id: conv.ym_client_id,
-    consent_at: conv.consent_at, consent_version: CONSENT_VERSION, conversation_id: conv.id
+    consent_at: conv.consent_at, consent_version: conv.consent_version || LEGACY_CONSENT_VERSION,
+    consent_channel: conv.consent_channel || 'telegram_button', conversation_id: conv.id
   });
   await sql`update conversations set lead_id = ${lead.id} where id = ${conv.id}`;
   conv.lead_id = lead.id;
+  // Два сообщения одного диалога одновременно: вторая попытка получает уже созданную заявку.
+  if (lead.existed) return updateExisting(lead);
+
   await addEvent(lead.id, 'note', {text: 'Заявка собрана ИИ-консультантом в Telegram'});
   const fresh = await getLead(lead.id);
   const delivery = await notifyNewLead(fresh);
@@ -376,19 +500,26 @@ async function createOrUpdateLead(conv, {announce = false, removeKeyboard = fals
   await enqueueConversion(fresh, 'bot_lead').catch(() => {});
   await pushToCrm(fresh).catch(() => {});
   const hours = (await db()`select value from content_blocks where key = 'contacts'`)[0]?.value?.hours || 'в рабочее время';
-  await send(conv.tg_chat_id, `Готово, заявка №${lead.id} у менеджера. С вами свяжутся ${hours.toLowerCase().startsWith('ежедневно') ? hours.toLowerCase() : 'в рабочее время'}. Пока можете задавать вопросы здесь.`,
-    removeKeyboard || fields.phone ? {reply_markup: {remove_keyboard: true}} : {});
+  const when = hours.toLowerCase().startsWith('ежедневно') ? hours.toLowerCase() : 'в рабочее время';
+  // Говорим клиенту правду о доставке: если карточка не ушла сотрудникам, заявка всё равно сохранена.
+  await send(conv.tg_chat_id, delivery.sent
+    ? `Готово, заявка №${lead.id} у менеджера. С вами свяжутся ${when}. Пока можете задавать вопросы здесь.`
+    : `Заявка №${lead.id} сохранена, менеджер увидит её и свяжется с вами ${when}. Пока можете задавать вопросы здесь.`, keyboard);
   return lead;
 }
 
-// Получатели сообщений из диалогов: группа и пользователи с правом читать диалоги.
-async function conversationRecipients() {
+// Получатели сообщений из диалога: группа заявок и сотрудники с правом отвечать, которым этот диалог доступен
+// (видят все заявки или отвечают за заявку этого диалога).
+async function conversationRecipients(conv) {
   const chats = new Set();
   const group = await getSetting('notify.admin_chat_id');
   if (group) chats.add(String(group));
-  const users = await db()`select u.tg_chat_id from users u join roles r on r.id = u.role_id
+  const [lead] = conv.lead_id ? await db()`select manager_id from leads where id = ${conv.lead_id}` : [];
+  const users = await db()`select u.id, u.tg_chat_id, r.permissions from users u join roles r on r.id = u.role_id
     where u.is_active and u.tg_chat_id is not null and 'conversations.reply' = any(r.permissions)`;
-  for (const user of users) chats.add(String(user.tg_chat_id));
+  for (const user of users) {
+    if (user.permissions.includes('leads.view_all') || (lead && lead.manager_id === user.id)) chats.add(String(user.tg_chat_id));
+  }
   return [...chats];
 }
 
@@ -403,27 +534,51 @@ async function relaySend(chatId, conv, html) {
   return message;
 }
 
+// Возвращает, скольким получателям сообщение действительно ушло.
 async function forwardToManagers(conv, text) {
-  for (const chatId of await conversationRecipients()) {
-    await relaySend(chatId, conv, `<b>${convTitle(conv)}</b>\n\n${esc(clip(text, 3000))}\n\n<i>Ответьте на это сообщение, и ответ уйдёт клиенту.</i>`).catch(() => {});
+  let delivered = 0;
+  for (const chatId of await conversationRecipients(conv)) {
+    try {
+      await relaySend(chatId, conv, `<b>${convTitle(conv)}</b>\n\n${esc(clip(text, 3000))}\n\n<i>Ответьте на это сообщение, и ответ уйдёт клиенту.</i>`);
+      delivered += 1;
+    } catch (error) {
+      console.error('relay to managers', error.message);
+    }
   }
+  if (!delivered) await alertError('Доставка сообщений клиентов', `Сообщение из диалога №${conv.id} не ушло ни одному сотруднику`);
+  return delivered;
 }
 
+// Передаёт разговор менеджеру. Возвращает число получателей, до которых сообщение дошло.
 export async function handover(conv, reason, {silent = false} = {}) {
+  if (!conv.consent_at) {
+    await askConsent(conv, 'Чтобы подключить менеджера, нужно согласие на обработку данных.');
+    return 0;
+  }
   const sql = db();
   await sql`update conversations set human_mode = true, human_since = now() where id = ${conv.id}`;
   conv.human_mode = true;
   const recent = (await sql`select role, text from messages where conversation_id = ${conv.id} order by created_at desc limit 8`).reverse();
   const transcript = recent.map(m => `${m.role === 'user' ? 'Клиент' : m.role === 'manager' ? 'Менеджер' : 'Бот'}: ${clip(m.text, 300)}`).join('\n');
   const fields = Object.entries(conv.fields || {}).filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`).join('; ');
-  for (const chatId of await conversationRecipients()) {
-    await relaySend(chatId, conv, `<b>Нужен менеджер: ${convTitle(conv)}</b>\nПричина: ${esc(reason)}\n${fields ? `Данные: ${esc(fields)}\n` : ''}\n${esc(transcript)}\n\n<i>Ответьте на это сообщение, и ответ уйдёт клиенту.${conv.lead_id ? ` Заявка: ${leadUrl(conv.lead_id)}` : ''}</i>`).catch(() => {});
+  let delivered = 0;
+  for (const chatId of await conversationRecipients(conv)) {
+    try {
+      await relaySend(chatId, conv, `<b>Нужен менеджер: ${convTitle(conv)}</b>\nПричина: ${esc(reason)}\n${fields ? `Данные: ${esc(fields)}\n` : ''}\n${esc(transcript)}\n\n<i>Ответьте на это сообщение, и ответ уйдёт клиенту.${conv.lead_id ? ` Заявка: ${leadUrl(conv.lead_id)}` : ''}</i>`);
+      delivered += 1;
+    } catch (error) {
+      console.error('handover relay', error.message);
+    }
   }
+  if (!delivered) await alertError('Доставка сообщений клиентов', `Запрос менеджера из диалога №${conv.id} не ушёл ни одному сотруднику`);
   if (!silent) {
     const extra = conv.fields?.phone ? {} : {reply_markup: {keyboard: [[{text: 'Отправить номер телефона', request_contact: true}]], resize_keyboard: true, one_time_keyboard: true}};
-    await send(conv.tg_chat_id, 'Передал разговор менеджеру, он ответит здесь же в рабочее время. Если удобнее звонок, отправьте номер.', extra);
+    await send(conv.tg_chat_id, delivered
+      ? 'Передал разговор менеджеру, он ответит здесь же в рабочее время. Если удобнее звонок, отправьте номер.'
+      : 'Сейчас не получилось передать разговор менеджеру. Отправьте номер, и мы перезвоним, или напишите на info@gkvesmir.ru.', extra);
   }
-  if (!conv.lead_id && (conv.fields?.phone || conv.tg_username) && conv.consent_at) await createOrUpdateLead(conv);
+  if (!conv.lead_id && (conv.fields?.phone || conv.fields?.email || conv.tg_username)) await createOrUpdateLead(conv);
+  return delivered;
 }
 
 export async function sendManagerReply(conversationId, text, {userId = null, userName = ''} = {}) {
@@ -431,21 +586,34 @@ export async function sendManagerReply(conversationId, text, {userId = null, use
   const [conv] = await sql`select * from conversations where id = ${conversationId}`;
   if (!conv) throw new HttpError(404, 'Диалог не найден');
   const message = await send(conv.tg_chat_id, text);
+  if (!message) throw new HttpError(409, 'Сообщение не доставлено: клиент заблокировал бота или удалил чат');
   await saveMessage(conv.id, 'manager', text, {tgMessageId: message.message_id, managerId: userId});
   await sql`update conversations set human_mode = true, human_since = now() where id = ${conv.id}`;
   if (conv.lead_id) {
     await addEvent(conv.lead_id, 'message', {userId, text: `Ответ клиенту в Telegram${userName ? ` (${userName})` : ''}: ${clip(text, 500)}`});
     await sql`update leads set first_response_at = coalesce(first_response_at, now()), updated_at = now() where id = ${conv.lead_id}`;
+    await markFirstContact(conv.lead_id);
   }
   return message;
 }
 
+// Удаление по команде /delete: контакты в заявке, переписка, выводы ИИ, пересланные сотрудникам сообщения.
+// Копии вне нашей базы (CRM, старые сообщения в Telegram, резервные копии) описаны в docs/data-deletion.md.
 async function deleteMyData(conv, messageId) {
   const sql = db();
+  const relays = await sql`select chat_id, message_id from relay_map where conversation_id = ${conv.id}`;
+  for (const relay of relays) {
+    await tg(adminToken(), 'deleteMessage', {chat_id: String(relay.chat_id), message_id: Number(relay.message_id)}).catch(() => {});
+  }
   if (conv.lead_id) {
     await sql`update leads set name = null, phone = null, email = null, tg_username = null, tg_user_id = null, message = 'Данные удалены по запросу клиента',
       details = '{}', ym_client_id = null, updated_at = now() where id = ${conv.lead_id}`;
+    // В истории заявки остаются только служебные события без переписки и контактов.
+    await sql`update lead_events set text = 'Удалено по запросу клиента', data = '{}' where lead_id = ${conv.lead_id} and type in ('message', 'note', 'edit', 'repeat', 'call', 'email', 'meeting')`;
     await addEvent(conv.lead_id, 'note', {text: 'Клиент удалил свои данные командой /delete'});
+    await refreshLeadMessages(conv.lead_id).catch(() => {});
+    const [lead] = await sql`select crm_status from leads where id = ${conv.lead_id}`;
+    if (lead?.crm_status === 'sent') await notifyOwners(`Клиент удалил свои данные (заявка №${conv.lead_id}). Удалите эту заявку и во внешней CRM.`).catch(() => {});
   }
   await sql`delete from conversations where id = ${conv.id}`;
   await audit({actor: `tg:${conv.tg_user_id}`, action: 'client_data_deleted', entity: 'conversation', entityId: conv.id});

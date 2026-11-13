@@ -3,7 +3,7 @@ import {db} from './db.js';
 import {HttpError, json, readJson, clientIp, hashIp} from './http.js';
 import {requireUser} from './auth.js';
 import {audit} from './security.js';
-import {can, STATUS_KEYS, LEAD_STATUSES, SERVICES, CHANNELS} from './permissions.js';
+import {can, STATUS_KEYS, LEAD_STATUSES, SERVICES, CHANNELS, canSeeConversation, canReplyConversation} from './permissions.js';
 import {getLead, changeStatus, assignLead, addNote, insertLead, addEvent} from './lead-core.js';
 import {refreshLeadMessages, notifyNewLead} from './notify.js';
 import {enqueueForStatus} from './metrika.js';
@@ -100,22 +100,34 @@ export async function updateLeadRoute({request, params}) {
   const body = await readJson(request);
   const sql = db();
   const ipHash = hashIp(clientIp(request));
-  let updated = lead;
 
+  // Сначала проверяем все поля, и только потом меняем заявку одной транзакцией:
+  // запрос с ошибкой не оставит наполовину изменённый статус или ответственного.
+  let assign = null;
   if (body.manager_id !== undefined) {
-    if (!can(user, 'leads.assign') && !(body.manager_id === user.id && !lead.manager_id)) throw new HttpError(403, 'Нет права назначать ответственных');
-    updated = await assignLead(lead.id, body.manager_id ? Number(body.manager_id) : null, {userId: user.id});
+    const managerId = body.manager_id ? Number(body.manager_id) : null;
+    if (!can(user, 'leads.assign') && !(managerId === user.id && !lead.manager_id)) throw new HttpError(403, 'Нет права назначать ответственных');
+    if (managerId) {
+      const [manager] = await sql`select id from users where id = ${managerId} and is_active`;
+      if (!manager) throw new HttpError(400, 'Сотрудник не найден или отключён');
+    }
+    assign = {managerId};
   }
+  let status = null;
   if (body.status !== undefined) {
     if (!can(user, 'leads.edit')) throw new HttpError(403, 'Нет права менять статус');
     if (!STATUS_KEYS.includes(body.status)) throw new HttpError(400, 'Неизвестный статус');
-    const reason = body.status === 'rejected' ? cleanLine(body.reason, 120) || 'Другое' : null;
-    const amount = body.status === 'contract' && body.amount ? Number(body.amount) : null;
-    updated = await changeStatus(lead.id, body.status, {userId: user.id, reason, comment: cleanLine(body.comment, 300) || null, amount});
-    await enqueueForStatus(updated).catch(() => {});
+    const amount = body.status === 'contract' && body.amount !== undefined && body.amount !== '' && body.amount !== null ? Number(body.amount) : null;
+    if (amount !== null && (!Number.isFinite(amount) || amount < 0)) throw new HttpError(400, 'Проверьте сумму договора');
+    status = {
+      key: body.status,
+      reason: body.status === 'rejected' ? cleanLine(body.reason, 120) || 'Другое' : null,
+      comment: cleanLine(body.comment, 300) || null,
+      amount
+    };
   }
+  const patch = {};
   if (can(user, 'leads.edit')) {
-    const patch = {};
     if (body.name !== undefined) patch.name = cleanLine(body.name, 80) || null;
     if (body.phone !== undefined) {
       const phone = normalizePhone(body.phone);
@@ -129,13 +141,25 @@ export async function updateLeadRoute({request, params}) {
     }
     if (body.service !== undefined) patch.service = normalizeService(body.service);
     if (body.message !== undefined) patch.message = cleanText(body.message, 4000) || null;
-    if (body.next_contact_at !== undefined) patch.next_contact_at = body.next_contact_at ? new Date(body.next_contact_at) : null;
-    if (body.details !== undefined) patch.details = sql.json({...lead.details, ...cleanDetails(body.details)});
-    if (Object.keys(patch).length) {
-      [updated] = await sql`update leads set ${sql(patch)}, updated_at = now() where id = ${lead.id} returning *`;
-      await addEvent(lead.id, 'edit', {userId: user.id, text: `Изменены поля: ${Object.keys(patch).join(', ')}`});
+    if (body.next_contact_at !== undefined) {
+      const next = body.next_contact_at ? new Date(body.next_contact_at) : null;
+      if (next && Number.isNaN(next.getTime())) throw new HttpError(400, 'Проверьте дату следующего контакта');
+      patch.next_contact_at = next;
     }
+    if (body.details !== undefined) patch.details = sql.json({...lead.details, ...cleanDetails(body.details)});
   }
+
+  const updated = await sql.begin(async tx => {
+    let current = lead;
+    if (assign) current = await assignLead(lead.id, assign.managerId, {userId: user.id, sql: tx});
+    if (status) current = await changeStatus(lead.id, status.key, {userId: user.id, reason: status.reason, comment: status.comment, amount: status.amount, sql: tx});
+    if (Object.keys(patch).length) {
+      [current] = await tx`update leads set ${tx(patch)}, updated_at = now() where id = ${lead.id} returning *`;
+      await addEvent(lead.id, 'edit', {sql: tx, userId: user.id, text: `Изменены поля: ${Object.keys(patch).join(', ')}`});
+    }
+    return current;
+  });
+  if (status) await enqueueForStatus(updated).catch(() => {});
   await audit({userId: user.id, ipHash, action: 'lead_update', entity: 'lead', entityId: lead.id, details: body});
   refreshLeadMessages(lead.id).catch(() => {});
   return json({lead: updated});
@@ -172,7 +196,8 @@ export async function createLeadRoute({request}) {
   const lead = await insertLead({
     channel: 'manual', form: 'manual', service: normalizeService(body.service), name: cleanLine(body.name, 80),
     phone: phone || null, email: email || null, message: cleanText(body.message, 4000) || null,
-    utm_source: cleanLine(body.source, 60) || null, details: cleanDetails(body.details)
+    utm_source: cleanLine(body.source, 60) || null, details: cleanDetails(body.details),
+    delivery_status: body.notify ? 'pending' : 'skipped'
   });
   if (body.assign_to_me) await assignLead(lead.id, user.id, {userId: user.id});
   await audit({userId: user.id, action: 'lead_create', entity: 'lead', entityId: lead.id});
@@ -180,13 +205,27 @@ export async function createLeadRoute({request}) {
   return json({lead});
 }
 
+// Диалоги видны по тому же правилу, что и заявки: все, или только диалоги своих заявок.
+function conversationScope(sql, user) {
+  return can(user, 'leads.view_all') ? sql`true` : sql`c.lead_id in (select id from leads where manager_id = ${user.id})`;
+}
+
+async function loadConversationFor(user, id, {reply = false} = {}) {
+  const [row] = await db()`select c.id, c.lead_id, l.manager_id from conversations c left join leads l on l.id = c.lead_id where c.id = ${id}`;
+  if (!row) throw new HttpError(404, 'Диалог не найден');
+  const lead = row.lead_id ? {id: row.lead_id, manager_id: row.manager_id} : null;
+  if (!(reply ? canReplyConversation(user, lead) : canSeeConversation(user, lead))) throw new HttpError(403, 'Этот диалог относится к чужой заявке');
+  return row;
+}
+
 export async function listConversations({request, url}) {
-  await requireUser(request, 'conversations.view');
+  const user = await requireUser(request, 'conversations.view');
   const sql = db();
   const page = Math.max(Number(url.searchParams.get('page')) || 1, 1);
   const q = cleanLine(url.searchParams.get('q'), 60);
   const like = `%${q}%`;
-  const where = q ? sql`(c.first_name ilike ${like} or c.tg_username ilike ${like} or c.last_name ilike ${like})` : sql`true`;
+  const search = q ? sql`(c.first_name ilike ${like} or c.tg_username ilike ${like} or c.last_name ilike ${like})` : sql`true`;
+  const where = sql`${search} and ${conversationScope(sql, user)}`;
   const [{total}] = await sql`select count(*)::int as total from conversations c where ${where}`;
   const items = await sql`
     select c.id, c.tg_username, c.first_name, c.last_name, c.source, c.lead_id, c.human_mode, c.messages_count, c.created_at, c.last_message_at,
@@ -198,7 +237,8 @@ export async function listConversations({request, url}) {
 }
 
 export async function getConversation({request, params}) {
-  await requireUser(request, 'conversations.view');
+  const user = await requireUser(request, 'conversations.view');
+  await loadConversationFor(user, Number(params.id));
   const sql = db();
   const [conversation] = await sql`select c.*, i.topics, i.pains, i.objections, i.questions, i.refusal_reason, i.segment
     from conversations c left join conversation_insights i on i.conversation_id = c.id where c.id = ${Number(params.id)}`;
@@ -210,6 +250,7 @@ export async function getConversation({request, params}) {
 
 export async function replyConversation({request, params}) {
   const user = await requireUser(request, 'conversations.reply');
+  await loadConversationFor(user, Number(params.id), {reply: true});
   const body = await readJson(request);
   const textValue = cleanText(body.text, 3500);
   if (!textValue) throw new HttpError(400, 'Пустое сообщение');
@@ -220,6 +261,7 @@ export async function replyConversation({request, params}) {
 
 export async function setHumanMode({request, params}) {
   const user = await requireUser(request, 'conversations.reply');
+  await loadConversationFor(user, Number(params.id), {reply: true});
   const body = await readJson(request);
   const on = Boolean(body.on);
   await db()`update conversations set human_mode = ${on}, human_since = ${on ? new Date() : null} where id = ${Number(params.id)}`;

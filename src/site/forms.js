@@ -42,8 +42,11 @@ function ensurePow() {
 }
 
 // Отправка заявки с решением защитной задачи. При устаревшей задаче повторяет попытку один раз.
+// Ключ одной отправки: если запрос повторится (новая задача, сеть), сервер не создаст вторую заявку.
+const submissionKey = () => (crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 14)}-${Math.random().toString(36).slice(2, 14)}`);
+
 export async function postLead(payload) {
-  const body = {...payload, attribution: payload.attribution || attribution(), started_at: payload.started_at || Date.now() - 5000};
+  const body = {...payload, attribution: payload.attribution || attribution(), started_at: payload.started_at || Date.now() - 5000, submission_key: payload.submission_key || submissionKey()};
   const send = async () => {
     body.pow = await ensurePow();
     return fetch('/api/leads', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify(body)});

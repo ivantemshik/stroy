@@ -82,8 +82,10 @@ export function statsSheets(stats) {
       {k: 'Заявок (без спама)', v: t.leads}, {k: 'Спам', v: t.spam}, {k: 'Договоров', v: t.contracts},
       {k: 'Конверсия в договор, %', v: pct(t.conversion_to_contract)}, {k: 'Сумма договоров, ₽', v: t.contracts_amount},
       {k: 'Отказов', v: t.rejected}, {k: 'Без ответа сейчас', v: t.unanswered},
-      {k: 'Среднее время ответа, мин', v: t.avg_response_min === null ? null : Math.round(t.avg_response_min)},
+      {k: 'Первое действие сотрудника в среднем, мин', v: t.avg_response_min === null ? null : Math.round(t.avg_response_min)},
       {k: 'Медиана времени ответа, мин', v: t.median_response_min === null ? null : Math.round(t.median_response_min)},
+      {k: 'Первый ответ клиенту в среднем, мин', v: t.avg_contact_min === null || t.avg_contact_min === undefined ? null : Math.round(t.avg_contact_min)},
+      {k: 'Заявок без ответа клиенту', v: t.without_contact ?? null},
       {k: 'Диалогов с ИИ-консультантом', v: stats.bot.conversations}, {k: 'Заявок из диалогов', v: stats.bot.with_lead},
       {k: 'Конверсия диалога в заявку, %', v: pct(stats.bot.conversion)}
     ]},
@@ -110,16 +112,19 @@ export async function exportStatsXlsx({request, url}) {
   return xlsxResponse(buildXlsx(statsSheets(stats)), `statistika-${from.toISOString().slice(0, 10)}.xlsx`);
 }
 
-async function checkFeedToken(url) {
+// У ленты сводки и ленты заявок разные ключи: ссылка на сводку не открывает контакты клиентов.
+const FEED_KEYS = {reports: 'feeds.token', leads: 'feeds.leads_token'};
+
+async function checkFeedToken(url, kind) {
   const token = String(url.searchParams.get('token') || '');
-  const expected = await getSetting('feeds.token');
+  const expected = await getSetting(FEED_KEYS[kind]);
   if (!expected || !token || !safeEqual(token, expected)) throw new HttpError(403, 'Неверный ключ ленты');
 }
 
 const csvResponse = body => text(`﻿${body}`, 200, {'content-type': 'text/csv; charset=utf-8', 'cache-control': 'private, max-age=300'});
 
 export async function leadsFeed({url}) {
-  await checkFeedToken(url);
+  await checkFeedToken(url, 'leads');
   const days = Math.min(Math.max(Number(url.searchParams.get('days')) || 90, 1), 730);
   const sql = db();
   const rows = await queryLeads(sql`l.created_at > now() - make_interval(days => ${days}) and not l.is_test and l.status <> 'spam'`, 5000);
@@ -127,7 +132,7 @@ export async function leadsFeed({url}) {
 }
 
 export async function reportsFeed({url}) {
-  await checkFeedToken(url);
+  await checkFeedToken(url, 'reports');
   const rows = await db()`select * from reports where kind = 'weekly' order by period_start desc limit 104`;
   const flat = rows.map(r => ({
     period_start: r.period_start.toISOString().slice(0, 10), period_end: r.period_end.toISOString().slice(0, 10),
@@ -141,22 +146,32 @@ export async function reportsFeed({url}) {
   return csvResponse(toCsv(columns, flat));
 }
 
-export async function feedInfo({request}) {
-  await requireUser(request, 'leads.export');
-  const token = await getSetting('feeds.token');
+// Ссылку на ленту заявок с контактами видит только тот, кто сам может видеть и выгружать все заявки.
+const canSeeLeadsFeed = user => user.permissions.includes('leads.export') && user.permissions.includes('leads.view_all');
+
+async function feedLinks(user) {
+  const [reports, leads] = await Promise.all([getSetting(FEED_KEYS.reports), getSetting(FEED_KEYS.leads)]);
   const base = config.siteUrl;
-  return json({
-    enabled: Boolean(token),
-    leads: token ? `${base}/api/feeds/leads.csv?token=${token}` : null,
-    reports: token ? `${base}/api/feeds/reports.csv?token=${token}` : null
-  });
+  return {
+    enabled: Boolean(reports),
+    reports: reports ? `${base}/api/feeds/reports.csv?token=${reports}` : null,
+    leads_enabled: Boolean(leads),
+    leads: leads && canSeeLeadsFeed(user) ? `${base}/api/feeds/leads.csv?token=${leads}` : null
+  };
+}
+
+export async function feedInfo({request}) {
+  const user = await requireUser(request, 'leads.export');
+  return json(await feedLinks(user));
 }
 
 export async function rotateFeedToken({request}) {
   const user = await requireUser(request, 'settings.manage');
   const body = await readJson(request);
+  const kind = body.kind === 'leads' ? 'leads' : 'reports';
+  if (kind === 'leads' && !canSeeLeadsFeed(user)) throw new HttpError(403, 'Ленту заявок с контактами включает только тот, кто может видеть и выгружать все заявки');
   const token = body.disable ? null : randomToken(24);
-  await setSetting('feeds.token', token, user.id);
-  await audit({userId: user.id, action: token ? 'feed_token_rotated' : 'feed_disabled'});
-  return feedInfo({request});
+  await setSetting(FEED_KEYS[kind], token, user.id);
+  await audit({userId: user.id, action: token ? 'feed_token_rotated' : 'feed_disabled', details: {kind}});
+  return json(await feedLinks(user));
 }

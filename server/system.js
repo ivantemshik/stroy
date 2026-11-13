@@ -28,7 +28,7 @@ export async function systemRoute({request}) {
   const sql = db();
   const [jobs, failedLeads, aiErrors, aiLastDay, pendingConv] = await Promise.all([
     sql`select * from job_runs where name not like 'alert:%' order by name`,
-    sql`select id, created_at, delivery_error from leads where delivery_status <> 'sent' and status <> 'spam' and created_at > now() - interval '7 days' order by id desc limit 10`,
+    sql`select id, created_at, delivery_error from leads where delivery_status not in ('sent', 'skipped') and status <> 'spam' and created_at > now() - interval '7 days' order by id desc limit 10`,
     sql`select created_at, provider, model, error from ai_usage where not ok order by created_at desc limit 10`,
     sql`select provider, model, count(*)::int as requests, count(*) filter (where not ok)::int as errors, avg(latency_ms)::int as latency
       from ai_usage where created_at > now() - interval '1 day' group by 1, 2 order by 3 desc`,

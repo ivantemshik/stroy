@@ -31,7 +31,8 @@ export default function Stats({user}) {
           <div className="kpis">
             <div className="kpi"><span>Заявок</span><b>{s.totals.leads}</b><small>спам отсеян: {s.totals.spam}</small></div>
             <div className="kpi"><span>Договоров</span><b>{s.totals.contracts}</b><small>конверсия {pct(s.totals.conversion_to_contract)}{s.totals.contracts_amount ? `, ${rub(s.totals.contracts_amount)} ₽` : ''}</small></div>
-            <div className="kpi"><span>Среднее время ответа</span><b>{minutes(s.totals.avg_response_min)}</b><small>медиана {minutes(s.totals.median_response_min)}</small></div>
+            <div className="kpi"><span>Первое действие сотрудника</span><b>{minutes(s.totals.avg_response_min)}</b><small>медиана {minutes(s.totals.median_response_min)}</small></div>
+            <div className="kpi"><span>Первый ответ клиенту</span><b>{minutes(s.totals.avg_contact_min)}</b><small>ещё без ответа: {s.totals.without_contact ?? 0}</small></div>
             <div className="kpi"><span>Диалогов с ИИ</span><b>{s.bot.conversations}</b><small>в заявку: {s.bot.with_lead} ({pct(s.bot.conversion)})</small></div>
           </div>
           <div className="grid-2">
@@ -71,8 +72,8 @@ export default function Stats({user}) {
           {feeds.data.enabled ? (
             <>
               <p>Создайте таблицу Google и вставьте в ячейку A1 формулу. Таблица будет обновляться сама примерно раз в час.</p>
-              <Field label="Заявки за 90 дней"><input readOnly value={`=IMPORTDATA("${feeds.data.leads}")`} onFocus={e => e.target.select()} /></Field>
-              <Field label="Еженедельные отчёты"><input readOnly value={`=IMPORTDATA("${feeds.data.reports}")`} onFocus={e => e.target.select()} /></Field>
+              <Field label="Еженедельные отчёты (сводка без контактов)"><input readOnly value={`=IMPORTDATA("${feeds.data.reports}")`} onFocus={e => e.target.select()} /></Field>
+              {feeds.data.leads ? <Field label="Заявки за 90 дней с контактами (отдельная ссылка)"><input readOnly value={`=IMPORTDATA("${feeds.data.leads}")`} onFocus={e => e.target.select()} /></Field> : null}
               <p className="muted">Ссылки секретные: не публикуйте их. Новые ссылки можно выпустить в разделе «Настройки».</p>
             </>
           ) : <p>Ленты для Google Таблиц выключены. Включить их может администратор в разделе «Настройки».</p>}

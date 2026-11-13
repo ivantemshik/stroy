@@ -5,11 +5,11 @@ import {json, readJson} from './http.js';
 import {tg, esc, clip} from './telegram.js';
 import {getSetting, setSetting} from './settings.js';
 import {audit} from './security.js';
-import {LEAD_STATUSES, statusLabel, serviceLabel} from './permissions.js';
-import {changeStatus, assignLead, getLead} from './lead-core.js';
+import {LEAD_STATUSES, statusLabel, serviceLabel, canAccessLead, canEditLead, canTakeLead, canSeeConversation, canReplyConversation} from './permissions.js';
+import {changeStatus, getLead, takeLead} from './lead-core.js';
 import {refreshLeadMessages, leadKeyboard, leadUrl, alertError} from './notify.js';
 import {enqueueForStatus} from './metrika.js';
-import {claimUpdate, checkWebhookSecret, runInBackground, sendManagerReply} from './client-bot.js';
+import {claimUpdate, finishUpdate, failUpdate, checkWebhookSecret, runInBackground, sendManagerReply} from './client-bot.js';
 import {formatPhone} from './validate.js';
 import {computeStats} from './stats.js';
 import {runTick} from './cron.js';
@@ -21,14 +21,20 @@ export async function adminWebhook({request}) {
   checkWebhookSecret(request);
   const update = await readJson(request, 512 * 1024);
   if (!await claimUpdate('admin', update.update_id)) return json({ok: true});
-  const task = handleUpdate(update).catch(error => {
-    console.error('admin bot', error);
-    return alertError('Админ-бот', error.message);
-  }).then(() => runTick().catch(() => {}));
+  const task = handleUpdate(update)
+    .then(() => finishUpdate('admin', update.update_id))
+    .catch(async error => {
+      console.error('admin bot', error);
+      await failUpdate('admin', update);
+      return alertError('Админ-бот', error.message);
+    }).then(() => runTick().catch(() => {}));
   runInBackground(task);
   if (!process.env.VERCEL) await task;
   return json({ok: true});
 }
+
+// Для повтора упавших обновлений из плановой проверки.
+export const handleAdminUpdate = update => handleUpdate(update);
 
 async function staffByTelegram(tgUserId) {
   const [user] = await db()`select u.id, u.name, u.login, r.permissions from users u join roles r on r.id = u.role_id
@@ -67,7 +73,11 @@ async function handleUpdate(update) {
   if (replyTo && text && !text.startsWith('/')) {
     const [link] = await db()`select conversation_id from relay_map where chat_id = ${chatId} and message_id = ${replyTo.message_id}`;
     if (!link) return;
-    if (!staff || !staff.permissions.includes('conversations.reply')) return say(chatId, 'Отвечать клиентам могут сотрудники с привязанным аккаунтом и правом «Отвечать клиентам».', {reply_to_message_id: message.message_id});
+    const [convLead] = await db()`select l.id, l.manager_id from conversations c left join leads l on l.id = c.lead_id where c.id = ${link.conversation_id}`;
+    const lead = convLead?.id ? convLead : null;
+    if (!staff || !canReplyConversation(staff, lead)) return say(chatId, staff
+      ? 'Ответить этому клиенту могут ответственный за его заявку и те, кто видит все заявки.'
+      : 'Отвечать клиентам могут сотрудники с привязанным аккаунтом и правом «Отвечать клиентам». Привяжите Telegram в админке.', {reply_to_message_id: message.message_id});
     try {
       await sendManagerReply(link.conversation_id, text, {userId: staff.id, userName: staff.name});
       await tg(token(), 'setMessageReaction', {chat_id: chatId, message_id: message.message_id, reaction: [{type: 'emoji', emoji: '👌'}]}).catch(() =>
@@ -80,8 +90,9 @@ async function handleUpdate(update) {
 
 async function linkUser(message, code) {
   const sql = db();
-  const [row] = await sql`delete from link_tokens where token = ${code} and purpose = 'link_user' and expires_at > now() returning user_id`;
-  if (!row) return say(message.chat.id, 'Ссылка устарела. Получите новую в админке: «Профиль», «Подключить Telegram».');
+  const [row] = await sql`delete from link_tokens t using users u where t.token = ${code} and t.purpose = 'link_user'
+    and t.expires_at > now() and u.id = t.user_id and u.is_active returning t.user_id`;
+  if (!row) return say(message.chat.id, 'Ссылка устарела или доступ отозван. Получите новую в админке: «Профиль», «Подключить Telegram».');
   await sql`update users set tg_chat_id = null where tg_chat_id = ${message.from.id} and id <> ${row.user_id}`;
   const [user] = await sql`update users set tg_chat_id = ${message.from.id}, tg_username = ${message.from.username || null} where id = ${row.user_id} returning name`;
   await audit({userId: row.user_id, action: 'telegram_linked', details: {tg_user: message.from.id}});
@@ -91,8 +102,10 @@ async function linkUser(message, code) {
 async function bindGroup(message, code) {
   if (message.chat.type === 'private') return say(message.chat.id, 'Команду /bind нужно отправить в группе, куда добавлен бот.');
   const sql = db();
-  const [row] = await sql`delete from link_tokens where token = ${code} and purpose = 'bind_group' and expires_at > now() returning user_id`;
-  if (!row) return say(message.chat.id, 'Код не подошёл или устарел. Получите новый в админке, раздел «Настройки».');
+  const [row] = await sql`delete from link_tokens t using users u join roles r on r.id = u.role_id
+    where t.token = ${code} and t.purpose = 'bind_group' and t.expires_at > now() and u.id = t.user_id and u.is_active
+      and 'settings.manage' = any(r.permissions) returning t.user_id`;
+  if (!row) return say(message.chat.id, 'Код не подошёл, устарел или доступ отозван. Получите новый в админке, раздел «Настройки».');
   await setSetting('notify.admin_chat_id', String(message.chat.id), row.user_id);
   await audit({userId: row.user_id, action: 'group_bound', details: {chat_id: message.chat.id, title: message.chat.title}});
   return say(message.chat.id, 'Группа подключена: сюда будут приходить заявки и сообщения клиентов.');
@@ -139,14 +152,20 @@ async function handleCallback(query) {
 
   if (action === 'take') {
     if (!canEdit) return answer('Нет права менять заявки', true);
-    if (lead.manager_id && lead.manager_id !== staff.id) return answer(`Заявку уже взял ${lead.manager_name}`, true);
-    await assignLead(leadId, staff.id, {userId: staff.id});
-    if (lead.status === 'new') await changeStatus(leadId, 'in_progress', {userId: staff.id});
+    if (!canTakeLead(staff, lead)) return answer(`Заявку уже взял ${lead.manager_name || 'другой сотрудник'}`, true);
+    const taken = await takeLead(leadId, staff.id);
+    if (!taken) {
+      const fresh = await getLead(leadId);
+      await refreshLeadMessages(leadId);
+      return answer(`Заявку уже взял ${fresh?.manager_name || 'другой сотрудник'}`, true);
+    }
+    if (taken.status === 'new') await changeStatus(leadId, 'in_progress', {userId: staff.id});
     await audit({userId: staff.id, action: 'lead_take_tg', entity: 'lead', entityId: leadId});
     await refreshLeadMessages(leadId);
     return answer('Заявка ваша');
   }
   if (action === 'sts') {
+    if (!canEditLead(staff, lead)) return answer(canEdit ? `Заявка у ${lead.manager_name || 'другого сотрудника'}` : 'Нет права менять статус', true);
     await tg(token(), 'editMessageReplyMarkup', {chat_id: chatId, message_id: messageId, reply_markup: statusKeyboard(leadId)}).catch(() => {});
     return answer();
   }
@@ -155,7 +174,7 @@ async function handleCallback(query) {
     return answer();
   }
   if (action === 'st') {
-    if (!canEdit) return answer('Нет права менять статус', true);
+    if (!canEditLead(staff, lead)) return answer(canEdit ? `Заявка у ${lead.manager_name || 'другого сотрудника'}` : 'Нет права менять статус', true);
     if (extra === 'rejected') {
       const reasons = await getSetting('leads.reject_reasons');
       const rows = reasons.map((reason, index) => [{text: reason, callback_data: `rr:${leadId}:${index}`}]);
@@ -163,15 +182,23 @@ async function handleCallback(query) {
       await tg(token(), 'editMessageReplyMarkup', {chat_id: chatId, message_id: messageId, reply_markup: {inline_keyboard: rows}}).catch(() => {});
       return answer('Выберите причину отказа');
     }
+    // Свободную заявку при смене статуса забирает себе тот, кто её меняет (если её не успел взять другой).
+    if (!lead.manager_id && !await takeLead(leadId, staff.id) && !canAccessLead(staff, await getLead(leadId))) {
+      await refreshLeadMessages(leadId);
+      return answer('Заявку только что взял другой сотрудник', true);
+    }
     const updated = await changeStatus(leadId, extra, {userId: staff.id});
-    if (!lead.manager_id) await assignLead(leadId, staff.id, {userId: staff.id});
     await enqueueForStatus(updated).catch(() => {});
     await audit({userId: staff.id, action: 'lead_status_tg', entity: 'lead', entityId: leadId, details: {status: extra}});
     await refreshLeadMessages(leadId);
     return answer(`Статус: ${statusLabel(extra)}`);
   }
   if (action === 'rr') {
-    if (!canEdit) return answer('Нет права менять статус', true);
+    if (!canEditLead(staff, lead)) return answer(canEdit ? `Заявка у ${lead.manager_name || 'другого сотрудника'}` : 'Нет права менять статус', true);
+    if (!lead.manager_id && !await takeLead(leadId, staff.id) && !canAccessLead(staff, await getLead(leadId))) {
+      await refreshLeadMessages(leadId);
+      return answer('Заявку только что взял другой сотрудник', true);
+    }
     const reasons = await getSetting('leads.reject_reasons');
     const reason = reasons[Number(extra)] || 'Другое';
     await changeStatus(leadId, 'rejected', {userId: staff.id, reason});
@@ -180,7 +207,7 @@ async function handleCallback(query) {
     return answer(`Отказ: ${reason}`);
   }
   if (action === 'dlg') {
-    if (!lead.conversation_id || !staff.permissions.includes('conversations.view')) return answer('Диалога нет или нет доступа', true);
+    if (!lead.conversation_id || !canSeeConversation(staff, lead)) return answer('Диалога нет или нет доступа к этой заявке', true);
     const messages = (await db()`select role, text from messages where conversation_id = ${lead.conversation_id} and role <> 'system'
       order by created_at desc limit 16`).reverse();
     const body = messages.map(m => `<b>${m.role === 'user' ? 'Клиент' : m.role === 'manager' ? 'Менеджер' : 'Бот'}:</b> ${esc(clip(m.text, 400))}`).join('\n\n');

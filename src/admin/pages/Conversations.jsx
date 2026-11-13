@@ -54,7 +54,8 @@ function Conversation({id, user}) {
   const {conversation: c, messages} = data.data;
   const act = async (fn, ok) => {
     setBusy(true);
-    try { await fn(); setMessage({kind: 'success', text: ok}); await data.reload(); } catch (err) { setMessage({kind: 'error', text: err.message}); } finally { setBusy(false); }
+    // Возвращает, получилось ли: текст ответа стираем только после успешной отправки.
+    try { await fn(); setMessage({kind: 'success', text: ok}); await data.reload(); return true; } catch (err) { setMessage({kind: 'error', text: err.message}); return false; } finally { setBusy(false); }
   };
   return (
     <Page title={`Диалог: ${[c.first_name, c.last_name].filter(Boolean).join(' ') || 'клиент'}`} actions={<a className="a-link" href="#/conversations">Все диалоги</a>}>
@@ -69,7 +70,7 @@ function Conversation({id, user}) {
           {can(user, 'conversations.reply') ? (
             <div className="reply">
               <Field label="Ответить клиенту"><textarea rows="3" value={text} onChange={e => setText(e.target.value)} /></Field>
-              <Button busy={busy} disabled={!text.trim()} onClick={() => act(() => api(`/conversations/${c.id}/reply`, {method: 'POST', body: {text}}), 'Отправлено').then(() => setText(''))}>Отправить</Button>
+              <Button busy={busy} disabled={!text.trim()} onClick={() => act(() => api(`/conversations/${c.id}/reply`, {method: 'POST', body: {text}}), 'Отправлено').then(sent => { if (sent) setText(''); })}>Отправить</Button>
             </div>
           ) : null}
         </Panel>

@@ -30,7 +30,8 @@ export default function Dashboard({user}) {
         <div className="kpis">
           <div className="kpi"><span>Заявок за 7 дней</span><b>{t.leads}</b></div>
           <div className="kpi"><span>Без ответа сейчас</span><b>{t.unanswered}</b></div>
-          <div className="kpi"><span>Среднее время ответа</span><b>{minutes(t.avg_response_min)}</b></div>
+          <div className="kpi"><span>Первое действие сотрудника</span><b>{minutes(t.avg_response_min)}</b></div>
+          <div className="kpi"><span>Первый ответ клиенту</span><b>{minutes(t.avg_contact_min)}</b></div>
           <div className="kpi"><span>Договоров за 7 дней</span><b>{t.contracts}</b></div>
         </div>
       ) : null}

@@ -8,9 +8,19 @@ import {allSettings, setSetting, DEFAULT_SETTINGS} from './settings.js';
 import {cleanLine, cleanText} from './validate.js';
 import {config} from './env.js';
 import {CONTENT_DEFAULTS} from './content-defaults.js';
-import {pushToCrm} from './crm.js';
+import {pushToCrm, crmUrlProblem} from './crm.js';
 
 // ---------- Пользователи и роли ----------
+
+// Кто не владелец, выдаёт только те права, что есть у него самого, и не трогает системные роли
+// и свою собственную роль. Иначе администратор мог бы добавить себе право на резервные копии
+// и через него получить роль владельца.
+const isOwner = user => user?.role === 'owner';
+function assertGrantable(actor, permissions) {
+  if (isOwner(actor)) return;
+  const extra = permissions.filter(p => !actor.permissions.includes(p));
+  if (extra.length) throw new HttpError(403, `Нельзя выдать права, которых нет у вас: ${extra.map(p => PERMISSIONS[p] || p).join(', ')}`);
+}
 
 export async function listUsers({request}) {
   await requireUser(request, ['users.manage', 'leads.assign', 'leads.view_all']);
@@ -32,9 +42,10 @@ export async function createUser({request}) {
   const problem = validatePasswordStrength(password);
   if (problem) throw new HttpError(400, problem);
   const sql = db();
-  const [role] = await sql`select id, key from roles where id = ${Number(body.role_id)}`;
+  const [role] = await sql`select id, key, permissions from roles where id = ${Number(body.role_id)}`;
   if (!role) throw new HttpError(400, 'Выберите роль');
-  if (role.key === 'owner' && !actor.permissions.includes('backup.download')) throw new HttpError(403, 'Владельца может добавить только владелец');
+  if (role.key === 'owner' && !isOwner(actor)) throw new HttpError(403, 'Владельца может добавить только владелец');
+  assertGrantable(actor, role.permissions);
   const [exists] = await sql`select id from users where login = ${login}`;
   if (exists) throw new HttpError(409, 'Такой логин уже есть');
   const [user] = await sql`insert into users (login, name, email, role_id, password_hash)
@@ -55,9 +66,10 @@ export async function updateUser({request, params}) {
   if (body.name !== undefined) patch.name = cleanLine(body.name, 80);
   if (body.email !== undefined) patch.email = cleanLine(body.email, 120) || null;
   if (body.role_id !== undefined) {
-    const [role] = await sql`select id, key from roles where id = ${Number(body.role_id)}`;
+    const [role] = await sql`select id, key, permissions from roles where id = ${Number(body.role_id)}`;
     if (!role) throw new HttpError(400, 'Нет такой роли');
-    if (role.key === 'owner' && actor.role !== 'owner') throw new HttpError(403, 'Назначить владельца может только владелец');
+    if (role.key === 'owner' && !isOwner(actor)) throw new HttpError(403, 'Назначить владельца может только владелец');
+    assertGrantable(actor, role.permissions);
     if (id === actor.id && role.key !== actor.role) throw new HttpError(400, 'Нельзя поменять роль самому себе');
     patch.role_id = role.id;
   }
@@ -76,6 +88,7 @@ export async function updateUser({request, params}) {
   if (!Object.keys(patch).length) return json({ok: true});
   await sql`update users set ${sql(patch)} where id = ${id}`;
   if (patch.is_active === false || newPassword) await sql`delete from sessions where user_id = ${id}`;
+  if (patch.is_active === false) await sql`delete from link_tokens where user_id = ${id}`;
   const {password_hash, ...logged} = patch;
   await audit({userId: actor.id, ipHash: hashIp(clientIp(request)), action: 'user_update', entity: 'user', entityId: id, details: {...logged, reset_password: Boolean(newPassword)}});
   return json({ok: true, password: newPassword});
@@ -89,6 +102,8 @@ export async function updateRole({request, params}) {
   const [role] = await sql`select * from roles where id = ${Number(params.id)}`;
   if (!role) throw new HttpError(404, 'Роль не найдена');
   if (role.key === 'owner') throw new HttpError(400, 'Права владельца не меняются');
+  if (!isOwner(actor) && (role.key === 'admin' || role.id === actor.role_id)) throw new HttpError(403, 'Эту роль может менять только владелец');
+  assertGrantable(actor, permissions);
   await sql`update roles set permissions = ${permissions}, name = ${cleanLine(body.name, 40) || role.name} where id = ${role.id}`;
   await audit({userId: actor.id, action: 'role_update', entity: 'role', entityId: role.id, details: {permissions}});
   return json({ok: true});
@@ -101,6 +116,7 @@ export async function createRole({request}) {
   if (!name) throw new HttpError(400, 'Укажите название роли');
   const key = `custom_${randomToken(4).toLowerCase().replace(/[^a-z0-9]/g, '')}`;
   const permissions = (Array.isArray(body.permissions) ? body.permissions : []).filter(p => p in PERMISSIONS);
+  assertGrantable(actor, permissions);
   const [role] = await db()`insert into roles (key, name, permissions) values (${key}, ${name}, ${permissions}) returning id`;
   await audit({userId: actor.id, action: 'role_create', entity: 'role', entityId: role.id, details: {name, permissions}});
   return json({id: role.id});
@@ -126,9 +142,13 @@ export async function groupBindCode({request}) {
 const EDITABLE_SETTINGS = new Set(Object.keys(DEFAULT_SETTINGS));
 
 export async function getSettings({request}) {
-  await requireUser(request, ['settings.manage', 'ai.manage']);
+  const user = await requireUser(request, ['settings.manage', 'ai.manage']);
   const values = await allSettings({fresh: true});
-  const {['feeds.token']: _token, ...safe} = values;
+  const {['feeds.token']: _token, ['feeds.leads_token']: _leadsToken, ...safe} = values;
+  // Полный адрес вебхука CRM (в нём ключ доступа) видит только тот, кто управляет интеграциями.
+  if (!user.permissions.includes('settings.manage') && safe['crm.webhook_url']) {
+    try { safe['crm.webhook_url'] = `https://${new URL(safe['crm.webhook_url']).hostname}/…`; } catch { safe['crm.webhook_url'] = 'задан'; }
+  }
   return json({
     settings: safe,
     statuses: LEAD_STATUSES,
@@ -152,7 +172,7 @@ export async function saveSettings({request}) {
     if (!EDITABLE_SETTINGS.has(key)) continue;
     if (key.startsWith('ai.') && !user.permissions.includes('ai.manage')) continue;
     if (!key.startsWith('ai.') && !user.permissions.includes('settings.manage')) continue;
-    if (key === 'crm.webhook_url' && value && !/^https:\/\/[^\s]+$/.test(String(value))) throw new HttpError(400, 'Адрес CRM должен начинаться с https://');
+    if (key === 'crm.webhook_url' && value) { const problem = crmUrlProblem(value); if (problem) throw new HttpError(400, problem); }
     await setSetting(key, value, user.id);
     changed.push(key);
   }
@@ -239,14 +259,16 @@ export async function saveKb({request, params}) {
   const text = cleanText(body.body, 20000);
   if (!title || !text) throw new HttpError(400, 'Нужны заголовок и текст');
   const tags = (Array.isArray(body.tags) ? body.tags : String(body.tags || '').split(',')).map(t => cleanLine(t, 30)).filter(Boolean).slice(0, 10);
+  // Откуда взяты факты статьи: видят сотрудники, в модель не уходит.
+  const note = cleanText(body.source_note, 1000) || null;
   const sql = db();
   let id = params.id ? Number(params.id) : null;
   if (id) {
     await sql`update kb_articles set title = ${title}, body = ${text}, tags = ${tags}, is_active = ${body.is_active !== false},
-      sort = ${Number(body.sort) || 100}, updated_at = now(), updated_by = ${user.id} where id = ${id}`;
+      sort = ${Number(body.sort) || 100}, source_note = ${note}, updated_at = now(), updated_by = ${user.id} where id = ${id}`;
   } else {
-    [{id}] = await sql`insert into kb_articles (title, body, tags, is_active, sort, updated_by)
-      values (${title}, ${text}, ${tags}, ${body.is_active !== false}, ${Number(body.sort) || 100}, ${user.id}) returning id`;
+    [{id}] = await sql`insert into kb_articles (title, body, tags, is_active, sort, source_note, updated_by)
+      values (${title}, ${text}, ${tags}, ${body.is_active !== false}, ${Number(body.sort) || 100}, ${note}, ${user.id}) returning id`;
   }
   await audit({userId: user.id, action: 'kb_save', entity: 'kb', entityId: id, details: {title}});
   return json({id});

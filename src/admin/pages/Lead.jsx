@@ -28,20 +28,23 @@ export default function Lead({id, user}) {
   const run = async (fn, ok) => {
     setBusy(true);
     setMessage({kind: 'info', text: ''});
+    // Возвращает, получилось ли: введённый текст стираем только после успеха.
     try {
       await fn();
       setMessage({kind: 'success', text: ok});
       await data.reload();
+      return true;
     } catch (err) {
       setMessage({kind: 'error', text: err.message});
+      return false;
     } finally {
       setBusy(false);
     }
   };
-  const saveStatus = () => run(() => api(`/leads/${lead.id}`, {method: 'PATCH', body: {status, reason, amount: amount || undefined, comment}}), 'Статус обновлён').then(() => { setStatus(null); setComment(''); });
+  const saveStatus = () => run(() => api(`/leads/${lead.id}`, {method: 'PATCH', body: {status, reason, amount: amount || undefined, comment}}), 'Статус обновлён').then(done => { if (done) { setStatus(null); setComment(''); } });
   const assign = managerId => run(() => api(`/leads/${lead.id}`, {method: 'PATCH', body: {manager_id: managerId ? Number(managerId) : null}}), 'Ответственный назначен');
-  const addNote = () => run(() => api(`/leads/${lead.id}/events`, {method: 'POST', body: note}), 'Запись добавлена').then(() => setNote({type: 'note', text: ''}));
-  const sendReply = () => run(() => api(`/conversations/${lead.conversation_id}/reply`, {method: 'POST', body: {text: reply}}), 'Сообщение отправлено клиенту').then(() => setReply(''));
+  const addNote = () => run(() => api(`/leads/${lead.id}/events`, {method: 'POST', body: note}), 'Запись добавлена').then(done => { if (done) setNote({type: 'note', text: ''}); });
+  const sendReply = () => run(() => api(`/conversations/${lead.conversation_id}/reply`, {method: 'POST', body: {text: reply}}), 'Сообщение отправлено клиенту').then(sent => { if (sent) setReply(''); });
   const remove = () => { if (confirm(`Удалить заявку №${lead.id} без возможности восстановления?`)) run(() => api(`/leads/${lead.id}`, {method: 'DELETE'}), 'Удалено').then(() => go('/leads')); };
   const responseTime = lead.first_response_at ? (new Date(lead.first_response_at) - new Date(lead.created_at)) / 60000 : null;
 

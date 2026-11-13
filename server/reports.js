@@ -11,6 +11,7 @@ import {statusLabel, serviceLabel, CHANNELS} from './permissions.js';
 import {formatPhone} from './validate.js';
 import {sourceExpr} from './stats.js';
 
+const PRIVATE_COLUMNS = new Set(['name', 'phone_fmt', 'email', 'tg_username', 'message', 'details_text', 'ym_client_id']);
 const fmtDate = date => new Date(date).toLocaleDateString('ru-RU', {day: 'numeric', month: 'long', timeZone: 'Europe/Moscow'});
 const delta = (now, before) => before === undefined || before === null ? '' : now === before ? ' (как неделей раньше)' : ` (неделей раньше ${before})`;
 const list = (rows, key = 'item', limit = 5) => rows.slice(0, limit).map(r => `${esc(r[key])} ${r.count}`).join(', ') || 'нет данных';
@@ -32,7 +33,8 @@ export function reportText(stats, previous) {
     `Заявок: <b>${t.leads}</b>${delta(t.leads, p.leads)}`,
     `Договоров: ${t.contracts}${t.contracts_amount ? ` на ${Math.round(t.contracts_amount).toLocaleString('ru-RU')} ₽` : ''}, отказов: ${t.rejected}, спам: ${t.spam}`,
     `Без ответа сейчас: ${t.unanswered}`,
-    t.avg_response_min !== null && t.avg_response_min !== undefined ? `Среднее время первого ответа: ${Math.round(t.avg_response_min)} мин` : 'Время ответа: нет данных',
+    t.avg_response_min !== null && t.avg_response_min !== undefined ? `Первое действие сотрудника: в среднем ${Math.round(t.avg_response_min)} мин` : 'Первое действие: нет данных',
+    t.avg_contact_min !== null && t.avg_contact_min !== undefined ? `Первый ответ клиенту: в среднем ${Math.round(t.avg_contact_min)} мин, ещё без ответа ${t.without_contact}` : `Первый ответ клиенту: нет данных, без ответа ${t.without_contact ?? 0}`,
     '',
     `<b>Источники:</b> ${list(stats.by_source, 'source')}`,
     `<b>Услуги:</b> ${stats.by_service.slice(0, 5).map(s => `${esc(s.label)} ${s.count}`).join(', ') || 'нет данных'}`,
@@ -84,7 +86,9 @@ export async function sendWeeklyReport({force = false, now = new Date()} = {}) {
     computeStats({from: new Date(from.getTime() - 7 * 86400000), to: from})
   ]);
   const [report] = await sql`insert into reports (kind, period_start, period_end, data) values ('weekly', ${from}, ${to}, ${sql.json(stats)}) returning id`;
-  const xlsx = buildXlsx([...statsSheets(stats), {name: 'Заявки недели', columns: LEAD_COLUMNS, rows: await weekLeads(from, to)}]);
+  // В общую рассылку контакты и текст клиента не попадают: полные заявки выгружаются в админке по правам.
+  const columns = LEAD_COLUMNS.filter(col => !PRIVATE_COLUMNS.has(col.key));
+  const xlsx = buildXlsx([...statsSheets(stats), {name: 'Заявки недели', columns, rows: await weekLeads(from, to)}]);
   const filename = `otchet-${from.toISOString().slice(0, 10)}.xlsx`;
   const text = reportText(stats, previous);
   const feed = await getSetting('feeds.token');

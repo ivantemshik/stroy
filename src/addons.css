@@ -17,6 +17,9 @@
   --menu-glass: rgba(247, 247, 245, 0.98);
   --menu-shadow: rgba(0, 0, 0, 0.07);
   --plum-link: #796480;
+  --on-plum: #fff;
+  --sky-veil: rgba(145, 178, 191, 0.72);
+  --sky-veil-0: rgba(145, 178, 191, 0);
 }
 
 /* ---------- Шапка: переключатель светлой и тёмной темы рядом с «Обсудить проект» ---------- */
@@ -199,7 +202,9 @@ html:not(.js) .theme-toggle { display: none; }
   .contact-grid { gap: 20px; }
   .footer-bottom { margin-top: 28px; }
 }
-@media (max-width: 760px) { .pj-model { display: none; } .pj-tiles { grid-template-rows: auto; } }
+/* Собранный сайт подключает стили «Проектирования» после этого файла, поэтому правила для телефона
+   с приставкой .design-page: иначе их перебивают строки 260px и 300px из proektirovanie.css */
+@media (max-width: 760px) { .pj-model { display: none; } .design-page .pj-tiles { grid-template-rows: auto; } .design-page .pj-sky { min-height: 560px; } }
 .doc .crumbs li { color: inherit; font-size: inherit; line-height: 1.5; max-width: none; }
 
 /* =====================================================================
@@ -236,6 +241,8 @@ html:not(.js) .theme-toggle { display: none; }
   --sky-fade-88: rgba(27, 43, 58, 0.88);
   --sky-fade-92: rgba(27, 43, 58, 0.92);
   --sky-fade-0: rgba(27, 43, 58, 0);
+  --sky-veil: rgba(27, 43, 58, 0.72);
+  --sky-veil-0: rgba(27, 43, 58, 0);
   --haze-night-82: rgba(16, 28, 42, 0.84);
   --haze-night-55: rgba(16, 28, 42, 0.6);
   --haze-night-0: rgba(16, 28, 42, 0);
@@ -751,3 +758,77 @@ html:not(.js) .theme-toggle { display: none; }
   .about-photo img { min-height: 0; aspect-ratio: 4 / 3; }
 }
 [data-theme="dark"] .about-photo figcaption { background: var(--night-chip); color: var(--ink); }
+
+/* ==========================================================================
+   «Отделка» по раскладке «Проектирования»: те же плитки и цепочка этапов,
+   свои фото и блоки. Первый экран с фото интерьера, «Что проверяем до старта»
+   с номерами прямо на фото, прайс отделки внутри белой плитки без второй подложки.
+   ========================================================================== */
+.otd-sky-photo { position: absolute; z-index: -2; top: 0; right: 0; width: 70%; max-width: none; height: 100%; object-fit: cover; object-position: 55% 50%; }
+/* Подложка в пикселях, а не в процентах: заголовок всегда на сплошном цвете, фото открыто справа */
+.pj-bento .otd-sky::after { background: linear-gradient(90deg, var(--blue) 0, var(--blue) 380px, var(--sky-veil) 440px, var(--sky-veil-0) 580px); }
+.otd-bento .pj-price-value strong, .otd-bento .pj-catalog-value strong { font-size: clamp(26px, 3.2vw, 46px); white-space: nowrap; }
+
+.otd-check { padding: 60px 16px 12px; }
+.otd-check-frame { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); gap: 12px; }
+/* Фото обрезается как object-fit: cover, а номера на нём остаются на своих местах при любой ширине */
+.otd-check-photo { position: relative; min-height: 520px; margin: 0; overflow: hidden; border-radius: 30px; background: var(--soft); container-type: size; }
+.otd-check-shot { position: absolute; left: 50%; bottom: 0; width: 100%; height: 100%; width: max(100cqw, 75cqh); height: max(100cqh, 133.34cqw); transform: translateX(-50%); }
+.otd-check-shot img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.otd-check-dots { margin: 0; padding: 0; list-style: none; }
+.otd-check-dots li { position: absolute; left: var(--x); top: var(--y); display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--sheet); color: var(--ink); font-size: 12px; font-weight: 600; box-shadow: 0 0 0 6px var(--white-line); transform: translate(-50%, -50%); }
+.otd-check-copy { display: flex; flex-direction: column; padding: 44px 44px 40px; border-radius: 30px; background: var(--sheet); color: var(--ink); }
+.otd-check-copy .eyebrow { margin-bottom: 19px; color: var(--muted); }
+.otd-check-copy > p:not(.eyebrow) { max-width: 520px; margin-top: 18px; font-size: 13px; line-height: 1.65; color: var(--muted); }
+.otd-check-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: auto 0 0; padding: 28px 0 0; list-style: none; counter-reset: check; }
+.otd-check-list li { display: grid; grid-template-columns: 30px minmax(0, 1fr); column-gap: 14px; row-gap: 4px; align-content: start; padding: 20px 20px 18px; border: 1px solid var(--line); border-radius: 20px; counter-increment: check; }
+.otd-check-list li::before { content: counter(check); grid-row: 1 / 3; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--plum); color: var(--on-plum); font-size: 12px; font-weight: 600; }
+.otd-check-list b { font-size: 17px; font-weight: 500; line-height: 1.3; letter-spacing: -0.4px; }
+.otd-check-list span { font-size: 12px; line-height: 1.55; color: var(--muted); }
+
+.pj-stages.otd-stages { padding-top: 64px; }
+.otd-cost .pj-form { align-self: start; position: sticky; top: 16px; }
+.price-list--flat { margin: 0; padding: 0; border-radius: 0; background: none; }
+.price-list--flat .price-group:first-child { border-top: 1px solid var(--line); }
+.price-list--flat .price-table tr:last-child { border-bottom: 0; }
+/* Внутри плитки «Проектирования» её правила для таблицы (код раздела мелким капсом) не трогают прайс */
+.pj-spec .price-table th, .pj-spec .price-table td { padding: 12px 0; vertical-align: baseline; }
+.pj-spec .price-table th { width: auto; font-size: 13px; font-weight: 400; letter-spacing: 0; color: var(--ink); }
+.pj-spec .price-table td:last-child { padding-left: 24px; font-size: 16px; }
+
+@media (max-width: 1100px) {
+  .otd-check-copy { padding: 36px 32px 32px; }
+  .otd-check-list b { font-size: 15px; }
+}
+/* Планшет: первый экран во всю ширину, три плитки под ним в ряд */
+@media (min-width: 761px) and (max-width: 1100px) {
+  .pj-bento.otd-bento { grid-template-columns: minmax(0, 1fr); }
+  .otd-bento .pj-tiles { grid-template-columns: minmax(0, 1.3fr) repeat(2, minmax(0, 1fr)); grid-template-rows: 240px; }
+  .otd-bento .pj-model { grid-column: auto; }
+  .otd-bento .pj-price-value strong, .otd-bento .pj-catalog-value strong { font-size: clamp(30px, 4.4vw, 44px); }
+  .pj-bento .otd-sky::after { background: linear-gradient(90deg, var(--blue) 0, var(--blue) 320px, var(--sky-veil) 380px, var(--sky-veil-0) 520px); }
+}
+/* Узкое фото обрезало бы номера по краям, поэтому до 980px текст сверху, фото снизу во всю ширину */
+@media (max-width: 980px) {
+  .otd-check-frame { grid-template-columns: minmax(0, 1fr); }
+  .otd-check-photo { min-height: 0; aspect-ratio: 16 / 9; }
+  .otd-check-copy { order: -1; }
+}
+@media (max-width: 760px) {
+  .otd-sky-photo { top: auto; bottom: 0; left: 0; width: 100%; height: 56%; object-position: 50% 60%; }
+  .pj-bento .otd-sky::after { background: linear-gradient(180deg, var(--blue) 0, var(--blue) 44%, var(--sky-veil) 52%, var(--sky-veil-0) 66%); }
+  .otd-bento .pj-price-value strong, .otd-bento .pj-catalog-value strong { font-size: 30px; letter-spacing: -1.4px; }
+  .otd-check { padding: 44px 10px 10px; }
+  .otd-check-frame { gap: 10px; }
+  .otd-check-photo { aspect-ratio: 4 / 3; border-radius: 24px; }
+  .otd-check-copy { padding: 30px 22px 24px; border-radius: 24px; }
+  .otd-check-list { grid-template-columns: minmax(0, 1fr); padding-top: 22px; gap: 8px; }
+  .otd-check-list li { padding: 14px 16px; column-gap: 12px; }
+  .otd-check-list li::before, .otd-check-dots li { width: 26px; height: 26px; font-size: 11px; }
+  .pj-stages.otd-stages { padding-top: 44px; }
+  .otd-cost .pj-form { position: static; }
+}
+@media (max-width: 360px) {
+  .otd-bento .pj-price-value strong, .otd-bento .pj-catalog-value strong { font-size: 26px; }
+}
+[data-theme="dark"] .otd-check-dots li { box-shadow: 0 0 0 6px var(--night-chip); }

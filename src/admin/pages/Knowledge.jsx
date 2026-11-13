@@ -3,7 +3,7 @@ import {api, fmtDate} from '../api.js';
 import {useAsync, Page, Panel, Button, Field, Loading, ErrorBox, Notice} from '../ui.jsx';
 import {can} from '../nav.js';
 
-const empty = {title: '', body: '', tags: '', is_active: true, sort: 100};
+const empty = {title: '', body: '', tags: '', is_active: true, sort: 100, source_note: ''};
 
 export default function Knowledge({user}) {
   const data = useAsync(() => api('/kb'), []);
@@ -43,6 +43,7 @@ export default function Knowledge({user}) {
             <Field label="Теги через запятую" hint="Слова, по которым статья подбирается к вопросу. core: всегда в ответе"><input value={edit.tags} onChange={e => setEdit(s => ({...s, tags: e.target.value}))} /></Field>
             <Field label="Порядок"><input type="number" value={edit.sort} onChange={e => setEdit(s => ({...s, sort: e.target.value}))} /></Field>
             <Field label="Текст статьи" hint="Факты простым языком: цены, сроки, условия. Не пишите то, чего компания не обещает"><textarea rows="14" value={edit.body} onChange={e => setEdit(s => ({...s, body: e.target.value}))} /></Field>
+            <Field label="Источник фактов" hint="Откуда взяты факты: страница сайта, документ, ответ заказчика. Видят сотрудники, ИИ-консультанту не передаётся"><input value={edit.source_note || ''} onChange={e => setEdit(s => ({...s, source_note: e.target.value}))} /></Field>
             <label className="inline-check"><input type="checkbox" checked={edit.is_active} onChange={e => setEdit(s => ({...s, is_active: e.target.checked}))} /> Статья включена</label>
           </div>
           <div className="row-actions"><Button busy={busy} onClick={save}>Сохранить</Button><Button kind="quiet" onClick={() => setEdit(null)}>Отмена</Button></div>
@@ -57,6 +58,7 @@ export default function Knowledge({user}) {
               <li key={item.id} className={item.is_active ? '' : 'is-off'}>
                 <div><b>{item.title}</b> <small>{item.tags.join(', ')}</small></div>
                 <p>{item.body.slice(0, 220)}{item.body.length > 220 ? '...' : ''}</p>
+                {item.source_note ? <small className="muted">Источник: {item.source_note}</small> : null}
                 <small className="muted">Обновлено {fmtDate(item.updated_at)}{item.updated_by_name ? `, ${item.updated_by_name}` : ''}{item.is_active ? '' : ', выключена'}</small>
                 {editable ? <div className="row-actions"><Button kind="quiet" onClick={() => setEdit({...item, tags: item.tags.join(', ')})}>Изменить</Button><Button kind="quiet" onClick={() => remove(item)}>Удалить</Button></div> : null}
               </li>

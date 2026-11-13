@@ -37,7 +37,7 @@ try {
   const [{count}] = await sql`select count(*)::int as count from kb_articles`;
   if (!count) {
     for (const article of KB_DEFAULTS) {
-      await sql`insert into kb_articles (title, body, tags, sort) values (${article.title}, ${article.body}, ${article.tags}, ${article.sort})`;
+      await sql`insert into kb_articles (title, body, tags, sort, source_note) values (${article.title}, ${article.body}, ${article.tags}, ${article.sort}, ${article.source || null})`;
     }
     console.log(`База знаний: добавлено статей ${KB_DEFAULTS.length}`);
   } else {

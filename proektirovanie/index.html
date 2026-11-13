@@ -22,6 +22,8 @@
   <link rel="stylesheet" href="../src/proektirovanie.css" />
   <link rel="stylesheet" href="../src/addons.css" />
   <script>document.documentElement.classList.add('js');var s=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light',t;try{t=localStorage.getItem('dm_theme');if(t&&localStorage.getItem('dm_theme_sys')!==s){localStorage.removeItem('dm_theme');localStorage.removeItem('dm_theme_sys');t=null}}catch(e){}if(t!=='dark'&&t!=='light')t=s;document.documentElement.dataset.theme=t;</script>
+  <script type="application/ld+json" data-c-offers="design.prices">{"@context":"https://schema.org","@type":"Service","name":"Проектирование домов","serviceType":"Эскизные и индивидуальные проекты домов: архитектура, расчёт нагрузки, инженерные системы, ландшафт","areaServed":[{"@type":"City","name":"Москва"},{"@type":"AdministrativeArea","name":"Московская область"}],"provider":{"@type":"HomeAndConstructionBusiness","name":"Дом Мира","legalName":"ООО «ГК ВЕСЬ МИР»","url":"%SITE_URL%/"},"url":"%SITE_URL%/proektirovanie/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Главная","item":"%SITE_URL%/"},{"@type":"ListItem","position":2,"name":"Проектирование","item":"%SITE_URL%/proektirovanie/"}]}</script>
 </head>
 <body class="design-page" data-page="proektirovanie">
   <a class="skip-link" href="#main">К содержанию</a>
@@ -125,7 +127,7 @@
           <h2 id="cost-title">Цены за работу, <br /><span class="muted">без материалов</span></h2>
           <table>
             <caption class="visually-hidden">Ориентировочная стоимость разделов проекта</caption>
-            <tbody>
+            <tbody data-c-list="design.prices">
               <tr><th scope="row">ЭП</th><td>Эскизный проект</td><td>от 700 <small>₽/м²</small></td></tr>
               <tr><th scope="row">АР</th><td>Проект без учета нагрузки</td><td>от 1 200 <small>₽/м²</small></td></tr>
               <tr><th scope="row">КР</th><td>Расчет нагрузки</td><td>от 1 500 <small>₽/м²</small></td></tr>

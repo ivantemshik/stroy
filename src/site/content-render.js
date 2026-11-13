@@ -14,9 +14,31 @@ export function telHref(phone) {
   return digits ? `tel:+${digits}` : '';
 }
 
+// Группы прайса: заголовки для таблиц, разметки для поиска и базы знаний ИИ-консультанта.
+export const PRICE_GROUPS = {
+  'build.prices': 'Строительство и конструктив',
+  'finish.prices': 'Отделочные работы',
+  'engineering.prices': 'Инженерные системы',
+  'landscape.prices': 'Участок и благоустройство',
+  'design.prices': 'Проектирование'
+};
+
+// «от 70 000 ₽/м²»: число крупно, рубли и единица мельче, как в таблице цен «Проектирования».
+const priceHtml = price => escapeHtml(price).replace(/^(.*\d)\s*(₽.*)$/, '$1 <small>$2</small>');
+
+// Цена строкой в число и единицу для разметки Offer: «от 6 500 ₽/м³» → 6500 и «м³».
+export function parsePrice(price) {
+  const match = /(\d[\d\s]*)\s*₽\s*(?:\/\s*(.+))?$/.exec(String(price || ''));
+  return match ? {value: Number(match[1].replace(/\s/g, '')), unit: (match[2] || '').trim()} : null;
+}
+
 const LISTS = {
-  prices: rows => rows.map(row => `<tr><th scope="row">${escapeHtml(row.name)}</th><td>${escapeHtml(row.price)}</td></tr>`).join(''),
+  prices: rows => rows.map(row => row.code
+    ? `<tr class="has-code"><th scope="row">${escapeHtml(row.code)}</th><td>${escapeHtml(row.name)}</td><td>${priceHtml(row.price)}</td></tr>`
+    : `<tr><th scope="row">${escapeHtml(row.name)}</th><td>${priceHtml(row.price)}</td></tr>`).join(''),
   promo: items => items.map(item => `<li><b>${escapeHtml(item.title)}</b><span>${escapeHtml(item.text)}</span></li>`).join(''),
+  paras: items => items.map(item => `<p>${escapeHtml(item.text)}</p>`).join(''),
+  facts: items => items.map(item => `<li><strong>${escapeHtml(item.value)}</strong><span>${escapeHtml(item.label)}</span></li>`).join(''),
   faq: items => items.map(item => `<details data-faq><summary>${escapeHtml(item.q)}<span aria-hidden="true">+</span></summary><p>${escapeHtml(item.a)}</p></details>`).join('')
 };
 
@@ -24,6 +46,8 @@ export function listKind(key) {
   if (key.endsWith('.prices')) return 'prices';
   if (key.endsWith('.promo')) return 'promo';
   if (key.endsWith('.faq')) return 'faq';
+  if (key.endsWith('.paras')) return 'paras';
+  if (key.endsWith('.facts')) return 'facts';
   return null;
 }
 
@@ -47,6 +71,23 @@ export function faqJsonLd(items) {
   });
 }
 
+// Каталог цен для разметки Service: группы прайса, в каждой работы с ценой «от» и единицей.
+export function offerCatalog(content, keys) {
+  return {
+    '@type': 'OfferCatalog',
+    name: 'Цены за работу без материалов',
+    itemListElement: keys.filter(key => Array.isArray(content[key])).map(key => ({
+      '@type': 'OfferCatalog',
+      name: PRICE_GROUPS[key] || key,
+      itemListElement: content[key].map(row => ({row, price: parsePrice(row.price)})).filter(({price}) => price).map(({row, price}) => ({
+        '@type': 'Offer',
+        itemOffered: {'@type': 'Service', name: row.name},
+        priceSpecification: {'@type': 'UnitPriceSpecification', minPrice: price.value, priceCurrency: 'RUB', ...(price.unit ? {unitText: price.unit} : {})}
+      }))
+    }))
+  };
+}
+
 // Подстановка контента в HTML страницы при сборке. Разметка страниц написана так,
 // чтобы внутри элементов с data-c-list не было вложенных тегов того же имени.
 export function bakeHtml(html, content) {
@@ -57,6 +98,15 @@ export function bakeHtml(html, content) {
   });
   out = out.replace(/<script type="application\/ld\+json" data-c-jsonld="([\w.]+)">[\s\S]*?<\/script>/g, (match, key) =>
     Array.isArray(content[key]) ? `<script type="application/ld+json" data-c-jsonld="${key}">${faqJsonLd(content[key])}</script>` : match);
+  // Разметка услуги с ценами из прайса: data-c-offers перечисляет группы через пробел.
+  out = out.replace(/<script type="application\/ld\+json" data-c-offers="([\w. ]+)">([\s\S]*?)<\/script>/g, (match, keys, base) => {
+    try {
+      const data = {...JSON.parse(base), hasOfferCatalog: offerCatalog(content, keys.trim().split(/\s+/))};
+      return `<script type="application/ld+json" data-c-offers="${keys}">${JSON.stringify(data).replace(/</g, '\\u003c')}</script>`;
+    } catch {
+      return match;
+    }
+  });
   out = out.replace(/<(\w+)([^>]*?)\sdata-c="([\w.]+)"([^>]*)>([^<]*)<\/\1>/g, (match, tag, before, path, after) => {
     const value = getPath(content, path);
     return typeof value === 'string' && value ? `<${tag}${before} data-c="${path}"${after}>${escapeHtml(value)}</${tag}>` : match;

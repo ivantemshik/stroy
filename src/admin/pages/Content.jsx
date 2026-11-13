@@ -2,14 +2,21 @@ import React, {useEffect, useState} from 'react';
 import {api} from '../api.js';
 import {useAsync, Page, Panel, Button, Field, Loading, ErrorBox, Notice} from '../ui.jsx';
 
+// Прайс: одни и те же группы выводятся на главной и «Отделке», в таблице «Проектирования»,
+// в разметке для поиска и в ответах ИИ-консультанта. Цена пишется как «от 70 000 ₽/м²».
+const PRICE_FIELDS = [['name', 'Работа'], ['price', 'Цена, например «от 70 000 ₽/м²»']];
 const LIST_SHAPES = {
-  'home.prices': {title: 'Цены на главной (строительство)', fields: [['name', 'Работа'], ['price', 'Цена']]},
-  'otdelka.prices': {title: 'Цены на странице отделки', fields: [['name', 'Работа'], ['price', 'Цена']]},
+  'build.prices': {title: 'Прайс: строительство и конструктив (главная)', fields: PRICE_FIELDS},
+  'finish.prices': {title: 'Прайс: отделочные работы («Отделка»)', fields: PRICE_FIELDS},
+  'engineering.prices': {title: 'Прайс: инженерные системы (главная и «Отделка»)', fields: PRICE_FIELDS},
+  'landscape.prices': {title: 'Прайс: участок и благоустройство (главная)', fields: PRICE_FIELDS},
+  'design.prices': {title: 'Прайс: проектирование (главная и «Проектирование»)', fields: [['code', 'Код раздела'], ...PRICE_FIELDS]},
+  'about.paras': {title: 'О компании: абзацы текста (главная)', fields: [['text', 'Абзац', true]]},
+  'about.facts': {title: 'О компании: цифры (главная)', fields: [['value', 'Число'], ['label', 'Подпись']]},
   'home.promo': {title: 'Акции на главной', fields: [['title', 'Заголовок'], ['text', 'Текст']]},
   'otdelka.promo': {title: 'Акции на странице отделки', fields: [['title', 'Заголовок'], ['text', 'Текст']]},
   'home.faq': {title: 'Вопросы на главной', fields: [['q', 'Вопрос'], ['a', 'Ответ', true]]},
   'otdelka.faq': {title: 'Вопросы на странице отделки', fields: [['q', 'Вопрос'], ['a', 'Ответ', true]]},
-  'proekt.prices': {title: 'Цены на странице проектирования', fields: [['name', 'Раздел проекта'], ['price', 'Цена']]},
   'proekt.promo': {title: 'Акции на странице проектирования', fields: [['title', 'Заголовок'], ['text', 'Текст']]},
   'proekt.faq': {title: 'Вопросы на странице проектирования', fields: [['q', 'Вопрос'], ['a', 'Ответ', true]]}
 };

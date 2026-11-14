@@ -68,7 +68,9 @@ export async function exportLeadsXlsx({request, url}) {
   const user = await requireUser(request, 'leads.export');
   const sql = db();
   const rows = await queryLeads(leadFilters(sql, user, url.searchParams));
-  await audit({userId: user.id, action: 'export_leads', details: {count: rows.length, query: url.search}});
+  // Поисковую строку (в ней может быть телефон или имя клиента) в журнал не пишем.
+  const filters = Object.fromEntries([...url.searchParams].filter(([key]) => key !== 'q'));
+  await audit({userId: user.id, action: 'export_leads', details: {count: rows.length, filters, search: url.searchParams.has('q')}});
   const date = new Date().toISOString().slice(0, 10);
   return xlsxResponse(buildXlsx([{name: 'Заявки', columns: LEAD_COLUMNS, rows}]), `zayavki-${date}.xlsx`);
 }

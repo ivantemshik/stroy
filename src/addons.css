@@ -26,6 +26,7 @@
   --tile-dark-muted: #a8aca7;
   --tile-dark-label: #888e85;
   --chip: rgba(247, 247, 245, 0.92);
+  --pop-shadow: rgba(24, 25, 24, 0.16);
 }
 
 /* ---------- Шапка: переключатель светлой и тёмной темы рядом с «Обсудить проект» ---------- */
@@ -209,7 +210,7 @@ html:not(.js) .theme-toggle { display: none; }
   .footer-bottom { margin-top: 28px; }
 }
 /* Собранный сайт подключает стили «Проектирования» после этого файла, поэтому правила для телефона
-   с приставкой .design-page: иначе их перебивают строки 260px и 300px из proektirovanie.css */
+   с приставкой .design-page: иначе их перебивают строки 260px и 300px из pj-blocks.css */
 @media (max-width: 760px) { .pj-model { display: none; } .design-page .pj-tiles { grid-template-rows: auto; } .design-page .pj-sky { min-height: 560px; } }
 .doc .crumbs li { color: inherit; font-size: inherit; line-height: 1.5; max-width: none; }
 
@@ -255,6 +256,7 @@ html:not(.js) .theme-toggle { display: none; }
   --tile-dark-muted: var(--muted);
   --tile-dark-label: var(--muted);
   --chip: var(--night-chip);
+  --pop-shadow: rgba(0, 0, 0, 0.5);
   --haze-night-82: rgba(16, 28, 42, 0.84);
   --haze-night-55: rgba(16, 28, 42, 0.6);
   --haze-night-0: rgba(16, 28, 42, 0);
@@ -891,3 +893,48 @@ html:not(.js) .theme-toggle { display: none; }
   .otd-bento .pj-price-value strong, .otd-bento .pj-catalog-value strong { font-size: 26px; }
 }
 [data-theme="dark"] .otd-check-dots li { box-shadow: 0 0 0 6px var(--night-chip); }
+
+/* ==========================================================================
+   Меню «Услуги»: на сайте две страницы (главная и «Отделка»), остальные услуги
+   открываются окном с записью через ИИ-консультанта в Telegram.
+   ========================================================================== */
+.nav-services { position: relative; }
+.nav-services-toggle { display: inline-flex; align-items: center; gap: 6px; padding: 7px 0; border: 0; background: none; color: inherit; font: inherit; opacity: 0.86; cursor: pointer; transition: opacity 0.2s; }
+.nav-services-toggle:hover, .nav-services-toggle[aria-expanded="true"] { opacity: 1; }
+.nav-services-toggle:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; border-radius: 4px; }
+.nav-chevron { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.2s; }
+.nav-services-toggle[aria-expanded="true"] .nav-chevron { transform: rotate(180deg); }
+.services-menu { position: absolute; z-index: 40; top: calc(100% + 12px); left: 50%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; width: 600px; padding: 10px; border: 1px solid var(--line); border-radius: 22px; background: var(--paper); color: var(--ink); box-shadow: 0 30px 70px var(--pop-shadow); transform: translateX(-50%); }
+.services-menu[hidden] { display: none; }
+.services-menu .services-item { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 14px 16px; border: 0; border-radius: 14px; background: none; color: var(--ink); font: inherit; text-align: left; opacity: 1; cursor: pointer; transition: background-color 0.2s; }
+.services-menu .services-item:hover { background: var(--sheet); }
+.services-menu .services-item:focus-visible { outline: 2px solid var(--plum); outline-offset: -2px; }
+.services-item b { font-size: 15px; font-weight: 500; letter-spacing: -0.3px; }
+.services-item span { font-size: 12px; line-height: 1.45; color: var(--muted); }
+.services-menu .services-item.is-page { grid-column: 1 / -1; background: var(--sheet); }
+.services-menu .services-item.is-page:hover { background: var(--sheet-hover); }
+.services-item small { margin-top: 6px; padding: 3px 9px; border-radius: 999px; background: var(--plum); color: var(--on-plum); font-size: 11px; }
+
+#mobile-menu .mobile-services-toggle { counter-increment: nav; display: grid; grid-template-columns: 38px 1fr auto; align-items: center; gap: 8px; width: 100%; padding: 13px 0; border: 0; border-bottom: 1px solid var(--line); background: none; color: var(--ink); font: inherit; font-size: 26px; font-weight: 450; line-height: 1.15; letter-spacing: -1px; text-align: left; cursor: pointer; }
+#mobile-menu .mobile-services-toggle::before { content: counter(nav, decimal-leading-zero); font-size: 10px; font-weight: 600; color: var(--muted); }
+#mobile-menu .mobile-services-toggle::after { content: "+"; display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid var(--line); border-radius: 50%; font-size: 16px; letter-spacing: 0; transition: transform 0.25s; }
+#mobile-menu .mobile-services-toggle[aria-expanded="true"]::after { transform: rotate(45deg); }
+#mobile-menu .mobile-services { display: grid; padding: 4px 0 10px 46px; border-bottom: 1px solid var(--line); }
+#mobile-menu .mobile-services[hidden] { display: none; }
+#mobile-menu .mobile-service { padding: 9px 0; border: 0; background: none; color: var(--ink); font: inherit; font-size: 17px; letter-spacing: -0.3px; text-align: left; cursor: pointer; }
+#mobile-menu :is(.mobile-service, .mobile-services-toggle):focus-visible { outline: 2px solid var(--plum); outline-offset: 2px; }
+@media (max-width: 480px) {
+  #mobile-menu .mobile-services-toggle { grid-template-columns: 28px 1fr auto; padding: 11px 0; font-size: 21px; letter-spacing: -0.8px; }
+  #mobile-menu .mobile-services { padding-left: 36px; }
+  #mobile-menu .mobile-service { font-size: 16px; }
+}
+@media (max-width: 380px) { #mobile-menu .mobile-services-toggle { grid-template-columns: 24px 1fr auto; font-size: 19px; } }
+@media (prefers-reduced-motion: reduce) { .nav-chevron, #mobile-menu .mobile-services-toggle::after { transition: none; } }
+
+/* Окно услуги: запись через Telegram главной кнопкой, заявка на сайте или почта рядом */
+.service-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 22px; margin-top: 24px; }
+.service-alt { padding: 6px 0; border: 0; background: none; color: var(--ink); font: inherit; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.service-alt:focus-visible { outline: 2px solid var(--plum); outline-offset: 3px; }
+button.prices-more { padding: 0; border: 0; background: none; font: inherit; font-size: 13px; cursor: pointer; }
+[data-theme="dark"] .services-item small { background: var(--plum); color: var(--on-plum); }
+[data-theme="dark"] :is(.services-menu .services-item, .service-alt, button.prices-more):focus-visible { outline-color: var(--plum-text); }

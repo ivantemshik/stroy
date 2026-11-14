@@ -20,7 +20,7 @@ const say = (chatId, text, extra = {}) => tg(token(), 'sendMessage', {chat_id: c
 export async function adminWebhook({request}) {
   checkWebhookSecret(request);
   const update = await readJson(request, 512 * 1024);
-  if (!await claimUpdate('admin', update.update_id)) return json({ok: true});
+  if (!await claimUpdate('admin', update)) return json({ok: true});
   const task = handleUpdate(update)
     .then(() => finishUpdate('admin', update.update_id))
     .catch(async error => {
@@ -223,7 +223,7 @@ async function listOpenLeads(chatId, staff) {
   const mine = !staff.permissions.includes('leads.view_all');
   const leads = await sql`select l.id, l.name, l.phone, l.service, l.status, l.created_at, u.name as manager_name from leads l
     left join users u on u.id = l.manager_id
-    where l.status in ('new', 'in_progress', 'qualified', 'meeting', 'estimate') and not l.is_test ${mine ? sql`and l.manager_id = ${staff.id}` : sql``}
+    where l.status in ('new', 'in_progress', 'qualified', 'meeting', 'estimate') and not l.is_test ${mine ? sql`and (l.manager_id = ${staff.id} or l.manager_id is null)` : sql``}
     order by l.created_at desc limit 12`;
   if (!leads.length) return say(chatId, 'Открытых заявок нет.');
   const lines = leads.map(l => `№${l.id} ${esc(statusLabel(l.status))}: ${esc(l.name || 'без имени')}, ${esc(formatPhone(l.phone) || '')}, ${esc(serviceLabel(l.service))}${l.manager_name ? `, ${esc(l.manager_name)}` : ''}\n${leadUrl(l.id)}`);

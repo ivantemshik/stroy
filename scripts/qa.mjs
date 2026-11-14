@@ -4,7 +4,7 @@
 import {chromium} from '@playwright/test';
 import {existsSync} from 'node:fs';
 const base = (process.argv[2] || 'http://127.0.0.1:5173').replace(/\/$/, '');
-const pages = ['/', '/otdelka/', '/proektirovanie/', '/privacy/', '/soglasie/', '/cookies/', '/admin/'];
+const pages = ['/', '/otdelka/', '/privacy/', '/soglasie/', '/cookies/', '/admin/'];
 const widths = [320, 375, 390, 480, 600, 768, 1024, 1440, 1920];
 const schemes = ['light', 'dark'].filter(scheme => !process.argv[3] || process.argv[3] === scheme);
 const local = ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/Applications/Chromium.app/Contents/MacOS/Chromium'].find(existsSync);

@@ -87,30 +87,63 @@ if (pricesDialog) {
 const menuToggle = $('.menu-toggle');
 function closeMenu() { menuToggle.setAttribute('aria-expanded', 'false'); menuToggle.setAttribute('aria-label', 'Открыть меню'); $('#mobile-menu').hidden = true; }
 menuToggle.addEventListener('click', () => { const open = menuToggle.getAttribute('aria-expanded') !== 'true'; menuToggle.setAttribute('aria-expanded', String(open)); menuToggle.setAttribute('aria-label', open ? 'Закрыть меню' : 'Открыть меню'); $('#mobile-menu').hidden = !open; });
-$$('a, button', $('#mobile-menu')).forEach(link => link.addEventListener('click', closeMenu));
+$$('a, button:not(.mobile-services-toggle)', $('#mobile-menu')).forEach(link => link.addEventListener('click', closeMenu));
 document.addEventListener('keydown', event => { if (event.key === 'Escape') closeMenu(); });
 const services = {
-  design: {title:'Проект под ваш образ жизни', intro:'Делаем индивидуальный проект под ваши пожелания и участок. Продумываем фасад и то, как будет удобно жить в доме каждый день.', scope:['Эскизный проект','Архитектура и конструктив','Инженерные системы','Ландшафтный проект'], rate:'Эскизный проект: от 700 ₽/м².', image:'canva-detail-1.png', select:'Эскизный проект'},
-  build: {title:'От участка до дома', intro:'Строим частные дома по индивидуальным проектам. Фундамент, стены, перекрытия, фасад и кровлю делаем в одной связке с инженерными системами и отделкой.', scope:['Фундаменты','Стены и перекрытия','Кровля и фасады','Индивидуальные проекты'], rate:'Строительство по проекту: от 70 000 ₽/м² за работу, без материалов.', image:'canva-detail-1.png', select:'Строительство по проекту'},
-  interior: {title:'Отделка, мебель и участок', intro:'Инженерные системы, отделка по дизайн-проекту, корпусная мебель и благоустройство участка в одном стиле с домом.', scope:['Отделка и ремонт','Мебель на заказ','Ландшафт','Архитектурное освещение'], rate:'Ремонт по дизайн-проекту: от 60 000 ₽/м² без инженерных систем и материалов.', image:'canva-detail-2.png', select:'Отделка по дизайн-проекту'},
-  engineering: {title:'Инженерные системы', intro:'Проектируем и монтируем отопление, водоснабжение, канализацию, вентиляцию и электрику.', scope:['Водоснабжение и отопление','Вентиляция','Электромонтаж','Канализация'], rate:'Проектирование инженерных систем: от 1 500 ₽/м².', image:'canva-detail-3.png', select:'Проектирование инженерии'},
-  landscape: {title:'Сад и участок', intro:'Планируем и обустраиваем участок: выравниваем территорию, сажаем растения, делаем дорожки, дренаж и освещение.', scope:['Ландшафтный проект','Газоны и посадки','Дорожки и площадки','Дренаж и автополив'], rate:'Ландшафтный проект, дендроплан, автополив и освещение: от 15 000 ₽/сотка.', image:'project-landscape.webp', emailOnly:true},
-  lighting: {title:'Архитектурная подсветка', intro:'Проектируем и монтируем подсветку домов, зданий и сада: фасадов, деревьев и всего участка.', scope:['Подсветка фасадов','Ландшафтное освещение','Декоративный свет','Монтаж'], rate:'Состав работ и цену считаем под ваш объект.', image:'project-lighting.webp', emailOnly:true},
-  furniture: {title:'Корпусная мебель на заказ', intro:'Делаем корпусную мебель по индивидуальному проекту: кухни, шкафы, гардеробные, столы и стеллажи.', scope:['Кухни','Шкафы и гардеробные','Столы и стеллажи','Дизайн мебели'], rate:'Цена зависит от проекта, размеров и материалов.', image:'project-furniture.webp', emailOnly:true}
+  design: {tg:'design', title:'Проект под ваш образ жизни', intro:'Делаем индивидуальный проект под ваши пожелания и участок. Продумываем фасад и то, как будет удобно жить в доме каждый день.', scope:['Эскизный проект','Архитектура и конструктив','Инженерные системы','Ландшафтный проект'], rate:'Эскизный проект: от 700 ₽/м².', image:'canva-detail-1.png', select:'Эскизный проект'},
+  build: {tg:'construction', title:'От участка до дома', intro:'Строим частные дома по индивидуальным проектам. Фундамент, стены, перекрытия, фасад и кровлю делаем в одной связке с инженерными системами и отделкой.', scope:['Фундаменты','Стены и перекрытия','Кровля и фасады','Индивидуальные проекты'], rate:'Строительство по проекту: от 70 000 ₽/м² за работу, без материалов.', image:'canva-detail-1.png', select:'Строительство по проекту'},
+  interior: {tg:'finishing', title:'Отделка, мебель и участок', intro:'Инженерные системы, отделка по дизайн-проекту, корпусная мебель и благоустройство участка в одном стиле с домом.', scope:['Отделка и ремонт','Мебель на заказ','Ландшафт','Архитектурное освещение'], rate:'Ремонт по дизайн-проекту: от 60 000 ₽/м² без инженерных систем и материалов.', image:'canva-detail-2.png', select:'Отделка по дизайн-проекту'},
+  engineering: {tg:'engineering', title:'Инженерные системы', intro:'Проектируем и монтируем отопление, водоснабжение, канализацию, вентиляцию и электрику.', scope:['Водоснабжение и отопление','Вентиляция','Электромонтаж','Канализация'], rate:'Проектирование инженерных систем: от 1 500 ₽/м².', image:'canva-detail-3.png', select:'Проектирование инженерии'},
+  landscape: {tg:'landscape', title:'Сад и участок', intro:'Планируем и обустраиваем участок: выравниваем территорию, сажаем растения, делаем дорожки, дренаж и освещение.', scope:['Ландшафтный проект','Газоны и посадки','Дорожки и площадки','Дренаж и автополив'], rate:'Ландшафтный проект, дендроплан, автополив и освещение: от 15 000 ₽/сотка.', image:'project-landscape.webp', emailOnly:true},
+  lighting: {tg:'lighting', title:'Архитектурная подсветка', intro:'Проектируем и монтируем подсветку домов, зданий и сада: фасадов, деревьев и всего участка.', scope:['Подсветка фасадов','Ландшафтное освещение','Декоративный свет','Монтаж'], rate:'Состав работ и цену считаем под ваш объект.', image:'project-lighting.webp', emailOnly:true},
+  furniture: {tg:'furniture', title:'Корпусная мебель на заказ', intro:'Делаем корпусную мебель по индивидуальному проекту: кухни, шкафы, гардеробные, столы и стеллажи.', scope:['Кухни','Шкафы и гардеробные','Столы и стеллажи','Дизайн мебели'], rate:'Цена зависит от проекта, размеров и материалов.', image:'project-furniture.webp', emailOnly:true}
 };
-$$('[data-service]').forEach(button => button.addEventListener('click', () => {
-  const service = services[button.dataset.service];
-  $('#service-content').innerHTML = `<img class="service-asset" src="${import.meta.env.BASE_URL}images/${service.image}" width="72" height="72" alt="Архитектурная деталь из материалов проекта" /><p class="eyebrow">НАПРАВЛЕНИЕ РАБОТ</p><h2 id="service-title">${service.title}</h2><p>${service.intro}</p><div class="service-scope">${service.scope.map(text=>`<span>${text}</span>`).join('')}</div><p>${service.rate}</p><p class="small-print">Цена примерная. Точную посчитаем, когда обсудим состав работ.</p><button class="button plum service-cta">Обсудить задачу <span aria-hidden="true"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg></span></button>`;
-  const action = $('.service-cta');
-  if (service.emailOnly) {
-    const link=document.createElement('a');
-    link.className=action.className;
-    link.innerHTML=action.innerHTML;
-    link.href=`mailto:info@gkvesmir.ru?subject=${encodeURIComponent('Дом Мира — '+service.title)}&body=${encodeURIComponent('Здравствуйте! Хочу обсудить проект: '+service.title+'.\n\nМои пожелания: ')}`;
-    action.replaceWith(link);
-  } else action.addEventListener('click', () => {state.scope = service.select; openQuiz();});
-  openModal(serviceDialog);
-}));
+// Мини окно услуги: описание, состав работ, цена «от» и запись через ИИ-консультанта в Telegram сразу с выбранной услугой.
+// У «Отделки» своя страница, остальные услуги открываются только в этом окне.
+const ARROW = '<svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg>';
+function serviceTelegramLink(service) {
+  const clientId = getClientId();
+  return `https://t.me/dommira_consult_bot?start=${`u_${service.tg}_${page}${clientId ? `_${clientId}` : ''}`.slice(0, 64)}`;
+}
+function openService(key, returnTarget = document.activeElement) {
+  const service = services[key];
+  if (!service) return;
+  const mail = `mailto:info@gkvesmir.ru?subject=${encodeURIComponent('Дом Мира: ' + service.title)}&body=${encodeURIComponent('Здравствуйте! Хочу обсудить: ' + service.title + '.\n\nМои пожелания: ')}`;
+  const alternative = service.emailOnly
+    ? `<a class="service-alt" href="${mail}">Написать на почту</a>`
+    : '<button class="service-alt" type="button">Оставить заявку на сайте</button>';
+  $('#service-content').innerHTML = `<img class="service-asset" src="${import.meta.env.BASE_URL}images/${service.image}" width="72" height="72" alt="Архитектурная деталь из материалов проекта" /><p class="eyebrow">НАПРАВЛЕНИЕ РАБОТ</p><h2 id="service-title">${service.title}</h2><p>${service.intro}</p><div class="service-scope">${service.scope.map(text => `<span>${text}</span>`).join('')}</div><p>${service.rate}</p><p class="small-print">Цена примерная. Точную посчитаем, когда обсудим состав работ.</p><div class="service-actions"><a class="button plum service-tg" href="${serviceTelegramLink(service)}" target="_blank" rel="noopener">Записаться через Telegram <span aria-hidden="true">${ARROW}</span></a>${alternative}</div>`;
+  $('.service-tg').addEventListener('click', () => goal('tg_click', {place: 'service', service: key}));
+  if (!service.emailOnly) $('.service-alt').addEventListener('click', () => { state.scope = service.select; openQuiz(); });
+  // Окно открыто поверх другого (например, прайса): прежнее закрываем, чтобы не было двух окон сразу.
+  $$('dialog[open]').forEach(dialog => { if (dialog !== serviceDialog) dialog.close(); });
+  openModal(serviceDialog, returnTarget);
+}
+$$('[data-service]').forEach(button => button.addEventListener('click', () => openService(button.dataset.service, button)));
+// Старый адрес «Проектирования» и ссылки вида /?usluga=design сразу открывают окно услуги.
+const linkedService = new URLSearchParams(location.search).get('usluga');
+if (linkedService && services[linkedService]) {
+  history.replaceState(null, '', location.pathname + location.hash);
+  openService(linkedService, document.body);
+}
+
+/* Меню «Услуги» в шапке: «Отделка» ведёт на страницу, остальные услуги открывают окно */
+const servicesToggle = $('.nav-services-toggle');
+const servicesMenu = $('#services-menu');
+if (servicesToggle && servicesMenu) {
+  const setServicesOpen = open => { servicesToggle.setAttribute('aria-expanded', String(open)); servicesMenu.hidden = !open; };
+  servicesToggle.addEventListener('click', () => setServicesOpen(servicesMenu.hidden));
+  document.addEventListener('click', event => { if (!servicesMenu.hidden && !event.target.closest('.nav-services')) setServicesOpen(false); });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape' && !servicesMenu.hidden) { setServicesOpen(false); servicesToggle.focus(); } });
+  $('.nav-services').addEventListener('focusout', event => { if (!event.currentTarget.contains(event.relatedTarget)) setServicesOpen(false); });
+  $$('a, button', servicesMenu).forEach(item => item.addEventListener('click', () => setServicesOpen(false)));
+}
+const mobileServicesToggle = $('.mobile-services-toggle');
+mobileServicesToggle?.addEventListener('click', () => {
+  const open = mobileServicesToggle.getAttribute('aria-expanded') !== 'true';
+  mobileServicesToggle.setAttribute('aria-expanded', String(open));
+  $('#mobile-services').hidden = !open;
+});
 const projectsTrack = $('#projects-track');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 function moveProjects(direction) {

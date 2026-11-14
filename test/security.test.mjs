@@ -3,8 +3,10 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {toCsv} from '../server/xlsx.js';
-import {canAccessLead, canEditLead, canTakeLead, canSeeConversation, canReplyConversation} from '../server/permissions.js';
-import {maskContacts, extractContacts} from '../server/client-bot.js';
+import {canAccessLead, canEditLead, canTakeLead, canSeeConversation, canReplyConversation, DEFAULT_ROLES} from '../server/permissions.js';
+import {verifyGithubActionsToken, GITHUB_ISSUER} from '../server/github-oidc.js';
+import {generateKeyPairSync, sign as cryptoSign} from 'node:crypto';
+import {maskContacts, extractContacts, parseStartParam} from '../server/client-bot.js';
 import {crmUrlProblem} from '../server/crm.js';
 import {renderList, parsePrice, offerCatalog, bakeHtml} from '../src/site/content-render.js';
 import {CONTENT_DEFAULTS} from '../server/content-defaults.js';
@@ -32,6 +34,31 @@ test('доступ к заявке: свои, все или свободная',
   assert.equal(canEditLead(manager, free), true, 'свободную можно взять');
   assert.equal(canTakeLead(manager, other), false);
   assert.equal(canTakeLead(viewer, free), false, 'без права менять заявку не взять');
+  assert.equal(canAccessLead(manager, free), true, 'свободную заявку менеджер видит, чтобы взять');
+  assert.equal(canAccessLead({id: 9, permissions: ['stats.view']}, free), false, 'без права на заявки не видно и свободных');
+});
+
+test('роль «Менеджер» по умолчанию видит только свои и свободные заявки', () => {
+  const role = DEFAULT_ROLES.find(r => r.key === 'manager');
+  assert.ok(role.permissions.includes('leads.view_own') && !role.permissions.includes('leads.view_all'));
+});
+
+test('плановая проверка из GitHub Actions: только подписанный токен нашего репозитория и сценария', async () => {
+  const {privateKey, publicKey} = generateKeyPairSync('rsa', {modulusLength: 2048});
+  const jwk = {...publicKey.export({format: 'jwk'}), kid: 'k1', alg: 'RS256'};
+  const sign = (claims, key = privateKey) => {
+    const head = Buffer.from(JSON.stringify({alg: 'RS256', kid: 'k1', typ: 'JWT'})).toString('base64url');
+    const body = Buffer.from(JSON.stringify(claims)).toString('base64url');
+    return `${head}.${body}.${cryptoSign('RSA-SHA256', Buffer.from(`${head}.${body}`), key).toString('base64url')}`;
+  };
+  const now = 1_800_000_000;
+  const good = {iss: GITHUB_ISSUER, aud: 'dom-mira-tick', exp: now + 300, repository: 'ivantemshik/stroy', workflow_ref: 'ivantemshik/stroy/.github/workflows/tick.yml@refs/heads/main'};
+  const opts = {audience: 'dom-mira-tick', repository: 'ivantemshik/stroy', workflow: 'tick.yml', keys: [jwk], now};
+  assert.equal(await verifyGithubActionsToken(sign(good), opts), true);
+  assert.equal(await verifyGithubActionsToken(sign({...good, repository: 'someone/fork'}), opts), false, 'чужой репозиторий');
+  assert.equal(await verifyGithubActionsToken(sign({...good, workflow_ref: 'ivantemshik/stroy/.github/workflows/deploy.yml@refs/heads/main'}), opts), false, 'другой сценарий');
+  assert.equal(await verifyGithubActionsToken(sign({...good, exp: now - 1}), opts), false, 'истёк');
+  assert.equal(await verifyGithubActionsToken(sign(good, generateKeyPairSync('rsa', {modulusLength: 2048}).privateKey), opts), false, 'чужая подпись');
 });
 
 test('диалоги видны и отвечаются по тому же правилу, что заявки', () => {
@@ -83,4 +110,11 @@ test('прайс: 65 позиций, цена с единицей и разме�
 test('«О компании»: абзацы и цифры из контента', () => {
   assert.equal(renderList('about.facts', [{value: '8', label: 'направлений'}]), '<li><strong>8</strong><span>направлений</span></li>');
   assert.equal(renderList('about.paras', [{text: 'Текст <b>'}]), '<p>Текст &lt;b&gt;</p>');
+});
+
+test('ссылка в бота из окна услуги: услуга, страница и номер посетителя', () => {
+  assert.deepEqual(parseStartParam('u_design_home_1234567890'), {source: 'site', landing: '/', clientId: '1234567890', service: 'design'});
+  assert.equal(parseStartParam('u_constructor_home').service, null, 'служебные имена объекта не принимаются');
+  assert.equal(parseStartParam('u_hack_home').service, null);
+  assert.deepEqual(parseStartParam('s_otdelka'), {source: 'site', landing: '/otdelka/', clientId: null});
 });

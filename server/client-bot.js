@@ -16,6 +16,7 @@ import {notifyNewLead, alertError, leadUrl, refreshLeadMessages, notifyOwners} f
 import {enqueueConversion} from './metrika.js';
 import {pushToCrm} from './crm.js';
 import {normalizePhone, normalizeEmail, normalizeService, cleanLine, cleanText} from './validate.js';
+import {statusLabel} from './permissions.js';
 
 const token = () => config.telegram.clientToken;
 const adminToken = () => config.telegram.adminToken;
@@ -34,6 +35,10 @@ const SERVICE_TEXT = {
   construction: 'Интересует строительство дома',
   finishing: 'Интересует отделка дома',
   design: 'Интересует проектирование дома',
+  engineering: 'Интересуют инженерные системы для дома',
+  landscape: 'Интересует благоустройство участка и ландшафт',
+  lighting: 'Интересует архитектурное освещение дома и участка',
+  furniture: 'Интересует корпусная мебель на заказ',
   other: 'У меня другой вопрос'
 };
 const FIELD_KEYS = ['name', 'phone', 'service', 'object', 'area', 'location', 'budget', 'timing', 'has_project', 'has_plot', 'material', 'notes'];
@@ -41,14 +46,28 @@ const FIELD_KEYS = ['name', 'phone', 'service', 'object', 'area', 'location', 'b
 // ---------- Обновления Telegram ----------
 // Обновление помечается processing и после обработки done. Упавшее сохраняется (failed) и повторяется
 // плановой проверкой, всего не больше трёх попыток. Повтор уже взятого в работу обновления отбрасывается.
-export async function claimUpdate(bot, updateId) {
+// Обновление сохраняется сразу при получении, а не только при ошибке: если обработчик остановится на полпути
+// (таймаут функции, перезапуск), плановая проверка найдёт его в состоянии «в работе» и повторит.
+// Повторно забрать можно упавшее или зависшее дольше 3 минут, не больше трёх попыток.
+export async function claimUpdate(bot, update) {
+  const updateId = update?.update_id;
   if (updateId === undefined || updateId === null) return true;
+  const payload = await safePayload(bot, update);
   const rows = await db()`
-    insert into tg_updates (bot, update_id, status, attempts) values (${bot}, ${updateId}, 'processing', 1)
-    on conflict (bot, update_id) do update set status = 'processing', attempts = tg_updates.attempts + 1, updated_at = now()
-      where tg_updates.status = 'failed' and tg_updates.attempts < 3
+    insert into tg_updates (bot, update_id, status, attempts, payload) values (${bot}, ${updateId}, 'processing', 1, ${db().json(payload)})
+    on conflict (bot, update_id) do update set status = 'processing', attempts = tg_updates.attempts + 1, updated_at = now(),
+      payload = coalesce(tg_updates.payload, excluded.payload)
+      where (tg_updates.status = 'failed' or (tg_updates.status = 'processing' and tg_updates.updated_at < now() - interval '3 minutes'))
+        and tg_updates.attempts < 3
     returning update_id`;
   return rows.length > 0;
+}
+
+// Пока клиент не дал согласие, текст, подпись и контакт из его сообщения не храним даже для повтора.
+async function safePayload(bot, update) {
+  if (bot !== 'client' || !update?.message) return update;
+  const [conv] = await db()`select consent_at from conversations where tg_chat_id = ${update.message.chat?.id ?? 0}`.catch(() => []);
+  return conv?.consent_at ? update : {...update, message: {...update.message, text: undefined, caption: undefined, contact: undefined}};
 }
 
 export async function finishUpdate(bot, updateId) {
@@ -59,11 +78,7 @@ export async function finishUpdate(bot, updateId) {
 // Упавшее обновление сохраняется для повтора. Пока клиент не дал согласие, текст и контакт в нём не храним.
 export async function failUpdate(bot, update) {
   if (update?.update_id === undefined || update?.update_id === null) return;
-  let payload = update;
-  if (bot === 'client' && update.message) {
-    const [conv] = await db()`select consent_at from conversations where tg_chat_id = ${update.message.chat?.id ?? 0}`.catch(() => []);
-    if (!conv?.consent_at) payload = {...update, message: {...update.message, text: undefined, caption: undefined, contact: undefined}};
-  }
+  const payload = await safePayload(bot, update);
   await db()`update tg_updates set status = 'failed', payload = ${db().json(payload)}, updated_at = now()
     where bot = ${bot} and update_id = ${update.update_id}`.catch(() => {});
 }
@@ -82,14 +97,16 @@ export function runInBackground(promise) {
 export async function clientWebhook({request}) {
   checkWebhookSecret(request);
   const update = await readJson(request, 512 * 1024);
-  if (!await claimUpdate('client', update.update_id)) return json({ok: true});
+  if (!await claimUpdate('client', update)) return json({ok: true});
   const task = handleUpdate(update)
     .then(() => finishUpdate('client', update.update_id))
     .catch(async error => {
       console.error('client bot', error);
       await failUpdate('client', update);
       return alertError('ИИ-консультант', error.message);
-    });
+    })
+    // Заодно плановая проверка (не чаще раза в 4 минуты): повтор упавших и зависших сообщений, напоминания.
+    .then(() => import('./cron.js').then(cron => cron.runTick()).catch(() => {}));
   runInBackground(task);
   if (!process.env.VERCEL) await task;
   return json({ok: true});
@@ -139,8 +156,12 @@ async function saveMessage(convId, role, text, meta = {}) {
 export function parseStartParam(param) {
   const value = String(param || '').slice(0, 64);
   if (!value) return {source: 'telegram'};
+  const landing = page => page ? `/${page === 'home' ? '' : `${page}/`}` : '/';
   const site = /^s_([a-z0-9-]*)_?(\d{6,30})?$/i.exec(value);
-  if (site) return {source: 'site', landing: site[1] ? `/${site[1] === 'home' ? '' : `${site[1]}/`}` : '/', clientId: site[2] || null};
+  if (site) return {source: 'site', landing: landing(site[1]), clientId: site[2] || null};
+  // Запись из окна услуги на сайте: u_<услуга>_<страница>_<ClientID>, бот сразу начинает разговор об этой услуге.
+  const service = /^u_([a-z]+)_([a-z0-9-]*)_?(\d{6,30})?$/i.exec(value);
+  if (service) return {source: 'site', landing: landing(service[2]), clientId: service[3] || null, service: Object.hasOwn(SERVICE_TEXT, service[1]) ? service[1] : null};
   return {source: value.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 40) || 'telegram'};
 }
 
@@ -257,9 +278,24 @@ async function handleStart(conv, param) {
     return askConsent(conv, 'Здравствуйте! Я ИИ-консультант компании «Дом Мира»: отвечу на вопросы о строительстве, отделке, проектировании и ценах. Перед началом отметьте согласие на обработку данных.');
   }
   await applyStartParam(conv);
+  const service = parseStartParam(param).service;
+  if (service) return startService(conv, service);
   const greeting = await getSetting('ai.greeting');
   await saveMessage(conv.id, 'assistant', greeting);
   await send(conv.tg_chat_id, greeting, {reply_markup: {inline_keyboard: SERVICE_BUTTONS}});
+}
+
+// Как нажатие кнопки услуги: услуга записывается в диалог, консультант отвечает на запрос о ней.
+async function startService(conv, key) {
+  if (!Object.hasOwn(SERVICE_TEXT, key)) key = 'other';
+  const text = SERVICE_TEXT[key];
+  if (key !== 'other') {
+    const fields = {...conv.fields, service: normalizeService(key)};
+    await db()`update conversations set fields = ${db().json(fields)} where id = ${conv.id}`;
+    conv.fields = fields;
+  }
+  await saveMessage(conv.id, 'user', text);
+  return routeUserText(conv, text);
 }
 
 async function handleCallback(query) {
@@ -285,6 +321,9 @@ async function handleCallback(query) {
     if (conv.fields?.phone && !conv.lead_id) return createOrUpdateLead(conv, {announce: true});
     const pending = conv.consent_pending;
     if (pending) await sql`update conversations set consent_pending = false where id = ${conv.id}`;
+    // Пришёл из окна услуги на сайте: сразу разговор об этой услуге.
+    const linked = parseStartParam(conv.start_param).service;
+    if (!pending && linked) return startService(conv, linked);
     const greeting = await getSetting('ai.greeting');
     const reply = pending ? 'Спасибо! Теперь отправьте ваш вопрос ещё раз, до согласия мы его не сохраняли.' : greeting;
     await saveMessage(conv.id, 'assistant', reply);
@@ -304,17 +343,7 @@ async function handleCallback(query) {
 
   // Кнопки услуг и «Позвать менеджера» работают только после согласия.
   if (!conv.consent_at) return askConsent(conv, data === 'manager' ? 'Чтобы подключить менеджера, нужно согласие на обработку данных.' : 'Перед началом отметьте согласие на обработку данных.');
-  if (data.startsWith('svc:')) {
-    const key = data.slice(4);
-    const text = SERVICE_TEXT[key] || SERVICE_TEXT.other;
-    if (key !== 'other') {
-      const fields = {...conv.fields, service: normalizeService(key)};
-      await sql`update conversations set fields = ${sql.json(fields)} where id = ${conv.id}`;
-      conv.fields = fields;
-    }
-    await saveMessage(conv.id, 'user', text);
-    return routeUserText(conv, text);
-  }
+  if (data.startsWith('svc:')) return startService(conv, data.slice(4));
   if (data === 'manager') return handover(conv, 'клиент нажал «Позвать менеджера»');
 }
 
@@ -605,17 +634,31 @@ async function deleteMyData(conv, messageId) {
   for (const relay of relays) {
     await tg(adminToken(), 'deleteMessage', {chat_id: String(relay.chat_id), message_id: Number(relay.message_id)}).catch(() => {});
   }
+  // Сохранённые для повтора сообщения Telegram этого чата (в них может быть телефон).
+  await sql`update tg_updates set payload = null where bot = 'client' and payload is not null
+    and coalesce(payload->'message'->'chat'->>'id', payload->'callback_query'->'message'->'chat'->>'id') = ${String(conv.tg_chat_id)}`;
   if (conv.lead_id) {
     await sql`update leads set name = null, phone = null, email = null, tg_username = null, tg_user_id = null, message = 'Данные удалены по запросу клиента',
-      details = '{}', ym_client_id = null, updated_at = now() where id = ${conv.lead_id}`;
-    // В истории заявки остаются только служебные события без переписки и контактов.
-    await sql`update lead_events set text = 'Удалено по запросу клиента', data = '{}' where lead_id = ${conv.lead_id} and type in ('message', 'note', 'edit', 'repeat', 'call', 'email', 'meeting')`;
+      details = '{}', ym_client_id = null, yclid = null, gclid = null, ip_hash = null, user_agent = null, referrer = null, updated_at = now()
+      where id = ${conv.lead_id}`;
+    // В истории заявки остаются только служебные события (создана, статусы, ответственный) без переписки, контактов и комментариев.
+    await sql`update lead_events set text = 'Удалено по запросу клиента', data = '{}' where lead_id = ${conv.lead_id} and type not in ('created', 'status', 'assign')`;
+    const statuses = await sql`select id, data from lead_events where lead_id = ${conv.lead_id} and type = 'status'`;
+    for (const event of statuses) {
+      const {from, to, reason} = event.data || {};
+      const text = `${statusLabel(from)} → ${statusLabel(to)}${reason ? `. Причина: ${reason}` : ''}`;
+      await sql`update lead_events set text = ${text}, data = ${sql.json({from: from ?? null, to: to ?? null, reason: reason ?? null})} where id = ${event.id}`;
+    }
+    // Журнал действий по этой заявке: только какие поля менялись, без значений (старые записи могли их хранить).
+    await sql`update audit_log set details = jsonb_build_object('fields', (select coalesce(jsonb_agg(k), '[]'::jsonb) from jsonb_object_keys(details) k))
+      where entity = 'lead' and entity_id = ${String(conv.lead_id)} and details <> '{}'::jsonb and not (details ? 'fields' and (select count(*) from jsonb_object_keys(details)) = 1)`;
+    await sql`update offline_conversions set client_id = null, yclid = null where lead_id = ${conv.lead_id}`;
     await addEvent(conv.lead_id, 'note', {text: 'Клиент удалил свои данные командой /delete'});
     await refreshLeadMessages(conv.lead_id).catch(() => {});
     const [lead] = await sql`select crm_status from leads where id = ${conv.lead_id}`;
     if (lead?.crm_status === 'sent') await notifyOwners(`Клиент удалил свои данные (заявка №${conv.lead_id}). Удалите эту заявку и во внешней CRM.`).catch(() => {});
   }
   await sql`delete from conversations where id = ${conv.id}`;
-  await audit({actor: `tg:${conv.tg_user_id}`, action: 'client_data_deleted', entity: 'conversation', entityId: conv.id});
+  await audit({actor: 'client', action: 'client_data_deleted', entity: 'conversation', entityId: conv.id});
   await tg(token(), 'editMessageText', {chat_id: conv.tg_chat_id, message_id: messageId, text: 'Переписка и контакты удалены из нашей базы.'}).catch(() => {});
 }

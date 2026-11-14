@@ -19,14 +19,13 @@ if (existsSync(`${root}.env.local`)) {
 const PAGES = {
   main: 'index.html',
   otdelka: 'otdelka/index.html',
-  design: 'proektirovanie/index.html',
   privacy: 'privacy/index.html',
   consent: 'soglasie/index.html',
   cookies: 'cookies/index.html',
   notfound: '404.html',
   admin: 'admin/index.html'
 };
-const SITEMAP = ['/', '/otdelka/', '/proektirovanie/', '/privacy/', '/soglasie/', '/cookies/'];
+const SITEMAP = ['/', '/otdelka/', '/privacy/', '/soglasie/', '/cookies/'];
 
 // Общие куски страниц (шапка, подвал с контактами и окна) лежат в src/site/partials и вставляются
 // на место комментария <!--#include имя флаги-->. В шапке у всех страниц есть переключатель светлой и тёмной темы,

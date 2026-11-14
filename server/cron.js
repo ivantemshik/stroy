@@ -9,6 +9,7 @@ import {sendBackupToOwners} from './backup.js';
 import {sendWeeklyReport} from './reports.js';
 import {getSetting} from './settings.js';
 import {tg} from './telegram.js';
+import {verifyGithubActionsToken} from './github-oidc.js';
 
 async function claimJob(name, minSeconds) {
   const sql = db();
@@ -27,17 +28,21 @@ async function finishJob(name, ok, error = null) {
 async function retryFailedUpdates(limit = 10) {
   const sql = db();
   const result = {retried: 0, failed: 0, dropped: 0};
+  // Упавшие и зависшие «в работе» дольше 3 минут (обработчик остановился): после трёх попыток или без
+  // сохранённого сообщения повторить уже нельзя, владелец получает уведомление.
   const dead = await sql`update tg_updates set status = 'dead', payload = null, updated_at = now()
-    where status = 'failed' and attempts >= 3 returning bot, update_id`;
+    where (status = 'failed' or (status = 'processing' and updated_at < now() - interval '3 minutes'))
+      and (attempts >= 3 or payload is null) returning bot, update_id`;
   result.dropped = dead.length;
   if (dead.length) await alertError('Обновления Telegram', `Не удалось обработать после трёх попыток: ${dead.map(d => `${d.bot} ${d.update_id}`).join(', ')}`);
-  const rows = await sql`select bot, update_id, payload from tg_updates where status = 'failed' and payload is not null
-    and updated_at < now() - interval '1 minute' order by updated_at limit ${limit}`;
+  const rows = await sql`select bot, update_id, payload from tg_updates where payload is not null and attempts < 3
+    and ((status = 'failed' and updated_at < now() - interval '1 minute') or (status = 'processing' and updated_at < now() - interval '3 minutes'))
+    order by updated_at limit ${limit}`;
   if (!rows.length) return result;
   const client = await import('./client-bot.js');
   const admin = await import('./admin-bot.js');
   for (const row of rows) {
-    if (!await client.claimUpdate(row.bot, row.update_id)) continue;
+    if (!await client.claimUpdate(row.bot, row.payload)) continue;
     try {
       await (row.bot === 'client' ? client.handleClientUpdate(row.payload) : admin.handleAdminUpdate(row.payload));
       await client.finishUpdate(row.bot, row.update_id);
@@ -66,9 +71,15 @@ export async function runTick() {
 }
 
 // Внешний запуск проверки (GitHub Actions или крон хостинга) только с тем же служебным ключом, что и ежедневная задача.
+// Плановая проверка: по секрету CRON_SECRET или по токену GitHub Actions из сценария .github/workflows/tick.yml
+// нашего репозитория (каждые 15 минут, секреты в репозитории не нужны).
 export async function tickRoute({request}) {
   const auth = request.headers.get('authorization') || '';
-  if (!config.cronSecret || !safeEqual(auth, `Bearer ${config.cronSecret}`)) throw new HttpError(401, 'Нет доступа');
+  const bySecret = Boolean(config.cronSecret) && safeEqual(auth, `Bearer ${config.cronSecret}`);
+  const byGithub = !bySecret && /^Bearer ey/.test(auth) && await verifyGithubActionsToken(auth.slice(7), {
+    audience: 'dom-mira-tick', repository: process.env.GITHUB_TICK_REPO || 'ivantemshik/stroy', workflow: 'tick.yml'
+  }).catch(() => false);
+  if (!bySecret && !byGithub) throw new HttpError(401, 'Нет доступа');
   return json(await runTick());
 }
 

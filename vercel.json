@@ -37,6 +37,16 @@
       "source": "/admin",
       "destination": "/admin/",
       "permanent": true
+    },
+    {
+      "source": "/proektirovanie",
+      "destination": "/?usluga=design",
+      "permanent": true
+    },
+    {
+      "source": "/proektirovanie/",
+      "destination": "/?usluga=design",
+      "permanent": true
     }
   ],
   "headers": [

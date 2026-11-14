@@ -3,7 +3,7 @@ import {db} from './db.js';
 import {HttpError, json, readJson, clientIp, hashIp} from './http.js';
 import {requireUser} from './auth.js';
 import {audit} from './security.js';
-import {can, STATUS_KEYS, LEAD_STATUSES, SERVICES, CHANNELS, canSeeConversation, canReplyConversation} from './permissions.js';
+import {can, STATUS_KEYS, LEAD_STATUSES, SERVICES, CHANNELS, canAccessLead, canSeeConversation, canReplyConversation} from './permissions.js';
 import {getLead, changeStatus, assignLead, addNote, insertLead, addEvent} from './lead-core.js';
 import {refreshLeadMessages, notifyNewLead} from './notify.js';
 import {enqueueForStatus} from './metrika.js';
@@ -48,7 +48,7 @@ export function leadFilters(sql, user, query) {
   if (from && !Number.isNaN(Date.parse(from))) where.push(sql`l.created_at >= ${new Date(from)}`);
   if (to && !Number.isNaN(Date.parse(to))) where.push(sql`l.created_at < ${new Date(new Date(to).getTime() + 86400000)}`);
   if (query.get('test') !== '1') where.push(sql`not l.is_test`);
-  if (!can(user, 'leads.view_all')) where.push(sql`l.manager_id = ${user.id}`);
+  if (!can(user, 'leads.view_all')) where.push(sql`(l.manager_id = ${user.id} or l.manager_id is null)`);
   return where.reduce((acc, part, index) => index === 0 ? part : sql`${acc} and ${part}`);
 }
 
@@ -73,7 +73,7 @@ export async function listLeads({request, url}) {
 async function loadLeadFor(user, id) {
   const lead = await getLead(id);
   if (!lead) throw new HttpError(404, 'Заявка не найдена');
-  if (!can(user, 'leads.view_all') && lead.manager_id !== user.id) throw new HttpError(403, 'Это не ваша заявка');
+  if (!canAccessLead(user, lead)) throw new HttpError(403, 'Это заявка другого менеджера');
   return lead;
 }
 
@@ -149,6 +149,10 @@ export async function updateLeadRoute({request, params}) {
     if (body.details !== undefined) patch.details = sql.json({...lead.details, ...cleanDetails(body.details)});
   }
 
+  // Менеджер без права «Видеть все заявки», меняя свободную заявку, берёт её себе: иначе она останется
+  // свободной и её продолжат видеть и менять другие менеджеры.
+  if (!assign && !lead.manager_id && !can(user, 'leads.view_all') && (status || Object.keys(patch).length)) assign = {managerId: user.id};
+
   const updated = await sql.begin(async tx => {
     let current = lead;
     if (assign) current = await assignLead(lead.id, assign.managerId, {userId: user.id, sql: tx});
@@ -160,7 +164,8 @@ export async function updateLeadRoute({request, params}) {
     return current;
   });
   if (status) await enqueueForStatus(updated).catch(() => {});
-  await audit({userId: user.id, ipHash, action: 'lead_update', entity: 'lead', entityId: lead.id, details: body});
+  // В журнал пишем только какие поля менялись, без значений: там нет контактов и текстов клиента.
+  await audit({userId: user.id, ipHash, action: 'lead_update', entity: 'lead', entityId: lead.id, details: {fields: Object.keys(body || {})}});
   refreshLeadMessages(lead.id).catch(() => {});
   return json({lead: updated});
 }
@@ -182,7 +187,7 @@ export async function deleteLeadRoute({request, params}) {
   const id = Number(params.id);
   const [lead] = await db()`delete from leads where id = ${id} returning id, name, phone`;
   if (!lead) throw new HttpError(404, 'Заявка не найдена');
-  await audit({userId: user.id, ipHash: hashIp(clientIp(request)), action: 'lead_delete', entity: 'lead', entityId: id, details: {name: lead.name}});
+  await audit({userId: user.id, ipHash: hashIp(clientIp(request)), action: 'lead_delete', entity: 'lead', entityId: id, details: {}});
   return json({ok: true});
 }
 
@@ -207,7 +212,7 @@ export async function createLeadRoute({request}) {
 
 // Диалоги видны по тому же правилу, что и заявки: все, или только диалоги своих заявок.
 function conversationScope(sql, user) {
-  return can(user, 'leads.view_all') ? sql`true` : sql`c.lead_id in (select id from leads where manager_id = ${user.id})`;
+  return can(user, 'leads.view_all') ? sql`true` : sql`c.lead_id in (select id from leads where manager_id = ${user.id} or manager_id is null)`;
 }
 
 async function loadConversationFor(user, id, {reply = false} = {}) {

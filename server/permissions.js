@@ -22,7 +22,8 @@ const all = Object.keys(PERMISSIONS);
 export const DEFAULT_ROLES = [
   {key: 'owner', name: 'Владелец', permissions: all},
   {key: 'admin', name: 'Администратор', permissions: all.filter(p => p !== 'backup.download')},
-  {key: 'manager', name: 'Менеджер', permissions: ['leads.view_all', 'leads.edit', 'conversations.view', 'conversations.reply', 'stats.view']},
+  // Обычный менеджер видит свои заявки и свободные (чтобы взять), чужие не видит. Все заявки видят роли с правом leads.view_all.
+  {key: 'manager', name: 'Менеджер', permissions: ['leads.view_own', 'leads.edit', 'conversations.view', 'conversations.reply', 'stats.view']},
   {key: 'analyst', name: 'Наблюдатель', permissions: ['leads.view_all', 'stats.view', 'leads.export', 'conversations.view']}
 ];
 
@@ -74,10 +75,13 @@ export function can(user, permission) {
 }
 
 // Одно правило доступа для веб-админки и админ-бота.
-// Заявку видит тот, кто видит все заявки, или её ответственный.
+// Заявку видит тот, кто видит все заявки, её ответственный, а свободную (без ответственного) любой менеджер,
+// чтобы взять её в работу. Чужие заявки менеджер без права «Видеть все заявки» не видит.
 export function canAccessLead(user, lead) {
   if (!user || !lead) return false;
-  return can(user, 'leads.view_all') || (lead.manager_id !== null && lead.manager_id !== undefined && lead.manager_id === user.id);
+  if (can(user, 'leads.view_all')) return true;
+  const free = lead.manager_id === null || lead.manager_id === undefined;
+  return free ? can(user, 'leads.view_own') : lead.manager_id === user.id;
 }
 
 // Свободную заявку (без ответственного) может взять себе любой, кто может менять заявки.

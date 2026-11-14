@@ -48,7 +48,8 @@ const LISTS = {
   promo: items => items.map(item => `<li><b>${escapeHtml(item.title)}</b><span>${escapeHtml(item.text)}</span></li>`).join(''),
   paras: items => items.map(item => `<p>${escapeHtml(item.text)}</p>`).join(''),
   facts: items => items.map(item => `<li><strong>${escapeHtml(item.value)}</strong><span>${escapeHtml(item.label)}</span></li>`).join(''),
-  faq: items => items.map(item => `<details data-faq><summary>${escapeHtml(item.q)}<span aria-hidden="true">+</span></summary><p>${escapeHtml(item.a)}</p></details>`).join(''),
+  // Первый вопрос открыт сразу: видно, как выглядит ответ. Значок «плюс» рисуется стилями (.faq-icon).
+  faq: items => items.map((item, i) => `<details data-faq=""${i ? '' : ' open=""'}><summary>${escapeHtml(item.q)}<i class="faq-icon" aria-hidden="true"></i></summary><div class="faq-a"><p>${escapeHtml(item.a)}</p></div></details>`).join(''),
   // Только настоящие отзывы из админки: имя, где и когда оставлен. Без фото и звёзд, которых у отзыва нет.
   reviews: items => items.map(item => `<article class="review-card"><div class="review-person"><span class="review-initial" aria-hidden="true">${initial(item.name)}</span><div><h3>${escapeHtml(item.name)}</h3>${item.source || item.date ? `<p class="review-source">${escapeHtml([item.source, item.date].filter(Boolean).join(', '))}</p>` : ''}</div></div>${item.subject ? `<p class="review-subject">${escapeHtml(item.subject)}</p>` : ''}<p class="review-copy">${escapeHtml(item.text)}</p></article>`).join('')
 };

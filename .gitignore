@@ -6,3 +6,11 @@ qa/
 recordings/
 photos/
 .vercel
+.cache/
+.hallmark/shots/
+.claude/
+!.env.example
+
+# Варианты ночного фото из Codex (на сайт идёт выбранный WebP рядом)
+design/sources/hero-night/*.png
+dist-beget/

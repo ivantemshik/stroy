@@ -20,7 +20,7 @@ function inBackground(promise) {
 }
 
 export async function submitLead({request}) {
-  assertSameOrigin(request);
+  assertSameOrigin(request, {allowSite: true});
   const body = await readJson(request, 32 * 1024);
   const ip = clientIp(request);
   const ipHash = hashIp(ip);

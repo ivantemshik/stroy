@@ -1,6 +1,7 @@
 // Свежий контент из админки: телефон, почта, часы, цены, акции и вопросы.
 // Страница уже собрана с контентом на момент сборки, здесь подтягиваются правки, сделанные позже.
-import {renderList, getPath, formatPhone, telHref, countLists, isEmptyList} from './content-render.js';
+import {renderList, getPath, formatPhone, telHref, countLists, isEmptyList, managerTelegram} from './content-render.js';
+import {api} from './api.js';
 
 export function applyContent(content) {
   document.querySelectorAll('[data-c]').forEach(node => {
@@ -32,12 +33,18 @@ export function applyContent(content) {
       link.hidden = true;
     }
   });
+  document.querySelectorAll('a[data-phone-href]').forEach(link => {
+    link.hidden = !phone;
+    if (phone) link.href = telHref(phone);
+  });
+  const manager = managerTelegram(content);
+  if (manager) document.querySelectorAll('a[data-manager-tg]').forEach(link => { link.href = `https://t.me/${manager}`; link.dataset.direct = ''; });
   const email = content.contacts?.email;
   if (email) document.querySelectorAll('a[data-c-mail]').forEach(link => { link.href = `mailto:${email}`; });
 }
 
 export function initContent() {
-  fetch('/api/content', {headers: {accept: 'application/json'}})
+  fetch(api('/api/content'), {headers: {accept: 'application/json'}})
     .then(response => (response.ok ? response.json() : null))
     .then(content => { if (content) applyContent(content); })
     .catch(() => {});

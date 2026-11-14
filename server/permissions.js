@@ -48,6 +48,8 @@ export const SERVICES = {
   design: 'Проектирование',
   engineering: 'Инженерные системы',
   landscape: 'Благоустройство и ландшафт',
+  lighting: 'Архитектурное освещение',
+  furniture: 'Корпусная мебель',
   commercial: 'Коммерческий объект',
   other: 'Другое'
 };

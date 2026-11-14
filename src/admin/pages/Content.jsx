@@ -69,6 +69,7 @@ export default function Content() {
           <Field label="Адрес"><input value={draft.contacts.address} onChange={e => setContact('address', e.target.value)} /></Field>
           <Field label="Часы работы"><input value={draft.contacts.hours} onChange={e => setContact('hours', e.target.value)} /></Field>
           <Field label="Встречи"><input value={draft.contacts.meeting} onChange={e => setContact('meeting', e.target.value)} /></Field>
+          <Field label="Telegram менеджера" hint="Ник для кнопки «Написать менеджеру», например @manager. Пусто: кнопка ведёт в ИИ-консультанта, он сразу передаёт разговор менеджеру"><input value={draft.contacts.manager_telegram || ''} onChange={e => setContact('manager_telegram', e.target.value)} placeholder="@manager" /></Field>
           <Field label="Объявление под первым экраном" hint="Например, о праздничном графике. Пустое поле скрывает объявление"><input value={draft.notice} onChange={e => setDraft(d => ({...d, notice: e.target.value}))} /></Field>
         </div>
       </Panel>

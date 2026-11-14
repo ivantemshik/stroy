@@ -1,5 +1,5 @@
 // Маршруты API. Одна функция Vercel (api/[...path].js) обслуживает все адреса /api/*.
-import {HttpError, json} from './http.js';
+import {HttpError, json, allowedOrigin} from './http.js';
 import {challengeRoute} from './antispam.js';
 import {submitLead} from './leads-public.js';
 import {login, logout, me, changePassword} from './auth.js';
@@ -75,6 +75,10 @@ add('POST', '/api/admin/report-now', reportNowRoute);
 add('GET', '/api/admin/metrika.csv', metrikaCsvRoute);
 add('GET', '/api/admin/backup', backupDownloadRoute);
 
+// Открытые адреса, к которым обращается сам сайт. Только им разрешены запросы с адресов из SITE_ORIGINS,
+// админка и вебхуки работают лишь со своего домена.
+const SITE_PATHS = new Set(['/api/challenge', '/api/leads', '/api/content', '/api/config']);
+
 export async function handle(request) {
   const url = new URL(request.url);
   // На Vercel все адреса /api/* переписываются на /api/handler?__path=..., восстанавливаем исходный путь.
@@ -84,6 +88,20 @@ export async function handle(request) {
     url.searchParams.delete('__path');
   }
   const path = url.pathname.replace(/\/+$/, '') || '/';
+  const cors = SITE_PATHS.has(path) ? allowedOrigin(request) : null;
+  if (request.method === 'OPTIONS') {
+    const headers = cors ? {'access-control-allow-origin': cors, 'access-control-allow-methods': 'GET, POST, OPTIONS', 'access-control-allow-headers': 'content-type', 'access-control-max-age': '600', vary: 'Origin'} : {};
+    return new Response(null, {status: cors ? 204 : 403, headers});
+  }
+  const response = await dispatch(request, url, path);
+  if (cors) {
+    response.headers.set('access-control-allow-origin', cors);
+    response.headers.append('vary', 'Origin');
+  }
+  return response;
+}
+
+async function dispatch(request, url, path) {
   try {
     let methodMismatch = false;
     for (const route of routes) {

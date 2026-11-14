@@ -66,6 +66,50 @@ async function loadContent() {
   }
 }
 
+// Копия сайта на хостинге Beget (доммира.рф) собирается с SITE_HOSTING=beget: тогда рядом со страницами
+// кладётся .htaccess. В нём переход на https и адрес без www, те же редиректы и заголовки безопасности,
+// что в vercel.json, и кэш картинок на год. Админка и сервер заявок остаются на Vercel.
+function begetHtaccess() {
+  const vercel = JSON.parse(readFileSync(`${root}vercel.json`, 'utf8'));
+  const apiOrigin = (process.env.VITE_API_BASE || '').replace(/\/+$/, '');
+  const adminUrl = `${apiOrigin || 'https://dom-mira.vercel.app'}/admin/`;
+  const quote = value => `"${String(value).replaceAll('"', '\\"')}"`;
+  const security = vercel.headers.find(rule => rule.source === '/(.*)').headers.map(({key, value}) =>
+    `  Header always set ${key} ${quote(key === 'Content-Security-Policy' && apiOrigin ? value.replace("connect-src 'self'", `connect-src 'self' ${apiOrigin}`) : value)}`);
+  const redirects = vercel.redirects
+    .filter(rule => !rule.source.startsWith('/admin'))
+    .map(rule => `  RewriteRule ^${rule.source.slice(1).replace(/[.]/g, '\\.')}$ ${rule.destination} [R=${rule.permanent ? 301 : 302},L]`);
+  return [
+    '# Собирается вместе с сайтом: vite.config.js, функция begetHtaccess. Править там.',
+    'AddDefaultCharset UTF-8',
+    'DirectoryIndex index.html',
+    'Options -Indexes',
+    'ErrorDocument 404 /404.html',
+    '',
+    '<IfModule mod_rewrite.c>',
+    '  RewriteEngine On',
+    '  RewriteCond %{HTTPS} off',
+    '  RewriteCond %{HTTP:X-Forwarded-Proto} !https',
+    '  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]',
+    '  RewriteCond %{HTTP_HOST} ^www\\.(.+)$ [NC]',
+    '  RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L]',
+    ...redirects,
+    `  RewriteRule ^admin(/.*)?$ ${adminUrl} [R=302,L]`,
+    '</IfModule>',
+    '',
+    '<IfModule mod_headers.c>',
+    ...security,
+    '  <If "%{REQUEST_URI} =~ m#^/(images|fonts|assets)/#">',
+    '    Header set Cache-Control "public, max-age=31536000, immutable"',
+    '  </If>',
+    '  <FilesMatch "\\.(html|xml|txt)$">',
+    '    Header set Cache-Control "no-cache"',
+    '  </FilesMatch>',
+    '</IfModule>',
+    ''
+  ].join('\n');
+}
+
 function sitePlugin() {
   let content = CONTENT_DEFAULTS;
   return {
@@ -97,6 +141,7 @@ function sitePlugin() {
       this.emitFile({type: 'asset', fileName: 'robots.txt', source: indexable()
         ? `User-agent: *\nDisallow: /admin/\nDisallow: /api/\n\nUser-agent: Yandex\nDisallow: /admin/\nDisallow: /api/\nClean-param: utm_source&utm_medium&utm_campaign&utm_content&utm_term&yclid&gclid&ysclid&_ym_debug\n\nSitemap: ${base}/sitemap.xml\n`
         : 'User-agent: *\nDisallow: /\n'});
+      if (process.env.SITE_HOSTING === 'beget') this.emitFile({type: 'asset', fileName: '.htaccess', source: begetHtaccess()});
       const today = new Date().toISOString().slice(0, 10);
       this.emitFile({type: 'asset', fileName: 'sitemap.xml', source: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${SITEMAP.map(path =>
         `  <url><loc>${base}${path}</loc><lastmod>${today}</lastmod><priority>${path === '/' ? '1.0' : path.length < 14 ? '0.9' : '0.3'}</priority></url>`).join('\n')}\n</urlset>\n`});
@@ -177,7 +222,7 @@ function devApiPlugin() {
 export default defineConfig({
   base: process.env.GITHUB_PAGES ? '/stroy/' : '/',
   plugins: [react(), sitePlugin(), imageVersionPlugin(), devApiPlugin()],
-  define: {__IMAGES_V__: JSON.stringify(folderVersion(`${root}public/images/objects`))},
+  define: {__IMAGES_V__: JSON.stringify(folderVersion(`${root}public/images/objects`)), __SERVICES_V__: JSON.stringify(folderVersion(`${root}public/images/services`))},
   build: {
     rollupOptions: {
       input: Object.fromEntries(Object.entries(PAGES).map(([key, path]) => [key, fileURLToPath(new URL(`./${path}`, import.meta.url))]))

@@ -5,6 +5,9 @@ const env = process.env;
 
 export const config = {
   siteUrl: (env.SITE_URL || 'http://127.0.0.1:5173').replace(/\/$/, ''),
+  // Другие адреса, с которых сайт шлёт формы на этот сервер: копия сайта на хостинге Beget (доммира.рф).
+  // Через запятую, в виде https://xn--80ahmpakr.xn--p1ai (так браузер передаёт кириллический домен).
+  siteOrigins: (env.SITE_ORIGINS || '').split(',').map(item => item.trim().replace(/\/+$/, '')).filter(Boolean),
   databaseUrl: env.DATABASE_URL || '',
   sessionSecret: env.SESSION_SECRET || '',
   powSecret: env.POW_SECRET || env.SESSION_SECRET || '',

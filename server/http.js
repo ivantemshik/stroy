@@ -76,10 +76,18 @@ export function safeEqual(a, b) {
   return left.length === right.length && timingSafeEqual(left, right);
 }
 
-// Проверка, что изменяющий запрос пришёл с нашего сайта (защита от CSRF вместе с SameSite cookie).
-export function assertSameOrigin(request) {
+// Адрес сайта из SITE_ORIGINS, с которого пришёл запрос, или null. Такому адресу сервер отвечает
+// с заголовками CORS: статическая копия сайта на доммира.рф отправляет формы сюда напрямую.
+export function allowedOrigin(request) {
   const origin = request.headers.get('origin');
-  if (!origin) return;
+  return origin && config.siteOrigins.includes(origin) ? origin : null;
+}
+
+// Проверка, что изменяющий запрос пришёл с нашего сайта (защита от CSRF вместе с SameSite cookie).
+// allowSite: открытые формы сайта, им можно прийти и с адресов из SITE_ORIGINS. Админке нельзя.
+export function assertSameOrigin(request, {allowSite = false} = {}) {
+  const origin = request.headers.get('origin');
+  if (!origin || (allowSite && allowedOrigin(request))) return;
   const host = request.headers.get('x-forwarded-host') || request.headers.get('host');
   let originHost;
   try { originHost = new URL(origin).host; } catch { throw new HttpError(403, 'Запрос с чужого сайта'); }

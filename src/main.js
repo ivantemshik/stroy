@@ -4,6 +4,7 @@ import {initConsent} from './site/consent.js';
 import {initTheme} from './site/theme.js';
 import {initPhotoLinks} from './site/objects.js';
 import {initContent} from './site/content.js';
+import {SERVICES} from './site/services.js';
 const page = document.body.dataset.page || 'home';
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -90,40 +91,68 @@ function closeMenu() { menuToggle.setAttribute('aria-expanded', 'false'); menuTo
 menuToggle.addEventListener('click', () => { const open = menuToggle.getAttribute('aria-expanded') !== 'true'; menuToggle.setAttribute('aria-expanded', String(open)); menuToggle.setAttribute('aria-label', open ? 'Закрыть меню' : 'Открыть меню'); $('#mobile-menu').hidden = !open; });
 $$('a, button:not(.mobile-services-toggle)', $('#mobile-menu')).forEach(link => link.addEventListener('click', closeMenu));
 document.addEventListener('keydown', event => { if (event.key === 'Escape') closeMenu(); });
-const services = {
-  design: {tg:'design', title:'Проект под ваш образ жизни', intro:'Делаем индивидуальный проект под ваши пожелания и участок. Продумываем фасад и то, как будет удобно жить в доме каждый день.', scope:['Эскизный проект','Архитектура и конструктив','Инженерные системы','Ландшафтный проект'], rate:'Эскизный проект: от 700 ₽/м².', image:'canva-detail-1.png', select:'Эскизный проект'},
-  build: {tg:'construction', title:'От участка до дома', intro:'Строим частные дома по индивидуальным проектам. Фундамент, стены, перекрытия, фасад и кровлю делаем в одной связке с инженерными системами и отделкой.', scope:['Фундаменты','Стены и перекрытия','Кровля и фасады','Индивидуальные проекты'], rate:'Строительство по проекту: от 70 000 ₽/м² за работу, без материалов.', image:'canva-detail-1.png', select:'Строительство по проекту'},
-  interior: {tg:'finishing', title:'Отделка, мебель и участок', intro:'Инженерные системы, отделка по дизайн-проекту, корпусная мебель и благоустройство участка в одном стиле с домом.', scope:['Отделка и ремонт','Мебель на заказ','Ландшафт','Архитектурное освещение'], rate:'Ремонт по дизайн-проекту: от 60 000 ₽/м² без инженерных систем и материалов.', image:'canva-detail-2.png', select:'Отделка по дизайн-проекту'},
-  engineering: {tg:'engineering', title:'Инженерные системы', intro:'Проектируем и монтируем отопление, водоснабжение, канализацию, вентиляцию и электрику.', scope:['Водоснабжение и отопление','Вентиляция','Электромонтаж','Канализация'], rate:'Проектирование инженерных систем: от 1 500 ₽/м².', image:'canva-detail-3.png', select:'Проектирование инженерии'},
-  landscape: {tg:'landscape', title:'Сад и участок', intro:'Планируем и обустраиваем участок: выравниваем территорию, сажаем растения, делаем дорожки, дренаж и освещение.', scope:['Ландшафтный проект','Газоны и посадки','Дорожки и площадки','Дренаж и автополив'], rate:'Ландшафтный проект, дендроплан, автополив и освещение: от 15 000 ₽/сотка.', image:'project-landscape.webp', emailOnly:true},
-  lighting: {tg:'lighting', title:'Архитектурная подсветка', intro:'Проектируем и монтируем подсветку домов, зданий и сада: фасадов, деревьев и всего участка.', scope:['Подсветка фасадов','Ландшафтное освещение','Декоративный свет','Монтаж'], rate:'Состав работ и цену считаем под ваш объект.', image:'project-lighting.webp', emailOnly:true},
-  furniture: {tg:'furniture', title:'Корпусная мебель на заказ', intro:'Делаем корпусную мебель по индивидуальному проекту: кухни, шкафы, гардеробные, столы и стеллажи.', scope:['Кухни','Шкафы и гардеробные','Столы и стеллажи','Дизайн мебели'], rate:'Цена зависит от проекта, размеров и материалов.', image:'project-furniture.webp', emailOnly:true}
-};
-// Мини окно услуги: описание, состав работ, цена «от» и запись через ИИ-консультанта в Telegram сразу с выбранной услугой.
-// У «Отделки» своя страница, остальные услуги открываются только в этом окне.
-const ARROW = '<svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg>';
-function serviceTelegramLink(service) {
-  const clientId = getClientId();
-  return `https://t.me/dommira_consult_bot?start=${`u_${service.tg}_${page}${clientId ? `_${clientId}` : ''}`.slice(0, 64)}`;
-}
+// Окно услуги: фото, результат, состав работ, цена «от», форма заявки с выбранной услугой и три способа связи.
+// Данные в src/site/services.js, одно окно для меню, карточек главной и блока «Наши услуги».
+const SERVICES_VERSION = typeof __SERVICES_V__ === 'string' && __SERVICES_V__ ? `?v=${__SERVICES_V__}` : '';
+const serviceForm = $('#service-form');
+const serviceFormHtml = serviceForm ? serviceForm.innerHTML : '';
+let currentService = null;
 function openService(key, returnTarget = document.activeElement) {
-  const service = services[key];
+  const service = SERVICES[key];
   if (!service) return;
-  const mail = `mailto:info@gkvesmir.ru?subject=${encodeURIComponent('Дом Мира: ' + service.title)}&body=${encodeURIComponent('Здравствуйте! Хочу обсудить: ' + service.title + '.\n\nМои пожелания: ')}`;
-  const alternative = service.emailOnly
-    ? `<a class="service-alt" href="${mail}">Написать на почту</a>`
-    : '<button class="service-alt" type="button">Оставить заявку на сайте</button>';
-  $('#service-content').innerHTML = `<img class="service-asset" src="${import.meta.env.BASE_URL}images/${service.image}" width="72" height="72" alt="Архитектурная деталь из материалов проекта" /><p class="eyebrow">НАПРАВЛЕНИЕ РАБОТ</p><h2 id="service-title">${service.title}</h2><p>${service.intro}</p><div class="service-scope">${service.scope.map(text => `<span>${text}</span>`).join('')}</div><p>${service.rate}</p><p class="small-print">Цена примерная. Точную посчитаем, когда обсудим состав работ.</p><div class="service-actions"><a class="button plum service-tg" href="${serviceTelegramLink(service)}" target="_blank" rel="noopener">Записаться через Telegram <span aria-hidden="true">${ARROW}</span></a>${alternative}</div>`;
-  $('.service-tg').addEventListener('click', () => goal('tg_click', {place: 'service', service: key}));
-  if (!service.emailOnly) $('.service-alt').addEventListener('click', () => { state.scope = service.select; openQuiz(); });
-  // Окно открыто поверх другого (например, прайса): прежнее закрываем, чтобы не было двух окон сразу.
+  if (service.href) { location.href = service.href; return; }
+  currentService = service;
+  const path = size => `${import.meta.env.BASE_URL}images/services/${service.photo}-${size}.webp${SERVICES_VERSION}`;
+  const photo = $('#service-photo');
+  photo.src = path(800);
+  photo.srcset = `${path(480)} 480w, ${path(800)} 800w`;
+  photo.sizes = '(max-width: 760px) 100vw, 45vw';
+  photo.alt = service.alt;
+  $('#service-title').textContent = service.title;
+  $('#service-result').textContent = service.result;
+  $('#service-works').replaceChildren(...service.works.map(text => Object.assign(document.createElement('li'), {textContent: text})));
+  $('#service-price').textContent = service.price;
+  serviceForm.innerHTML = serviceFormHtml;
+  const mail = $('[data-service-mail]', serviceDialog);
+  if (mail) mail.href = `${mail.href.split('?')[0]}?subject=${encodeURIComponent(`Дом Мира: ${service.title}`)}`;
   $$('dialog[open]').forEach(dialog => { if (dialog !== serviceDialog) dialog.close(); });
+  goal('form_open', {form: `service-${key}`});
   openModal(serviceDialog, returnTarget);
+  serviceDialog.scrollTop = 0;
 }
+serviceForm?.addEventListener('submit', async event => {
+  event.preventDefault();
+  if (!currentService) return;
+  const field = name => serviceForm.elements.namedItem(name);
+  const error = $('.service-error', serviceForm);
+  const fail = (input, message) => { error.textContent = message; input.setAttribute('aria-invalid', 'true'); input.focus(); };
+  $$('[aria-invalid]', serviceForm).forEach(input => input.removeAttribute('aria-invalid'));
+  const phone = field('phone').value.trim();
+  if (phone.replace(/\D/g, '').length < 10) return fail(field('phone'), 'Укажите телефон с кодом города.');
+  if (!field('consent').checked) return fail(field('consent'), 'Отметьте согласие на обработку данных, без него заявку не принять.');
+  const submit = $('.service-submit', serviceForm);
+  const comment = field('comment').value.trim();
+  const form = `service-${currentService.key}`;
+  submit.disabled = true;
+  error.textContent = 'Отправляем...';
+  try {
+    await postLead({form, page: location.pathname, service: currentService.lead, name: field('name').value.trim(), phone, consent: true,
+      website: field('website').value, message: `Заявка из окна услуги «${currentService.title}»${comment ? `. ${comment}` : ''}`});
+    goal('lead_sent', {form, service: currentService.lead});
+    const done = Object.assign(document.createElement('p'), {className: 'service-done', textContent: 'Заявка принята. Менеджер свяжется с вами в ближайшее рабочее время.', tabIndex: -1});
+    done.setAttribute('role', 'status');
+    serviceForm.replaceChildren(done);
+    done.focus();
+  } catch (err) {
+    goal('form_error', {form});
+    error.textContent = `${err.status && err.message ? err.message : 'Не получилось отправить.'} Напишите нам на info@gkvesmir.ru.`;
+    submit.disabled = false;
+  }
+});
 $$('[data-service]').forEach(button => button.addEventListener('click', () => openService(button.dataset.service, button)));
 // Старый адрес «Проектирования» и ссылки вида /?usluga=design сразу открывают окно услуги.
 const linkedService = new URLSearchParams(location.search).get('usluga');
-if (linkedService && services[linkedService]) {
+if (linkedService && SERVICES[linkedService] && !SERVICES[linkedService].href) {
   history.replaceState(null, '', location.pathname + location.hash);
   openService(linkedService, document.body);
 }
@@ -243,7 +272,7 @@ function renderQuiz() {
   if (state.step === 2) inner = `<p>Выберите одну, по ней посчитаем ориентир.</p><div class="quiz-options">${['Строительство по проекту','Эскизный проект','Проектирование инженерии','Отделка по дизайн-проекту'].map(value=>`<button class="quiz-option ${state.scope === value ? 'selected' : ''}" data-scope="${value}" aria-pressed="${state.scope === value}"><span>${value}</span><span aria-hidden="true">${state.scope === value ? '<svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="m5 12 4 4L19 6"/></svg>' : '<svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg>'}</span></button>`).join('')}</div>`;
   if (state.step === 3) {
     const rate = {'Строительство по проекту':70000,'Эскизный проект':700,'Проектирование инженерии':1500,'Отделка по дизайн-проекту':60000}[state.scope];
-    inner = `<div class="quiz-summary"><p>Ориентировочная стоимость работ</p><strong class="estimate">от ${rub(state.area * rate)} ₽</strong><p>${rub(state.area)} м² × ${rub(rate)} ₽/м² · без материалов</p></div><dl class="summary-dl"><dt>Ваш объект</dt><dd>${state.type}</dd><dt>Задача</dt><dd>${state.scope}</dd><dt>Площадь</dt><dd>${state.area} м²</dd></dl><p class="small-print">Считаем по прайсу на сайте, это еще не смета. В отделку инженерные системы не входят. Итог зависит от проекта, участка и состава работ.</p><label class="modal-field-label" for="quiz-name">Имя</label><input class="modal-input" id="quiz-name" autocomplete="name" maxlength="80" /><label class="modal-field-label" for="quiz-phone">Телефон</label><input class="modal-input ym-hide-content" id="quiz-phone" type="tel" autocomplete="tel" placeholder="+7" /><label class="modal-field-label" for="quiz-message">Коротко о задаче (необязательно)</label><textarea class="modal-input quiz-message" id="quiz-message" maxlength="1000" rows="2" placeholder="Где участок, когда хотите начать"></textarea><label class="quiz-consent"><input type="checkbox" id="quiz-consent" /> Даю <a href="/soglasie/" target="_blank">согласие на обработку персональных данных</a></label><button class="button plum" type="button" id="quiz-send">Получить смету</button><p class="small-print" id="quiz-hint" role="status"></p>`;
+    inner = `<div class="quiz-summary"><p class="quiz-summary-label">Ориентировочная стоимость работ</p><strong class="estimate">от ${rub(state.area * rate)} ₽</strong><p class="quiz-summary-note">${rub(state.area)} м² × ${rub(rate)} ₽/м², только работа, без материалов. Это ориентир по прайсу, точную сумму покажет смета после осмотра.</p></div><dl class="summary-dl"><dt>Объект</dt><dd>${state.type}</dd><dt>Работы</dt><dd>${state.scope}</dd><dt>Площадь</dt><dd>${state.area} м²</dd></dl><div class="quiz-form"><label class="modal-field-label" for="quiz-name">Имя</label><input class="modal-input" id="quiz-name" autocomplete="name" maxlength="80" /><label class="modal-field-label" for="quiz-phone">Телефон</label><input class="modal-input ym-hide-content" id="quiz-phone" type="tel" autocomplete="tel" placeholder="+7" /><label class="modal-field-label" for="quiz-message">Комментарий, необязательно</label><textarea class="modal-input quiz-message" id="quiz-message" maxlength="1000" rows="2" placeholder="Где участок, когда хотите начать"></textarea><label class="quiz-consent"><input type="checkbox" id="quiz-consent" /> <span>Даю <a href="/soglasie/" target="_blank">согласие на обработку персональных данных</a></span></label><button class="button plum" type="button" id="quiz-send">Получить смету</button><p class="small-print" id="quiz-hint" role="status"></p></div>`;
   }
   content.innerHTML = `${progress}<p class="eyebrow">ШАГ ${state.step+1} ИЗ 4</p><h2 id="quiz-title">${titles[state.step]}</h2>${inner}<div class="quiz-actions">${state.step > 0 ? '<button class="quiz-back"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M19 12H5m6-6-6 6 6 6"/></svg> Назад</button>' : ''}${state.step < 3 ? '<button class="button plum quiz-next">Продолжить <span aria-hidden="true"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></button>' : '<button class="quiz-back quiz-reset">Начать заново <svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M20 7v5h-5M19 12a7 7 0 1 0-2 5M20 7l-3-3"/></svg></button>'}</div>`;
   $$('[data-type]', content).forEach(button=>button.addEventListener('click',()=>{state.type=button.dataset.type;renderQuiz();$('.quiz-option.selected',content)?.focus();}));
@@ -270,11 +299,133 @@ function mailto() {
   const body = `Здравствуйте! Хочу обсудить проект с «Дом Мира».\n\nОбъект: ${state.type}\nПлощадь: около ${state.area} м²\nЗадача: ${state.scope}\n${state.email ? `Мой e-mail: ${state.email}\n` : ''}\nУчасток и пожелания: [расскажите о вашем проекте]`;
   return `mailto:info@gkvesmir.ru?subject=${encodeURIComponent('Обсудить проект дома — Дом Мира')}&body=${encodeURIComponent(body)}`;
 }
-$('#contact-form').addEventListener('submit', event => {event.preventDefault();state.email=$('#contact-email').value;openQuiz();});
+/* «Оставить отзыв» под отзывами: отзыв приходит менеджерам как обращение с пометкой «Отзыв для сайта»,
+   после проверки его публикуют в админке, раздел «Контент сайта», список «Отзывы клиентов». */
+const reviewDialog = $('#review-dialog');
+if (reviewDialog) {
+  const reviewForm = $('#review-form', reviewDialog);
+  const reviewFormHtml = reviewForm.innerHTML;
+  $$('[data-open="review"]').forEach(button => button.addEventListener('click', () => {
+    if (!$('.review-submit', reviewForm)) reviewForm.innerHTML = reviewFormHtml;
+    goal('form_open', {form: 'review'});
+    openModal(reviewDialog, button);
+  }));
+  reviewForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    const field = name => reviewForm.elements.namedItem(name);
+    const error = $('.review-error', reviewForm);
+    const fail = (input, message) => { error.textContent = message; input.setAttribute('aria-invalid', 'true'); input.focus(); };
+    $$('[aria-invalid]', reviewForm).forEach(input => input.removeAttribute('aria-invalid'));
+    const name = field('name').value.trim();
+    const contact = field('contact').value.trim();
+    const text = field('text').value.trim();
+    const isEmail = contact.includes('@');
+    if (!name) return fail(field('name'), 'Укажите, как подписать отзыв.');
+    if (!(isEmail ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact) : contact.replace(/\D/g, '').length >= 10)) return fail(field('contact'), 'Укажите телефон или e-mail: менеджер уточнит детали перед публикацией.');
+    if (text.length < 20) return fail(field('text'), 'Напишите хотя бы пару предложений о работе.');
+    if (!field('consent').checked) return fail(field('consent'), 'Отметьте согласие на обработку данных.');
+    const subject = field('subject').value;
+    const submit = $('.review-submit', reviewForm);
+    submit.disabled = true;
+    error.textContent = 'Отправляем...';
+    try {
+      await postLead({form: 'review', page: location.pathname, service: 'other', name, phone: isEmail ? '' : contact, email: isEmail ? contact : '', consent: true,
+        website: field('website').value, message: `Отзыв для сайта${subject ? ` (${subject})` : ''}. Публикация с именем: ${field('publish').checked ? 'можно' : 'нельзя, только для компании'}.\n\n${text}`});
+      goal('lead_sent', {form: 'review'});
+      const done = Object.assign(document.createElement('p'), {className: 'review-done', textContent: 'Спасибо! Отзыв получили. Менеджер свяжется с вами, уточнит детали, и после этого опубликуем отзыв на сайте.', tabIndex: -1});
+      done.setAttribute('role', 'status');
+      reviewForm.replaceChildren(done);
+      done.focus();
+    } catch (err) {
+      goal('form_error', {form: 'review'});
+      error.textContent = `${err.status && err.message ? err.message : 'Не получилось отправить.'} Напишите нам на info@gkvesmir.ru.`;
+      submit.disabled = false;
+    }
+  });
+}
+
+/* Форма «Оставить заявку» в подвале: имя, телефон, согласие, отправка прямо отсюда, результат в том же блоке */
+const footerForm = $('#footer-form');
+footerForm?.addEventListener('submit', async event => {
+  event.preventDefault();
+  const field = name => footerForm.elements.namedItem(name);
+  const status = $('.footer-form-status', footerForm);
+  const fail = (input, message) => { status.textContent = message; input.setAttribute('aria-invalid', 'true'); input.focus(); };
+  $$('[aria-invalid]', footerForm).forEach(input => input.removeAttribute('aria-invalid'));
+  const phone = field('phone').value.trim();
+  if (phone.replace(/\D/g, '').length < 10) return fail(field('phone'), 'Укажите телефон с кодом города.');
+  if (!field('consent').checked) return fail(field('consent'), 'Отметьте согласие на обработку данных.');
+  const submit = $('.footer-submit', footerForm);
+  const form = `footer-${page}`;
+  submit.disabled = true;
+  status.textContent = 'Отправляем...';
+  try {
+    await postLead({form, page: location.pathname, service: page === 'otdelka' ? 'finishing' : 'other', name: field('name').value.trim(), phone, consent: true,
+      website: field('website').value, message: 'Заявка из формы внизу страницы'});
+    goal('lead_sent', {form});
+    footerForm.classList.add('is-done');
+    status.textContent = 'Заявка принята. Менеджер свяжется с вами в ближайшее рабочее время.';
+  } catch (err) {
+    goal('form_error', {form});
+    status.textContent = `${err.status && err.message ? err.message : 'Не получилось отправить.'} Напишите нам на info@gkvesmir.ru.`;
+    submit.disabled = false;
+  }
+});
+
+/* «Появились вопросы?» в правом нижнем углу на главной и «Отделке»: три способа связи.
+   Появляется после первого экрана, прячется, пока открыта клавиатура или видна форма в подвале, и после закрытия. */
+const ask = $('#ask');
+if (ask && ['home', 'otdelka'].includes(page)) {
+  let dismissed = false;
+  try { dismissed = sessionStorage.getItem('dm_ask_closed') === '1'; } catch { /* приватный режим */ }
+  const toggle = $('.ask-toggle', ask);
+  const panel = $('#ask-panel');
+  const askState = {scrolled: false, footer: false, forms: 0, typing: false, cookie: false};
+  const update = () => { ask.hidden = dismissed || !askState.scrolled || askState.footer || askState.forms > 0 || askState.typing || askState.cookie; if (ask.hidden) setPanel(false); };
+  const setPanel = open => { toggle.setAttribute('aria-expanded', String(open)); panel.hidden = !open; };
+  toggle.addEventListener('click', () => { setPanel(panel.hidden); if (!panel.hidden) goal('form_open', {form: 'ask'}); });
+  $('.ask-close', ask).addEventListener('click', () => {
+    dismissed = true;
+    try { sessionStorage.setItem('dm_ask_closed', '1'); } catch { /* приватный режим */ }
+    update();
+  });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape' && !panel.hidden) { setPanel(false); toggle.focus(); } });
+  document.addEventListener('click', event => { if (!panel.hidden && !event.target.closest('#ask')) setPanel(false); });
+  const onScroll = () => { askState.scrolled = window.scrollY > window.innerHeight * 0.6; update(); };
+  window.addEventListener('scroll', onScroll, {passive: true});
+  document.addEventListener('focusin', event => { askState.typing = Boolean(event.target.closest?.('input, textarea, select')) && !event.target.closest('#ask'); update(); });
+  document.addEventListener('focusout', () => { askState.typing = false; setTimeout(update, 0); });
+  const footer = $('.footer');
+  if (footer && 'IntersectionObserver' in window) new IntersectionObserver(([entry]) => { askState.footer = entry.isIntersecting; update(); }, {rootMargin: '0px 0px -10% 0px'}).observe(footer);
+  // Формы на самой странице (смета на «Отделке»): пока форма на экране, подсказка не закрывает её поля и кнопку
+  const pageForms = [...document.querySelectorAll('main form')];
+  if (pageForms.length && 'IntersectionObserver' in window) {
+    const seen = new Set();
+    const formObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => { if (entry.isIntersecting) seen.add(entry.target); else seen.delete(entry.target); });
+      askState.forms = seen.size;
+      update();
+    });
+    pageForms.forEach(form => formObserver.observe(form));
+  }
+  // Баннер cookie создаётся и удаляется скриптом согласия: пока он на экране, подсказку не показываем.
+  const syncCookie = () => { askState.cookie = Boolean(document.querySelector('body > .cookie')); update(); };
+  new MutationObserver(syncCookie).observe(document.body, {childList: true});
+  syncCookie();
+  onScroll();
+}
+
 $('#year').textContent = new Date().getFullYear();
 
 // Ссылки на ИИ-консультанта несут страницу и ClientID Метрики, чтобы заявка из бота связалась с визитом.
 function updateTelegramLinks(clientId = getClientId()) {
+  $$('a[data-manager-tg]:not([data-direct])').forEach(link => {
+    try {
+      const url = new URL(link.href);
+      url.searchParams.set('start', `m_${page}${clientId ? `_${clientId}` : ''}`.slice(0, 64));
+      link.href = url.toString();
+    } catch { /* ссылка без адреса */ }
+  });
   $$('a[data-tg]').forEach(link => {
     try {
       const url = new URL(link.href);
@@ -309,12 +460,12 @@ function initReveal() {
   const groups = new Map();
   const add = (trigger, items) => { if (trigger && items.length) groups.set(trigger, items); };
   $$('.section-heading, .projects-heading, .intro-copy, .faq > div:first-child, .projects-track', main).forEach(el => add(el, [el]));
-  ['.service-list', '.quality-grid', '.home-grid', '.price-grid', '.about-facts', '.reviews-grid', '.faq-list'].forEach(selector => {
+  ['.service-list', '.uslugi-grid', '.quality-grid', '.home-grid', '.process-grid', '.price-grid', '.about-facts', '.reviews-grid', '.faq-list'].forEach(selector => {
     $$(selector, main).forEach(parent => add(parent, [...parent.children].filter(child => !child.matches('[data-clone]'))));
   });
   $$('.footer-title, .contact-grid').forEach(el => add(el, [el]));
   groups.forEach(items => items.forEach((item, i) => { item.dataset.reveal = ''; item.style.setProperty('--reveal-i', Math.min(i, 6)); }));
-  const lines = $$(':scope > .quality, :scope > .projects, :scope > .homes, :scope > .prices, :scope > .about', main);
+  const lines = $$(':scope > .uslugi, :scope > .quality, :scope > .projects, :scope > .homes, :scope > .prices, :scope > .about', main);
   lines.forEach(section => { section.dataset.revealLine = ''; });
   const observer = new IntersectionObserver(entries => entries.forEach(entry => {
     if (!entry.isIntersecting) return;

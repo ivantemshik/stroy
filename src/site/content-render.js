@@ -9,6 +9,12 @@ export function formatPhone(phone) {
   return m ? `+7 (${m[1]}) ${m[2]}-${m[3]}-${m[4]}` : String(phone || '');
 }
 
+// Ник менеджера из админки: «@ivan», «ivan» или ссылка t.me/ivan превращаются в «ivan».
+export function managerTelegram(content) {
+  const raw = String(content?.contacts?.manager_telegram || '').trim().replace(/^https?:\/\/t\.me\//i, '').replace(/^@/, '');
+  return /^[A-Za-z0-9_]{5,32}$/.test(raw) ? raw : '';
+}
+
 export function telHref(phone) {
   const digits = String(phone || '').replace(/\D/g, '');
   return digits ? `tel:+${digits}` : '';
@@ -144,6 +150,14 @@ export function bakeHtml(html, content) {
     const attrs = `${before} data-phone${after}`.replace(/\shref="[^"]*"/, '').replace(/\shidden(="[^"]*")?/, '');
     return `<a${attrs} href="${telHref(phone)}">${escapeHtml(formatPhone(phone))}</a>`;
   });
+  // «Позвонить»: подпись остаётся, адрес tel: подставляется, без телефона ссылка скрыта.
+  out = out.replace(/<a([^>]*?)\sdata-phone-href([^>]*?)>/g, (match, before, after) => {
+    const attrs = `${before} data-phone-href${after}`.replace(/\shref="[^"]*"/, '').replace(/\shidden(="[^"]*")?/g, '');
+    return phone ? `<a${attrs} href="${telHref(phone)}">` : `<a${attrs} href="tel:" hidden>`;
+  });
+  const manager = managerTelegram(content);
+  if (manager) out = out.replace(/<a([^>]*?)\sdata-manager-tg([^>]*?)>/g, (match, before, after) =>
+    `<a${`${before} data-manager-tg${after}`.replace(/\shref="[^"]*"/, '').replace(/\sdata-direct/, '')} data-direct href="https://t.me/${manager}">`);
   const email = content.contacts?.email;
   if (email) out = out.replace(/href="mailto:[^"?]*(\?[^"]*)?"\s+data-c-mail/g, (match, query = '') => `href="mailto:${escapeHtml(email)}${query}" data-c-mail`);
   return out;

@@ -162,6 +162,9 @@ export function parseStartParam(param) {
   // Запись из окна услуги на сайте: u_<услуга>_<страница>_<ClientID>, бот сразу начинает разговор об этой услуге.
   const service = /^u_([a-z]+)_([a-z0-9-]*)_?(\d{6,30})?$/i.exec(value);
   if (service) return {source: 'site', landing: landing(service[2]), clientId: service[3] || null, service: Object.hasOwn(SERVICE_TEXT, service[1]) ? service[1] : null};
+  // Кнопка «Написать менеджеру» на сайте: m_<страница>_<ClientID>, после согласия разговор сразу уходит менеджеру.
+  const manager = /^m_([a-z0-9-]*)_?(\d{6,30})?$/i.exec(value);
+  if (manager) return {source: 'site', landing: landing(manager[1]), clientId: manager[2] || null, manager: true};
   return {source: value.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 40) || 'telegram'};
 }
 
@@ -278,8 +281,9 @@ async function handleStart(conv, param) {
     return askConsent(conv, 'Здравствуйте! Я ИИ-консультант компании «Дом Мира»: отвечу на вопросы о строительстве, отделке, проектировании и ценах. Перед началом отметьте согласие на обработку данных.');
   }
   await applyStartParam(conv);
-  const service = parseStartParam(param).service;
-  if (service) return startService(conv, service);
+  const info = parseStartParam(param);
+  if (info.manager) return handover(conv, 'клиент нажал «Написать менеджеру» на сайте');
+  if (info.service) return startService(conv, info.service);
   const greeting = await getSetting('ai.greeting');
   await saveMessage(conv.id, 'assistant', greeting);
   await send(conv.tg_chat_id, greeting, {reply_markup: {inline_keyboard: SERVICE_BUTTONS}});
@@ -322,8 +326,9 @@ async function handleCallback(query) {
     const pending = conv.consent_pending;
     if (pending) await sql`update conversations set consent_pending = false where id = ${conv.id}`;
     // Пришёл из окна услуги на сайте: сразу разговор об этой услуге.
-    const linked = parseStartParam(conv.start_param).service;
-    if (!pending && linked) return startService(conv, linked);
+    const linked = parseStartParam(conv.start_param);
+    if (!pending && linked.manager) return handover(conv, 'клиент нажал «Написать менеджеру» на сайте');
+    if (!pending && linked.service) return startService(conv, linked.service);
     const greeting = await getSetting('ai.greeting');
     const reply = pending ? 'Спасибо! Теперь отправьте ваш вопрос ещё раз, до согласия мы его не сохраняли.' : greeting;
     await saveMessage(conv.id, 'assistant', reply);

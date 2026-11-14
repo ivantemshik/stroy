@@ -1,6 +1,7 @@
 // Формы заявок: проверка полей, защита от спама, отправка в /api/leads, цели Метрики.
 import {attribution, goal} from './analytics.js';
 import {escapeHtml} from './content-render.js';
+import {api} from './api.js';
 
 let powPromise = null;
 
@@ -15,7 +16,7 @@ async function solveInPage({challenge, salt, maxnumber}) {
 }
 
 async function solveChallenge() {
-  const response = await fetch('/api/challenge', {cache: 'no-store'});
+  const response = await fetch(api('/api/challenge'), {cache: 'no-store'});
   if (!response.ok) throw new Error('challenge');
   const task = await response.json();
   let number = null;
@@ -49,7 +50,7 @@ export async function postLead(payload) {
   const body = {...payload, attribution: payload.attribution || attribution(), started_at: payload.started_at || Date.now() - 5000, submission_key: payload.submission_key || submissionKey()};
   const send = async () => {
     body.pow = await ensurePow();
-    return fetch('/api/leads', {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify(body)});
+    return fetch(api('/api/leads'), {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify(body)});
   };
   let response = await send();
   let data = await response.json().catch(() => ({}));

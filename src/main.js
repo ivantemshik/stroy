@@ -79,6 +79,7 @@ if (pricesDialog) {
     const returnTarget = modalFocus.get(pricesDialog);
     pricesDialog.close();
     goal('form_open', {form: `calc-${page}`});
+    state.scope = page === 'otdelka' ? 'Отделка по дизайн-проекту' : 'Строительство по проекту';
     state.step = 0;
     renderQuiz();
     openModal(quiz, returnTarget);

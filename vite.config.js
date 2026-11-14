@@ -44,6 +44,7 @@ function includePartials(html) {
       .replaceAll('{{page}}', page)
       .replaceAll('{{themeToggle}}', THEME_TOGGLE)
       .replaceAll('{{ctaMobile}}', ctaMobile)
+      .replaceAll('{{pricesCta}}', page === 'otdelka' ? 'Рассчитать отделку' : 'Рассчитать мой дом')
       .replaceAll('{{cta}}', cta);
     return part.replaceAll(`data-nav="${page}"`, `data-nav="${page}" aria-current="page"`).trim();
   });

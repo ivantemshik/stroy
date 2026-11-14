@@ -1,6 +1,6 @@
 // Свежий контент из админки: телефон, почта, часы, цены, акции и вопросы.
 // Страница уже собрана с контентом на момент сборки, здесь подтягиваются правки, сделанные позже.
-import {renderList, getPath, formatPhone, telHref} from './content-render.js';
+import {renderList, getPath, formatPhone, telHref, countLists, isEmptyList} from './content-render.js';
 
 export function applyContent(content) {
   document.querySelectorAll('[data-c]').forEach(node => {
@@ -16,9 +16,11 @@ export function applyContent(content) {
   document.querySelectorAll('[data-c-list]').forEach(node => {
     const value = content[node.dataset.cList];
     if (!Array.isArray(value)) return;
-    const html = renderList(node.dataset.cList, value);
+    const html = renderList(node.dataset.cList, value, node.dataset.cView);
     if (node.innerHTML !== html) node.innerHTML = html;
   });
+  document.querySelectorAll('[data-c-count]').forEach(node => { node.textContent = String(countLists(content, node.dataset.cCount)); });
+  document.querySelectorAll('[data-c-hide-empty]').forEach(node => { node.hidden = isEmptyList(content, node.dataset.cHideEmpty); });
   const phone = content.contacts?.phone || '';
   document.querySelectorAll('[data-phone]').forEach(link => {
     if (phone) {

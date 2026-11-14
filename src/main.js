@@ -47,6 +47,43 @@ $$('[data-open="quiz"]').forEach(button => button.addEventListener('click', () =
   openQuiz();
 }));
 $$('[data-open="privacy"]').forEach(button => button.addEventListener('click', () => openModal($('#privacy-dialog'))));
+/* Окно «Полный прайс»: вкладки по направлениям, кнопка открывает нужную (data-prices-tab) */
+const pricesDialog = $('#prices-dialog');
+if (pricesDialog) {
+  const tabs = $$('[role="tab"]', pricesDialog);
+  const selectTab = (name, focus = false) => {
+    tabs.forEach(tab => {
+      const active = tab.dataset.tab === name;
+      tab.setAttribute('aria-selected', String(active));
+      tab.tabIndex = active ? 0 : -1;
+      $(`#${tab.getAttribute('aria-controls')}`).hidden = !active;
+      if (active && focus) tab.focus();
+    });
+    $('.prices-body', pricesDialog).scrollTop = 0;
+  };
+  tabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => selectTab(tab.dataset.tab));
+    tab.addEventListener('keydown', event => {
+      const step = {ArrowRight: 1, ArrowLeft: -1}[event.key];
+      if (!step) return;
+      event.preventDefault();
+      selectTab(tabs[(index + step + tabs.length) % tabs.length].dataset.tab, true);
+    });
+  });
+  $$('[data-open="prices"]').forEach(button => button.addEventListener('click', () => {
+    selectTab(button.dataset.pricesTab || 'build');
+    goal('prices_view', {place: page, tab: button.dataset.pricesTab || 'build'});
+    openModal(pricesDialog);
+  }));
+  $('[data-prices-calc]', pricesDialog).addEventListener('click', () => {
+    const returnTarget = modalFocus.get(pricesDialog);
+    pricesDialog.close();
+    goal('form_open', {form: `calc-${page}`});
+    state.step = 0;
+    renderQuiz();
+    openModal(quiz, returnTarget);
+  });
+}
 const menuToggle = $('.menu-toggle');
 function closeMenu() { menuToggle.setAttribute('aria-expanded', 'false'); menuToggle.setAttribute('aria-label', 'Открыть меню'); $('#mobile-menu').hidden = true; }
 menuToggle.addEventListener('click', () => { const open = menuToggle.getAttribute('aria-expanded') !== 'true'; menuToggle.setAttribute('aria-expanded', String(open)); menuToggle.setAttribute('aria-label', open ? 'Закрыть меню' : 'Открыть меню'); $('#mobile-menu').hidden = !open; });

@@ -25,6 +25,9 @@ export const PRICE_GROUPS = {
 
 // «от 70 000 ₽/м²»: число крупно, рубли и единица мельче, как в таблице цен «Проектирования».
 const priceHtml = price => escapeHtml(price).replace(/^(.*\d)\s*(₽.*)$/, '$1 <small>$2</small>');
+// В карточке прайса «от» и единица мелко и приглушённо, сумма крупно.
+const priceCardHtml = price => escapeHtml(price).replace(/^от\s+/, '<small>от</small> ').replace(/(\d)\s*(₽.*)$/, '$1 <small>$2</small>');
+const initial = name => escapeHtml((String(name || '').trim().match(/[\p{L}\d]/u) || ['•'])[0].toUpperCase());
 
 // Цена строкой в число и единицу для разметки Offer: «от 6 500 ₽/м³» → 6500 и «м³».
 export function parsePrice(price) {
@@ -39,7 +42,14 @@ const LISTS = {
   promo: items => items.map(item => `<li><b>${escapeHtml(item.title)}</b><span>${escapeHtml(item.text)}</span></li>`).join(''),
   paras: items => items.map(item => `<p>${escapeHtml(item.text)}</p>`).join(''),
   facts: items => items.map(item => `<li><strong>${escapeHtml(item.value)}</strong><span>${escapeHtml(item.label)}</span></li>`).join(''),
-  faq: items => items.map(item => `<details data-faq><summary>${escapeHtml(item.q)}<span aria-hidden="true">+</span></summary><p>${escapeHtml(item.a)}</p></details>`).join('')
+  faq: items => items.map(item => `<details data-faq><summary>${escapeHtml(item.q)}<span aria-hidden="true">+</span></summary><p>${escapeHtml(item.a)}</p></details>`).join(''),
+  // Только настоящие отзывы из админки: имя, где и когда оставлен. Без фото и звёзд, которых у отзыва нет.
+  reviews: items => items.map(item => `<article class="review-card"><div class="review-person"><span class="review-initial" aria-hidden="true">${initial(item.name)}</span><div><h3>${escapeHtml(item.name)}</h3>${item.source || item.date ? `<p class="review-source">${escapeHtml([item.source, item.date].filter(Boolean).join(', '))}</p>` : ''}</div></div>${item.subject ? `<p class="review-subject">${escapeHtml(item.subject)}</p>` : ''}<p class="review-copy">${escapeHtml(item.text)}</p></article>`).join('')
+};
+
+// Другие виды того же списка: data-c-view="cards" у прайса в окне «Полный прайс».
+const VIEWS = {
+  cards: rows => rows.map(row => `<li class="price-card"><span class="price-card-name">${row.code ? `<b>${escapeHtml(row.code)}</b>` : ''}${escapeHtml(row.name)}</span><span class="price-card-value">${priceCardHtml(row.price)}</span></li>`).join('')
 };
 
 export function listKind(key) {
@@ -48,13 +58,24 @@ export function listKind(key) {
   if (key.endsWith('.faq')) return 'faq';
   if (key.endsWith('.paras')) return 'paras';
   if (key.endsWith('.facts')) return 'facts';
+  if (key.endsWith('.reviews')) return 'reviews';
   return null;
 }
 
-export function renderList(key, value) {
+export function renderList(key, value, view) {
+  if (!Array.isArray(value)) return '';
+  if (view && VIEWS[view]) return VIEWS[view](value);
   const kind = listKind(key);
-  return kind && Array.isArray(value) ? LISTS[kind](value) : '';
+  return kind ? LISTS[kind](value) : '';
 }
+
+// Сколько строк в списках (через пробел можно несколько): «65 работ» на кнопке прайса.
+export function countLists(content, keys) {
+  return String(keys).trim().split(/\s+/).reduce((sum, key) => sum + (Array.isArray(content[key]) ? content[key].length : 0), 0);
+}
+
+// Пустой список прячет блок или ссылку на него (data-c-hide-empty), например отзывы, пока их нет.
+export const isEmptyList = (content, key) => !Array.isArray(content[key]) || content[key].length === 0;
 
 // Ключи вида "home.prices" хранятся целиком, а "contacts.email" это поле объекта contacts.
 export function getPath(content, path) {
@@ -94,7 +115,13 @@ export function bakeHtml(html, content) {
   let out = html.replace(/<(\w+)([^>]*?)\sdata-c-list="([\w.]+)"([^>]*)>([\s\S]*?)<\/\1>/g, (match, tag, before, key, after) => {
     const value = content[key];
     if (!Array.isArray(value)) return match;
-    return `<${tag}${before} data-c-list="${key}"${after}>${renderList(key, value)}</${tag}>`;
+    const view = /data-c-view="(\w+)"/.exec(before + after)?.[1];
+    return `<${tag}${before} data-c-list="${key}"${after}>${renderList(key, value, view)}</${tag}>`;
+  });
+  out = out.replace(/(<\w+[^>]*?\sdata-c-count="([\w. ]+)"[^>]*>)\d*(<\/\w+>)/g, (match, open, keys, close) => `${open}${countLists(content, keys)}${close}`);
+  out = out.replace(/<(\w+)([^>]*?)\sdata-c-hide-empty="([\w.]+)"([^>]*?)(\/?)>/g, (match, tag, before, key, after, slash) => {
+    const attrs = `${before} data-c-hide-empty="${key}"${after}`.replace(/\shidden(="[^"]*")?/g, '');
+    return `<${tag}${attrs}${isEmptyList(content, key) ? ' hidden' : ''}${slash}>`;
   });
   out = out.replace(/<script type="application\/ld\+json" data-c-jsonld="([\w.]+)">[\s\S]*?<\/script>/g, (match, key) =>
     Array.isArray(content[key]) ? `<script type="application/ld+json" data-c-jsonld="${key}">${faqJsonLd(content[key])}</script>` : match);

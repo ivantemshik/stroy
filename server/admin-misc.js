@@ -7,7 +7,7 @@ import {PERMISSIONS, LEAD_STATUSES, SERVICES} from './permissions.js';
 import {allSettings, setSetting, DEFAULT_SETTINGS} from './settings.js';
 import {cleanLine, cleanText} from './validate.js';
 import {config} from './env.js';
-import {CONTENT_DEFAULTS} from './content-defaults.js';
+import {CONTENT_DEFAULTS, LIST_FIELDS} from './content-defaults.js';
 import {pushToCrm, crmUrlProblem} from './crm.js';
 
 // ---------- Пользователи и роли ----------
@@ -212,7 +212,7 @@ export async function saveContent({request}) {
   const changed = [];
   for (const [key, value] of Object.entries(body.content || {})) {
     if (!(key in CONTENT_DEFAULTS)) continue;
-    const normalized = sanitizeContent(value, CONTENT_DEFAULTS[key]);
+    const normalized = sanitizeContent(value, CONTENT_DEFAULTS[key], LIST_FIELDS[key]);
     await sql`insert into content_blocks (key, value, updated_by) values (${key}, ${sql.json(normalized)}, ${user.id})
       on conflict (key) do update set value = excluded.value, updated_at = now(), updated_by = excluded.updated_by`;
     changed.push(key);
@@ -225,10 +225,10 @@ export async function saveContent({request}) {
 }
 
 // Контент хранится как текст или массивы объектов из текста: HTML не принимается.
-function sanitizeContent(value, sample) {
+function sanitizeContent(value, sample, listFields) {
   if (typeof sample === 'string') return cleanText(value, 3000);
   if (Array.isArray(sample)) {
-    const shape = sample[0] || {};
+    const shape = listFields ? Object.fromEntries(listFields.map(field => [field, ''])) : sample[0] || {};
     return (Array.isArray(value) ? value : []).slice(0, 60).map(item => {
       if (typeof shape === 'string') return cleanText(item, 600);
       const out = {};

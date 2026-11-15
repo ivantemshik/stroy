@@ -1102,15 +1102,12 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
 @media (prefers-reduced-motion: reduce) { .usluga { transition: none; } .usluga:hover { transform: none; } }
 @media (max-width: 1100px) { .uslugi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .usluga img { aspect-ratio: 16 / 9; } }
 @media (max-width: 760px) {
-  .uslugi-grid { grid-template-columns: minmax(0, 1fr); gap: 8px; }
-  .usluga { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; grid-template-areas: "img text arrow" "img from arrow"; align-items: center; gap: 2px 14px; padding: 8px 12px 8px 8px; border-radius: 16px; }
-  .usluga img { grid-area: img; width: 72px; height: 72px; aspect-ratio: 1; border-radius: 12px; }
-  .usluga-text { grid-area: text; align-self: end; padding: 0; gap: 3px; }
-  .usluga-foot { display: contents; }
-  .usluga-from { grid-area: from; align-self: start; font-size: 12px; color: var(--plum-link); }
-  .usluga-arrow { grid-area: arrow; width: 32px; height: 32px; }
-  .usluga-text b { font-size: 15px; }
-  .usluga-text > span { font-size: 12px; }
+  .uslugi-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .usluga { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; border-radius: 18px; }
+  .usluga img { grid-column: 1 / -1; width: 100%; height: auto; aspect-ratio: 1 / 1; }
+  .usluga-text { padding: 16px 0 18px 16px; gap: 5px; }
+  .usluga-foot { margin: 0; padding: 0 16px 0 12px; }
+  .usluga-from { display: none; }
 }
 [data-theme="dark"] .usluga:focus-visible { outline-color: var(--plum-text); }
 

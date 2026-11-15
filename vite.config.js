@@ -20,13 +20,14 @@ if (existsSync(`${root}.env.local`)) {
 const PAGES = {
   main: 'index.html',
   otdelka: 'otdelka/index.html',
+  potolki: 'natyazhnye-potolki/index.html',
   privacy: 'privacy/index.html',
   consent: 'soglasie/index.html',
   cookies: 'cookies/index.html',
   notfound: '404.html',
   admin: 'admin/index.html'
 };
-const SITEMAP = ['/', '/otdelka/', '/privacy/', '/soglasie/', '/cookies/'];
+const SITEMAP = ['/', '/otdelka/', '/natyazhnye-potolki/', '/privacy/', '/soglasie/', '/cookies/'];
 
 // Общие куски страниц (шапка, подвал с контактами и окна) лежат в src/site/partials и вставляются
 // на место комментария <!--#include имя флаги-->. В шапке у всех страниц есть переключатель светлой и тёмной темы,
@@ -35,7 +36,7 @@ const PARTIALS_DIR = `${root}src/site/partials/`;
 const THEME_TOGGLE = '<button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false" aria-label="Включить тёмную тему"><svg class="i-moon" viewBox="0 0 20 20" aria-hidden="true"><path d="M16.4 12.4A6.8 6.8 0 0 1 7.6 3.6a6.8 6.8 0 1 0 8.8 8.8Z"/></svg><svg class="i-sun" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3.4"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.3 4.3l1.4 1.4M14.3 14.3l1.4 1.4M4.3 15.7l1.4-1.4M14.3 5.7l1.4-1.4"/></svg></button>';
 function includePartials(html) {
   const page = /<body[^>]*\sdata-page="([\w-]+)"/.exec(html)?.[1] || 'home';
-  const defaultService = page === 'otdelka' ? 'finishing' : 'other';
+  const defaultService = {otdelka: 'finishing', potolki: 'ceilings'}[page] || 'other';
   const serviceOptions = [...SERVICE_LIST, {lead: 'other', title: 'Другое'}].map(({lead, title}) =>
     `<option value="${escapeHtml(lead)}"${lead === defaultService ? ' selected' : ''}>${escapeHtml(title)}</option>`).join('');
   return html.replace(/<!--#include (\w+)((?: [\w-]+)*)\s*-->/g, (match, name, flagsRaw) => {

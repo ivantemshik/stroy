@@ -17,12 +17,12 @@ async function siteContent() {
   return content;
 }
 
-// Статьи из контента сайта: прайс (всегда в ответе) и частые вопросы с главной и «Отделки».
+// Статьи из контента сайта: прайс (всегда в ответе) и частые вопросы с главной, «Отделки» и «Потолков».
 export async function siteArticles() {
   const content = await siteContent();
   const groups = Object.entries(PRICE_GROUPS).filter(([key]) => Array.isArray(content[key]) && content[key].length)
     .map(([key, title]) => `${title}: ${content[key].map(row => `${row.name} ${row.price}`).join('; ')}.`);
-  const faq = [...(content['home.faq'] || []), ...(content['otdelka.faq'] || [])].map(item => `${item.q} ${item.a}`);
+  const faq = [...(content['home.faq'] || []), ...(content['otdelka.faq'] || []), ...(content['potolki.faq'] || [])].map(item => `${item.q} ${item.a}`);
   return [
     {id: 'site-prices', title: 'Прайс: цены за работу без материалов', body: groups.join('\n'), tags: ['core']},
     {id: 'site-faq', title: 'Частые вопросы с сайта', body: faq.join('\n'), tags: ['вопросы', 'частые вопросы', 'можно ли', 'как', 'сколько']}

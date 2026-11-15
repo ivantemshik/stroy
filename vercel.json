@@ -34,6 +34,11 @@
       "permanent": true
     },
     {
+      "source": "/natyazhnye-potolki",
+      "destination": "/natyazhnye-potolki/",
+      "permanent": true
+    },
+    {
       "source": "/admin",
       "destination": "/admin/",
       "permanent": true

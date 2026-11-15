@@ -46,6 +46,7 @@ export const SERVICES = {
   construction: 'Строительство дома',
   works: 'Строительные работы',
   finishing: 'Отделочные работы',
+  ceilings: 'Натяжные потолки и стены',
   design: 'Проектирование',
   engineering: 'Инженерные системы',
   landscape: 'Благоустройство и ландшафт',

@@ -1277,3 +1277,57 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
 .design-page .pj-fields label > span { font-size: 14px; }
 .design-page .pj-consent > span { font-size: 13px; }
 .design-page .pj-submit { font-size: 15px; font-weight: 500; }
+
+/* ==========================================================================
+   «Натяжные потолки и стены»: первый экран как на главной (фото интерьера под голубой дымкой),
+   виды потолков карточками с фото, натяжные стены фото и текстом. Цены, этапы, интерьеры и вопросы
+   собраны из готовых блоков главной и «Отделки».
+   ========================================================================== */
+.ptl-hero .hero-photo img { object-position: 60% 26%; }
+.ptl-hero .hero-description { max-width: 520px; }
+
+.ptl-types .section-heading { margin-bottom: 28px; }
+.ptl-types-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.ptl-type { display: flex; flex-direction: column; min-width: 0; overflow: hidden; border-radius: 22px; background: var(--sheet); color: var(--ink); }
+.ptl-type img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; }
+.ptl-type-text { padding: 18px 20px 22px; }
+.ptl-type h3 { margin: 0 0 6px; font-size: 20px; font-weight: 500; line-height: 1.25; letter-spacing: -0.4px; }
+.ptl-type p { margin: 0; font-size: 15px; line-height: 1.55; color: var(--muted); }
+
+/* Плитки цен, где вместо числа слова «по замеру» и «по проекту»: тот же вид, шрифт чуть меньше */
+.price-grid .ptl-price-text strong { font-size: 40px; letter-spacing: -1.6px; }
+
+.ptl-walls-frame { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 12px; }
+.ptl-walls-photo { position: relative; min-height: 520px; margin: 0; overflow: hidden; border-radius: 30px; background: var(--tile-dark); }
+/* светящаяся стена в левой части кадра: при обрезке под карточку держим её в кадре */
+.ptl-walls-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 18% 50%; }
+.ptl-walls-copy { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; padding: 40px; border-radius: 30px; background: var(--sheet); color: var(--ink); }
+.ptl-walls-copy h2 { margin: 0; }
+.ptl-walls-copy > p { max-width: 460px; margin: 18px 0 0; font-size: 16px; line-height: 1.6; color: var(--muted); }
+.ptl-walls-list { display: grid; gap: 8px; width: 100%; margin: 28px 0; padding: 0; list-style: none; }
+.ptl-walls-list li { display: flex; flex-direction: column; gap: 6px; padding: 18px 20px; border-radius: 18px; background: var(--paper); }
+.ptl-walls-list b { font-size: 18px; font-weight: 500; line-height: 1.3; letter-spacing: -0.3px; }
+.ptl-walls-list span { font-size: 15px; line-height: 1.55; color: var(--muted); }
+#main .ptl-walls-cta { margin-top: auto; }
+
+/* в плитке вопросов световая линия уходит вверх кадра, под текстом спокойная стена */
+.faq-help .ptl-faq-photo { object-position: 50% 12%; }
+
+@media (max-width: 1100px) { .ptl-types-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 900px) {
+  .ptl-walls-frame { grid-template-columns: minmax(0, 1fr); }
+  .ptl-walls-photo { min-height: 0; aspect-ratio: 3 / 2; }
+}
+@media (max-width: 760px) {
+  .ptl-types .section-heading { margin-bottom: 20px; }
+  .ptl-types-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .ptl-type { border-radius: 18px; }
+  .ptl-type-text { padding: 16px 16px 18px; }
+  .ptl-type h3 { font-size: 18px; }
+  .price-grid .ptl-price-text strong { font-size: 32px; letter-spacing: -1.2px; }
+  .ptl-walls-photo { border-radius: 24px; }
+  .ptl-walls-copy { padding: 28px 22px 24px; border-radius: 24px; }
+  .ptl-walls-copy > p { font-size: 15px; }
+  .ptl-walls-list li { padding: 16px; }
+  #main .ptl-walls-cta { width: 100%; }
+}

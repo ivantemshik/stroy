@@ -377,12 +377,12 @@ function initReveal() {
   const groups = new Map();
   const add = (trigger, items) => { if (trigger && items.length) groups.set(trigger, items); };
   $$('.section-heading, .projects-heading, .intro-copy, .faq > div:first-child, .projects-track', main).forEach(el => add(el, [el]));
-  ['.service-list', '.uslugi-grid', '.quality-grid', '.home-grid', '.process-grid', '.price-grid', '.about-facts', '.reviews-grid', '.faq-list'].forEach(selector => {
+  ['.service-list', '.uslugi-grid', '.ptl-types-grid', '.ptl-walls-frame', '.quality-grid', '.home-grid', '.process-grid', '.price-grid', '.about-facts', '.reviews-grid', '.faq-list'].forEach(selector => {
     $$(selector, main).forEach(parent => add(parent, [...parent.children].filter(child => !child.matches('[data-clone]'))));
   });
   $$('.footer-title, .contact-grid').forEach(el => add(el, [el]));
   groups.forEach(items => items.forEach((item, i) => { item.dataset.reveal = ''; item.style.setProperty('--reveal-i', Math.min(i, 6)); }));
-  const lines = $$(':scope > .uslugi, :scope > .quality, :scope > .projects, :scope > .homes, :scope > .prices, :scope > .about', main);
+  const lines = $$(':scope > .uslugi, :scope > .ptl-types, :scope > .quality, :scope > .projects, :scope > .homes, :scope > .prices, :scope > .about', main);
   lines.forEach(section => { section.dataset.revealLine = ''; });
   const observer = new IntersectionObserver(entries => entries.forEach(entry => {
     if (!entry.isIntersecting) return;

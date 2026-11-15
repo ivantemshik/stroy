@@ -28,6 +28,11 @@ export const SERVICE_LIST = [
     photo: 'service-finishing', alt: 'Визуализация: светлая гостиная загородного дома после отделки'
   },
   {
+    key: 'ceilings', lead: 'ceilings', href: '/natyazhnye-potolki/',
+    title: 'Натяжные потолки и стены',
+    short: 'Матовые, парящие, со световыми линиями и тканевые, световые и тканевые стены'
+  },
+  {
     key: 'engineering', lead: 'engineering', tg: 'engineering',
     title: 'Инженерные системы',
     short: 'Электрика, отопление, водоснабжение, вентиляция, кондиционирование и канализация',

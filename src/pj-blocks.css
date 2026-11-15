@@ -123,7 +123,8 @@
 .pj-form{display:flex;flex-direction:column;justify-content:space-between;gap:40px;background:#151615;color:var(--paper)}
 .pj-form h2 span{color:#a8aca7}
 .pj-fields{display:flex;flex-direction:column;gap:24px}
-.pj-fields label:not(.pj-consent){display:flex;flex-direction:column;gap:2px}
+/* gap 8px: рамка выделения поля (2px и отступ 4px) не должна заходить на подпись над ним */
+.pj-fields label:not(.pj-consent){display:flex;flex-direction:column;gap:8px}
 .pj-fields label>span{font-size:13px;color:#a8aca7}
 .pj-fields i{font-style:normal;color:#d9c6dd}
 .pj-fields :is(input:not([type="checkbox"]),select,textarea){width:100%;font:inherit;font-size:16px;color:var(--paper);background:transparent;border:0;border-bottom:1px solid rgba(247,247,245,.35);border-radius:0;padding:8px 0 12px;outline-offset:4px}
@@ -136,6 +137,8 @@
 .pj-submit{display:flex;justify-content:center;align-items:center;width:100%;min-height:56px;padding:18px 22px;border-radius:10px;background:var(--paper);color:var(--ink);font-size:13px;transition:background .2s}
 .pj-submit:hover{background:#fff}
 .pj-form :is(button,input,select,textarea):focus-visible{outline-color:#d9c6dd}
+/* у списка и многострочного поля рамка такая же, как у обычных полей, а не системная двойная */
+.pj-form :is(select,textarea):focus-visible{outline-style:solid;outline-width:2px}
 
 .design-page .footer{padding-top:56px}
 

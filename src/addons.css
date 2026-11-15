@@ -982,6 +982,8 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
 .service-contact:hover { border-color: var(--ink); }
 .service-contact:focus-visible { outline: 2px solid var(--plum); outline-offset: 2px; }
 .service-contact[hidden] { display: none; }
+/* кнопка перехода на сайт партнёра (освещение, мебель): под ценой, отступ до формы заявки */
+.service-modal .service-site { margin: -14px 0 28px; }
 .service-modal .modal-close { z-index: 2; background: var(--chip); }
 @media (max-width: 1100px) {
   .service-body { padding: 40px 32px 32px; }
@@ -1092,7 +1094,9 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
 .ask-toggle:focus-visible, .ask-close:focus-visible { outline: 2px solid var(--paper); outline-offset: 2px; border-radius: 999px; }
 .ask-panel { display: grid; gap: 2px; min-width: 240px; padding: 8px; border: 1px solid var(--line); border-radius: 16px; background: var(--paper); box-shadow: 0 20px 50px var(--pop-shadow); }
 .ask-panel[hidden] { display: none; }
-.ask-option { padding: 12px 14px; border-radius: 10px; color: var(--ink); font-size: 14px; transition: background-color 0.2s; }
+.ask-option { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 10px; color: var(--ink); font-size: 14px; transition: background-color 0.2s; }
+/* значки телеграма и конверта цветом текста, поэтому видны в обеих темах */
+.ask-icon { flex: none; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .ask-option:hover { background: var(--sheet); }
 .ask-option:focus-visible { outline: 2px solid var(--plum); outline-offset: -2px; }
 .ask-option[hidden] { display: none; }
@@ -1110,8 +1114,8 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
    «Наши услуги» на главной: восемь направлений. «Отделка» ведёт на свою страницу,
    остальные открывают окно услуги (то же, что в меню «Услуги»).
    ========================================================================== */
-/* девять направлений: сетка 3×3, на телефоне карточки горизонтальные (фото слева, текст и стрелка справа) */
-.uslugi-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+/* десять направлений: на ПК 5×2, на планшете 2×5, на телефоне карточки горизонтальные (фото слева, текст и стрелка справа) */
+.uslugi-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
 .uslugi-grid > li { display: flex; }
 .usluga { display: flex; flex-direction: column; width: 100%; padding: 0; border: 0; border-radius: 22px; overflow: hidden; background: var(--sheet); color: var(--ink); font: inherit; text-align: left; cursor: pointer; transition: transform 0.25s, box-shadow 0.25s; }
 .usluga img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
@@ -1127,7 +1131,8 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
 .usluga:hover { transform: translateY(-2px); box-shadow: 0 12px 30px var(--pop-shadow); }
 .usluga:focus-visible { outline: 2px solid var(--plum); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .usluga { transition: none; } .usluga:hover { transform: none; } }
-@media (max-width: 1100px) { .usluga img { aspect-ratio: 4 / 3; } .usluga-text b { font-size: 17px; } }
+@media (min-width: 1101px) { .usluga-text b { font-size: 17px; } .usluga-text { padding: 16px 16px 0; } .usluga-foot { padding: 16px 12px 12px 16px; } .usluga-from { font-size: 13px; } }
+@media (max-width: 1100px) { .uslugi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .usluga img { aspect-ratio: 16 / 9; } .usluga-text b { font-size: 17px; } }
 @media (max-width: 760px) {
   .uslugi-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
   /* квадратное фото слева на всю высоту карточки (сторона --s), справа заголовок, описание и стрелка; цену на телефоне не показываем.
@@ -1143,7 +1148,7 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
   .usluga-arrow { width: 30px; height: 30px; }
 }
 /* узкие телефоны: описание может занять три строки, тогда фото чуть выше квадрата, текст не обрезается */
-@media (max-width: 380px) { .usluga { --s: 136px; } .usluga-foot { padding: 6px 12px 10px; } .usluga-arrow { width: 28px; height: 28px; } .usluga-text > span { -webkit-line-clamp: 3; } }
+@media (max-width: 380px) { .usluga { --s: 136px; } .usluga-foot { padding: 6px 12px 10px; } .usluga-arrow { width: 28px; height: 28px; } .usluga-text b, .usluga-text > span { -webkit-line-clamp: 3; } }
 @media (max-width: 340px) { .usluga { --s: 116px; } }
 [data-theme="dark"] .usluga:focus-visible { outline-color: var(--plum-text); }
 

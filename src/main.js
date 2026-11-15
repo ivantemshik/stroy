@@ -105,6 +105,10 @@ function openService(key, returnTarget = document.activeElement) {
   $('#service-result').textContent = service.result;
   $('#service-works').replaceChildren(...service.works.map(text => Object.assign(document.createElement('li'), {textContent: text})));
   $('#service-price').textContent = service.price;
+  /* у освещения и мебели есть свои сайты: кнопка перехода показывается только в их окнах */
+  const site = $('#service-site');
+  site.hidden = !service.site;
+  if (service.site) { site.href = service.site.href; site.textContent = service.site.label; }
   serviceForm.innerHTML = serviceFormHtml;
   serviceForm.elements.namedItem('service').value = service.lead;
   const mail = $('[data-service-mail]', serviceDialog);

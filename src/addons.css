@@ -381,8 +381,10 @@ html:not(.js) .theme-toggle { display: none; }
 [data-theme="dark"] .pj-masthead .theme-toggle { border-color: var(--input-line); }
 /* Светлый текст на тёмных блоках: в исходном стиле он задан цветом бумаги, ночью бумага тёмная */
 [data-theme="dark"] .process, [data-theme="dark"] .pj-catalog-tile, [data-theme="dark"] .pj-form, [data-theme="dark"] .pj-catalog-value strong, [data-theme="dark"] .pj-fields input, [data-theme="dark"] .pj-consent a { color: var(--ink); }
-[data-theme="dark"] .pj-fields :is(input, select, textarea):focus { border-bottom-color: var(--ink); }
-[data-theme="dark"] .pj-fields :is(select, textarea) { color: var(--ink); }
+/* Поля тёмной формы: правило из pj-blocks.css подключается позже и при равном весе перебивало ночной цвет,
+   введённый текст получался тёмным на тёмном. Селектор здесь весомее, порядок файлов больше не важен. */
+[data-theme="dark"] .pj-form .pj-fields :is(input:not([type="checkbox"]), select, textarea) { color: var(--ink); }
+[data-theme="dark"] .pj-form .pj-fields :is(input:not([type="checkbox"]), select, textarea):focus { border-bottom-color: var(--ink); }
 
 /* ==========================================================================
    Карточки цен на главной: плитки в стиле страницы «Проектирование»
@@ -1002,12 +1004,15 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
 .footer-card { padding: 32px 32px 28px; border-radius: 24px; background: var(--sheet); color: var(--ink); }
 .footer-card h3 { margin: 0; font-size: 26px; font-weight: 500; line-height: 1.2; letter-spacing: -0.7px; }
 .footer-card-lead { margin: 8px 0 24px; font-size: 15px; line-height: 1.6; color: var(--muted); }
-.footer-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
+/* scroll-margin-top: кнопки «Запросить смету» ведут к #footer-form, после перехода заголовок карточки должен остаться на экране */
+.footer-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; scroll-margin-top: 136px; }
 .footer-field { display: flex; flex-direction: column; gap: 8px; }
 .footer-field-wide { grid-column: 1 / -1; }
 .footer-field span { font-size: 14px; color: var(--muted); }
 .footer-field :is(input, select, textarea) { width: 100%; min-height: 52px; padding: 12px 16px; border: 1px solid var(--field-line); border-radius: 12px; background: var(--paper); color: var(--ink); font: inherit; font-size: 16px; transition: border-color 0.2s; }
 .footer-field textarea { resize: vertical; }
+/* Длинное название услуги на узком телефоне не помещается в поле: вместо обрыва на полуслове показываем многоточие */
+.footer-field select, .pj-fields select { text-overflow: ellipsis; }
 .footer-field input::placeholder { color: var(--muted); }
 .footer-field :is(input, select, textarea):hover { border-color: var(--muted); }
 .footer-field :is(input, select, textarea):focus { outline: none; border-color: var(--ink); }

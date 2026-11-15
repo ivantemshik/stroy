@@ -35,7 +35,6 @@ items.forEach(item => item.querySelector('.pj-item-head').addEventListener('clic
 const form = document.querySelector('.pj-form');
 if (form) {
   const formName = form.dataset.form || 'request';
-  const service = form.dataset.leadService || 'other';
   const doneText = form.dataset.done || 'Заявка принята. Мы свяжемся с вами в ближайшее рабочее время.';
   const field = name => form.elements.namedItem(name);
   const nameInput = field('name');
@@ -55,13 +54,15 @@ if (form) {
     const valid = isEmail ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact) : contact.replace(/\D/g, '').length >= 10;
     if (!valid) return fail(contactInput, 'Укажите e-mail или телефон с кодом города.');
     if (!consentInput.checked) return fail(consentInput, 'Отметьте согласие на обработку данных, без него мы не можем принять заявку.');
+    const service = field('service')?.value || form.dataset.leadService || 'other';
+    const comment = field('comment')?.value.trim();
     submitButton.disabled = true;
     error.textContent = 'Отправляем заявку...';
     try {
       await postLead({
         form: formName, page: location.pathname, service, name,
         phone: isEmail ? '' : contact, email: isEmail ? contact : '', consent: true,
-        website: field('website')?.value || '', message: form.dataset.message || ''
+        website: field('website')?.value || '', message: [form.dataset.message, comment].filter(Boolean).join('\n')
       });
       goal('lead_sent', {form: formName, service});
       const done = document.createElement('p');

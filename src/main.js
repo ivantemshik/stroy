@@ -8,11 +8,7 @@ import {SERVICES} from './site/services.js';
 const page = document.body.dataset.page || 'home';
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
-const quiz = $('#quiz-dialog');
 const serviceDialog = $('#service-dialog');
-const state = {step: 0, type: 'Загородный дом', area: 150, scope: 'Строительство по проекту', email: ''};
-const rub = value => new Intl.NumberFormat('ru-RU').format(value);
-const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const modalFocus = new WeakMap();
 function openModal(dialog, returnTarget = document.activeElement) {
   modalFocus.set(dialog, returnTarget);
@@ -35,23 +31,28 @@ $$('dialog').forEach(dialog => {
     }
   });
 });
-function openQuiz(step = 0) {
-  goal('form_open', {form: `calc-${page}`});
-  const returnTarget = serviceDialog.open ? modalFocus.get(serviceDialog) : document.activeElement;
-  if (serviceDialog.open) serviceDialog.close();
-  state.step = step;
-  renderQuiz();
-  openModal(quiz, returnTarget);
-}
-$$('[data-open="quiz"]').forEach(button => button.addEventListener('click', () => {
-  if (button.dataset.quizScope) state.scope = button.dataset.quizScope;
-  openQuiz();
+$$('a[data-request]').forEach(link => link.addEventListener('click', event => {
+  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  if (link.pathname !== location.pathname) return;
+  const form = document.getElementById(link.hash.slice(1));
+  if (!(form instanceof HTMLFormElement)) return;
+  const service = form.elements.namedItem('service');
+  if (service && link.dataset.requestService) service.value = link.dataset.requestService;
+  const dialog = link.closest('dialog');
+  if (dialog?.open) {
+    modalFocus.delete(dialog);
+    dialog.close();
+  }
+  form.focus({preventScroll: true});
+  goal('form_open', {form: form.dataset.form || `footer-${page}`});
 }));
 $$('[data-open="privacy"]').forEach(button => button.addEventListener('click', () => openModal($('#privacy-dialog'))));
 /* Окно «Полный прайс»: вкладки по направлениям, кнопка открывает нужную (data-prices-tab) */
 const pricesDialog = $('#prices-dialog');
 if (pricesDialog) {
   const tabs = $$('[role="tab"]', pricesDialog);
+  const priceRequest = $('[data-prices-request]', pricesDialog);
+  const serviceForTab = {build: 'construction', finish: 'finishing', engineering: 'engineering', landscape: 'landscape', design: 'design'};
   const selectTab = (name, focus = false) => {
     tabs.forEach(tab => {
       const active = tab.dataset.tab === name;
@@ -60,6 +61,7 @@ if (pricesDialog) {
       $(`#${tab.getAttribute('aria-controls')}`).hidden = !active;
       if (active && focus) tab.focus();
     });
+    priceRequest.dataset.requestService = serviceForTab[name] || '';
     $('.prices-body', pricesDialog).scrollTop = 0;
   };
   tabs.forEach((tab, index) => {
@@ -76,15 +78,6 @@ if (pricesDialog) {
     goal('prices_view', {place: page, tab: button.dataset.pricesTab || 'build'});
     openModal(pricesDialog);
   }));
-  $('[data-prices-calc]', pricesDialog).addEventListener('click', () => {
-    const returnTarget = modalFocus.get(pricesDialog);
-    pricesDialog.close();
-    goal('form_open', {form: `calc-${page}`});
-    state.scope = page === 'otdelka' ? 'Отделка по дизайн-проекту' : 'Строительство по проекту';
-    state.step = 0;
-    renderQuiz();
-    openModal(quiz, returnTarget);
-  });
 }
 const menuToggle = $('.menu-toggle');
 function closeMenu() { menuToggle.setAttribute('aria-expanded', 'false'); menuToggle.setAttribute('aria-label', 'Открыть меню'); $('#mobile-menu').hidden = true; }
@@ -113,6 +106,7 @@ function openService(key, returnTarget = document.activeElement) {
   $('#service-works').replaceChildren(...service.works.map(text => Object.assign(document.createElement('li'), {textContent: text})));
   $('#service-price').textContent = service.price;
   serviceForm.innerHTML = serviceFormHtml;
+  serviceForm.elements.namedItem('service').value = service.lead;
   const mail = $('[data-service-mail]', serviceDialog);
   if (mail) mail.href = `${mail.href.split('?')[0]}?subject=${encodeURIComponent(`Дом Мира: ${service.title}`)}`;
   $$('dialog[open]').forEach(dialog => { if (dialog !== serviceDialog) dialog.close(); });
@@ -132,13 +126,15 @@ serviceForm?.addEventListener('submit', async event => {
   if (!field('consent').checked) return fail(field('consent'), 'Отметьте согласие на обработку данных, без него заявку не принять.');
   const submit = $('.service-submit', serviceForm);
   const comment = field('comment').value.trim();
+  const service = field('service').value;
   const form = `service-${currentService.key}`;
   submit.disabled = true;
   error.textContent = 'Отправляем...';
   try {
-    await postLead({form, page: location.pathname, service: currentService.lead, name: field('name').value.trim(), phone, consent: true,
+    await postLead({form, page: location.pathname, service, name: field('name').value.trim(), phone, consent: true,
       website: field('website').value, message: `Заявка из окна услуги «${currentService.title}»${comment ? `. ${comment}` : ''}`});
-    goal('lead_sent', {form, service: currentService.lead});
+    goal('lead_sent', {form, service});
+    if (!submit.isConnected) return;
     const done = Object.assign(document.createElement('p'), {className: 'service-done', textContent: 'Заявка принята. Менеджер свяжется с вами в ближайшее рабочее время.', tabIndex: -1});
     done.setAttribute('role', 'status');
     serviceForm.replaceChildren(done);
@@ -262,89 +258,7 @@ if (projectsTrack) {
   };
   requestAnimationFrame(tick);
 }
-function renderQuiz() {
-  const content = $('#quiz-content');
-  const titles = ['Что будем строить?', 'Какая нужна площадь?', 'Какие работы нужны?', 'Примерная стоимость'];
-  const progress = `<div class="quiz-progress" aria-label="Шаг ${state.step + 1} из 4">${[0,1,2,3].map(i=>`<span class="${i <= state.step ? 'active' : ''}"></span>`).join('')}</div>`;
-  let inner = '';
-  if (state.step === 0) inner = `<p>Выберите тип объекта.</p><div class="quiz-options">${['Загородный дом','Дом для постоянной жизни','Коммерческий объект'].map(value=>`<button class="quiz-option ${state.type === value ? 'selected' : ''}" data-type="${value}" aria-pressed="${state.type === value}"><span>${value}</span><span aria-hidden="true">${state.type === value ? '<svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="m5 12 4 4L19 6"/></svg>' : '<svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg>'}</span></button>`).join('')}</div>`;
-  if (state.step === 1) inner = `<p>Хватит примерной цифры, до метра считать не нужно.</p><label class="area-output" for="area"><span id="area-value">${state.area}</span> <small>м²</small></label><input class="area-range" type="range" id="area" min="50" max="600" step="10" value="${state.area}" aria-label="Площадь дома в квадратных метрах" /><div class="range-labels"><span>50 м²</span><span>600 м²</span></div>`;
-  if (state.step === 2) inner = `<p>Выберите одну, по ней посчитаем ориентир.</p><div class="quiz-options">${['Строительство по проекту','Эскизный проект','Проектирование инженерии','Отделка по дизайн-проекту'].map(value=>`<button class="quiz-option ${state.scope === value ? 'selected' : ''}" data-scope="${value}" aria-pressed="${state.scope === value}"><span>${value}</span><span aria-hidden="true">${state.scope === value ? '<svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="m5 12 4 4L19 6"/></svg>' : '<svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M7 17 17 7M7 7h10v10"/></svg>'}</span></button>`).join('')}</div>`;
-  if (state.step === 3) {
-    const rate = {'Строительство по проекту':70000,'Эскизный проект':700,'Проектирование инженерии':1500,'Отделка по дизайн-проекту':60000}[state.scope];
-    inner = `<div class="quiz-summary"><p class="quiz-summary-label">Ориентировочная стоимость работ</p><strong class="estimate">от ${rub(state.area * rate)} ₽</strong><p class="quiz-summary-note">${rub(state.area)} м² × ${rub(rate)} ₽/м², только работа, без материалов. Это ориентир по прайсу, точную сумму покажет смета после осмотра.</p></div><dl class="summary-dl"><dt>Объект</dt><dd>${state.type}</dd><dt>Работы</dt><dd>${state.scope}</dd><dt>Площадь</dt><dd>${state.area} м²</dd></dl><div class="quiz-form"><label class="modal-field-label" for="quiz-name">Имя</label><input class="modal-input" id="quiz-name" autocomplete="name" maxlength="80" /><label class="modal-field-label" for="quiz-phone">Телефон</label><input class="modal-input ym-hide-content" id="quiz-phone" type="tel" autocomplete="tel" placeholder="+7" /><label class="modal-field-label" for="quiz-message">Комментарий, необязательно</label><textarea class="modal-input quiz-message" id="quiz-message" maxlength="1000" rows="2" placeholder="Где участок, когда хотите начать"></textarea><label class="quiz-consent"><input type="checkbox" id="quiz-consent" /> <span>Даю <a href="/soglasie/" target="_blank">согласие на обработку персональных данных</a></span></label><button class="button plum" type="button" id="quiz-send">Получить смету</button><p class="small-print" id="quiz-hint" role="status"></p></div>`;
-  }
-  content.innerHTML = `${progress}<p class="eyebrow">ШАГ ${state.step+1} ИЗ 4</p><h2 id="quiz-title">${titles[state.step]}</h2>${inner}<div class="quiz-actions">${state.step > 0 ? '<button class="quiz-back"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M19 12H5m6-6-6 6 6 6"/></svg> Назад</button>' : ''}${state.step < 3 ? '<button class="button plum quiz-next">Продолжить <span aria-hidden="true"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span></button>' : '<button class="quiz-back quiz-reset">Начать заново <svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M20 7v5h-5M19 12a7 7 0 1 0-2 5M20 7l-3-3"/></svg></button>'}</div>`;
-  $$('[data-type]', content).forEach(button=>button.addEventListener('click',()=>{state.type=button.dataset.type;renderQuiz();$('.quiz-option.selected',content)?.focus();}));
-  $$('[data-scope]', content).forEach(button=>button.addEventListener('click',()=>{state.scope=button.dataset.scope;renderQuiz();$('.quiz-option.selected',content)?.focus();}));
-  $('.quiz-next',content)?.addEventListener('click',()=>{state.step++;renderQuiz();$('#quiz-title').setAttribute('tabindex','-1');$('#quiz-title').focus();});
-  $('.quiz-back:not(.quiz-reset)',content)?.addEventListener('click',()=>{state.step=Math.max(0,state.step-1);renderQuiz();});
-  $('.quiz-reset',content)?.addEventListener('click',()=>{state.step=0;renderQuiz();});
-  $('#area',content)?.addEventListener('input',event=>{state.area=Number(event.target.value);$('#area-value').textContent=state.area;});
-  $('#quiz-send',content)?.addEventListener('click',async()=>{
-    const hint=$('#quiz-hint'),phone=$('#quiz-phone').value.trim();
-    if(phone.replace(/\D/g,'').length<10){hint.textContent='Укажите телефон с кодом города.';$('#quiz-phone').focus();return;}
-    if(!$('#quiz-consent').checked){hint.textContent='Отметьте согласие на обработку данных.';return;}
-    const button=$('#quiz-send');button.disabled=true;hint.textContent='Отправляем...';
-    try{
-      const form=`calc-${page}`;
-      const data=await postLead({form,page:location.pathname,service:state.type==='Коммерческий объект'?'commercial':state.scope.includes('Отделка')?'finishing':state.scope.includes('Строительство')?'construction':'design',
-        name:$('#quiz-name').value.trim(),phone,email:state.email||'',message:$('#quiz-message').value.trim(),consent:true,details:{object:state.type,area:String(state.area),scope:state.scope}});
-      goal('lead_sent',{form});
-      hint.textContent=`Заявка${data.id?` №${data.id}`:''} принята. Мы свяжемся с вами в ближайшее рабочее время.`;
-    }catch(error){hint.textContent=`${error.status&&error.message?error.message:'Не получилось отправить.'} Напишите на info@gkvesmir.ru.`;button.disabled=false;}
-  });
-}
-function mailto() {
-  const body = `Здравствуйте! Хочу обсудить проект с «Дом Мира».\n\nОбъект: ${state.type}\nПлощадь: около ${state.area} м²\nЗадача: ${state.scope}\n${state.email ? `Мой e-mail: ${state.email}\n` : ''}\nУчасток и пожелания: [расскажите о вашем проекте]`;
-  return `mailto:info@gkvesmir.ru?subject=${encodeURIComponent('Обсудить проект дома — Дом Мира')}&body=${encodeURIComponent(body)}`;
-}
-/* «Оставить отзыв» под отзывами: отзыв приходит менеджерам как обращение с пометкой «Отзыв для сайта»,
-   после проверки его публикуют в админке, раздел «Контент сайта», список «Отзывы клиентов». */
-const reviewDialog = $('#review-dialog');
-if (reviewDialog) {
-  const reviewForm = $('#review-form', reviewDialog);
-  const reviewFormHtml = reviewForm.innerHTML;
-  $$('[data-open="review"]').forEach(button => button.addEventListener('click', () => {
-    if (!$('.review-submit', reviewForm)) reviewForm.innerHTML = reviewFormHtml;
-    goal('form_open', {form: 'review'});
-    openModal(reviewDialog, button);
-  }));
-  reviewForm.addEventListener('submit', async event => {
-    event.preventDefault();
-    const field = name => reviewForm.elements.namedItem(name);
-    const error = $('.review-error', reviewForm);
-    const fail = (input, message) => { error.textContent = message; input.setAttribute('aria-invalid', 'true'); input.focus(); };
-    $$('[aria-invalid]', reviewForm).forEach(input => input.removeAttribute('aria-invalid'));
-    const name = field('name').value.trim();
-    const contact = field('contact').value.trim();
-    const text = field('text').value.trim();
-    const isEmail = contact.includes('@');
-    if (!name) return fail(field('name'), 'Укажите, как подписать отзыв.');
-    if (!(isEmail ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact) : contact.replace(/\D/g, '').length >= 10)) return fail(field('contact'), 'Укажите телефон или e-mail: менеджер уточнит детали перед публикацией.');
-    if (text.length < 20) return fail(field('text'), 'Напишите хотя бы пару предложений о работе.');
-    if (!field('consent').checked) return fail(field('consent'), 'Отметьте согласие на обработку данных.');
-    const subject = field('subject').value;
-    const submit = $('.review-submit', reviewForm);
-    submit.disabled = true;
-    error.textContent = 'Отправляем...';
-    try {
-      await postLead({form: 'review', page: location.pathname, service: 'other', name, phone: isEmail ? '' : contact, email: isEmail ? contact : '', consent: true,
-        website: field('website').value, message: `Отзыв для сайта${subject ? ` (${subject})` : ''}. Публикация с именем: ${field('publish').checked ? 'можно' : 'нельзя, только для компании'}.\n\n${text}`});
-      goal('lead_sent', {form: 'review'});
-      const done = Object.assign(document.createElement('p'), {className: 'review-done', textContent: 'Спасибо! Отзыв получили. Менеджер свяжется с вами, уточнит детали, и после этого опубликуем отзыв на сайте.', tabIndex: -1});
-      done.setAttribute('role', 'status');
-      reviewForm.replaceChildren(done);
-      done.focus();
-    } catch (err) {
-      goal('form_error', {form: 'review'});
-      error.textContent = `${err.status && err.message ? err.message : 'Не получилось отправить.'} Напишите нам на info@gkvesmir.ru.`;
-      submit.disabled = false;
-    }
-  });
-}
-
-/* Форма «Оставить заявку» в подвале: имя, телефон, согласие, отправка прямо отсюда, результат в том же блоке */
+/* Форма «Оставить заявку» в подвале: отправка и результат в том же блоке. */
 const footerForm = $('#footer-form');
 footerForm?.addEventListener('submit', async event => {
   event.preventDefault();
@@ -356,13 +270,16 @@ footerForm?.addEventListener('submit', async event => {
   if (phone.replace(/\D/g, '').length < 10) return fail(field('phone'), 'Укажите телефон с кодом города.');
   if (!field('consent').checked) return fail(field('consent'), 'Отметьте согласие на обработку данных.');
   const submit = $('.footer-submit', footerForm);
+  if (submit.disabled || footerForm.classList.contains('is-done')) return;
   const form = `footer-${page}`;
+  const service = field('service').value;
+  const comment = field('comment').value.trim();
   submit.disabled = true;
   status.textContent = 'Отправляем...';
   try {
-    await postLead({form, page: location.pathname, service: page === 'otdelka' ? 'finishing' : 'other', name: field('name').value.trim(), phone, consent: true,
-      website: field('website').value, message: 'Заявка из формы внизу страницы'});
-    goal('lead_sent', {form});
+    await postLead({form, page: location.pathname, service, name: field('name').value.trim(), phone, consent: true,
+      website: field('website').value, message: ['Заявка из формы внизу страницы', comment].filter(Boolean).join('\n')});
+    goal('lead_sent', {form, service});
     footerForm.classList.add('is-done');
     status.textContent = 'Заявка принята. Менеджер свяжется с вами в ближайшее рабочее время.';
   } catch (err) {

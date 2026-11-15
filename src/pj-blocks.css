@@ -126,14 +126,16 @@
 .pj-fields label:not(.pj-consent){display:flex;flex-direction:column;gap:2px}
 .pj-fields label>span{font-size:13px;color:#a8aca7}
 .pj-fields i{font-style:normal;color:#d9c6dd}
-.pj-fields input:not([type="checkbox"]){width:100%;font:inherit;font-size:16px;color:var(--paper);background:transparent;border:0;border-bottom:1px solid rgba(247,247,245,.35);border-radius:0;padding:8px 0 12px;outline-offset:4px}
-.pj-fields input:not([type="checkbox"]):focus{border-bottom-color:var(--paper)}
+.pj-fields :is(input:not([type="checkbox"]),select,textarea){width:100%;font:inherit;font-size:16px;color:var(--paper);background:transparent;border:0;border-bottom:1px solid rgba(247,247,245,.35);border-radius:0;padding:8px 0 12px;outline-offset:4px}
+.pj-fields :is(input:not([type="checkbox"]),select,textarea):focus{border-bottom-color:var(--paper)}
+.pj-fields select{color-scheme:dark}
+.pj-fields textarea{resize:vertical}
 .pj-fields input:not([type="checkbox"])[aria-invalid=true]{border-bottom:2px solid #f2a58f}
 .pj-form-error{font-size:12px;color:#f2a58f}
 .pj-form-error:empty{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 .pj-submit{display:flex;justify-content:center;align-items:center;width:100%;min-height:56px;padding:18px 22px;border-radius:10px;background:var(--paper);color:var(--ink);font-size:13px;transition:background .2s}
 .pj-submit:hover{background:#fff}
-.pj-form button:focus-visible,.pj-form input:focus-visible{outline-color:#d9c6dd}
+.pj-form :is(button,input,select,textarea):focus-visible{outline-color:#d9c6dd}
 
 .design-page .footer{padding-top:56px}
 

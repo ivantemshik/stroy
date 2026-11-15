@@ -128,8 +128,7 @@ html:not(.js) .theme-toggle { display: none; }
 .lightbox figcaption { display: flex; justify-content: space-between; gap: 16px; color: var(--night-muted); font-size: 12px; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
-/* ---------- Поля заявки в окне расчёта ---------- */
-.quiz-message { min-height: 64px; resize: vertical; line-height: 1.5; }
+/* Согласие в форме услуги */
 .quiz-consent { display: flex; gap: 8px; align-items: flex-start; margin: 14px 0; font-size: 13px; line-height: 1.45; }
 .quiz-consent input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; accent-color: var(--plum); }
 .quiz-consent a { color: var(--ink); }
@@ -348,12 +347,6 @@ html:not(.js) .theme-toggle { display: none; }
 [data-theme="dark"] .modal-close { color: var(--muted); }
 [data-theme="dark"] .modal-close:hover { background: var(--card-hover); }
 [data-theme="dark"] .modal-input { background: var(--card); border-color: var(--input-line); color: var(--ink); }
-[data-theme="dark"] .quiz-option { background: var(--card); border-color: var(--input-line); color: var(--ink); }
-[data-theme="dark"] .quiz-option:hover, [data-theme="dark"] .quiz-option.selected { background: var(--card-hover); border-color: #8fa486; }
-[data-theme="dark"] .quiz-option span:last-child, [data-theme="dark"] .area-output small { color: #9db592; }
-[data-theme="dark"] .quiz-progress span { background: var(--line); }
-[data-theme="dark"] .quiz-summary { background: var(--card-2); }
-[data-theme="dark"] .quiz-summary .estimate { color: #cfe0c4; }
 [data-theme="dark"] .service-scope span { background: var(--card-hover); }
 [data-theme="dark"] .service-source { color: var(--muted); }
 [data-theme="dark"] .quiz-consent a, [data-theme="dark"] #privacy-dialog a { color: var(--ink); }
@@ -388,7 +381,8 @@ html:not(.js) .theme-toggle { display: none; }
 [data-theme="dark"] .pj-masthead .theme-toggle { border-color: var(--input-line); }
 /* Светлый текст на тёмных блоках: в исходном стиле он задан цветом бумаги, ночью бумага тёмная */
 [data-theme="dark"] .process, [data-theme="dark"] .pj-catalog-tile, [data-theme="dark"] .pj-form, [data-theme="dark"] .pj-catalog-value strong, [data-theme="dark"] .pj-fields input, [data-theme="dark"] .pj-consent a { color: var(--ink); }
-[data-theme="dark"] .pj-fields input:focus { border-bottom-color: var(--ink); }
+[data-theme="dark"] .pj-fields :is(input, select, textarea):focus { border-bottom-color: var(--ink); }
+[data-theme="dark"] .pj-fields :is(select, textarea) { color: var(--ink); }
 
 /* ==========================================================================
    Карточки цен на главной: плитки в стиле страницы «Проектирование»
@@ -954,7 +948,8 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
 .service-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .service-fields label { display: flex; flex-direction: column; gap: 6px; }
 .service-fields label > span { font-size: 12px; color: var(--muted); }
-.service-fields .service-comment { grid-column: 1 / -1; }
+.service-fields .service-field-wide { grid-column: 1 / -1; }
+.service-fields textarea { resize: vertical; }
 .service-modal .quiz-consent { margin: 14px 0 4px; }
 .service-modal p.service-error, .review-modal p.review-error { min-height: 18px; margin: 6px 0 10px; font-size: 12px; line-height: 1.5; color: var(--error-ink); }
 .service-modal .service-submit, .review-modal .review-submit { width: 100%; justify-content: center; }
@@ -989,32 +984,6 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
 [data-theme="dark"] .modal .modal-input:focus-visible, [data-theme="dark"] .service-contact:focus-visible { outline-color: var(--plum-text); }
 
 /* ==========================================================================
-   Калькулятор: палитра и кнопки сайта, без зелёного. Фирменный цвет только у главной кнопки.
-   Последний шаг: крупная сумма с пояснением, параметры расчёта и компактная форма в одну сетку.
-   ========================================================================== */
-#quiz-dialog .quiz-progress { margin-right: 44px; }
-#quiz-dialog .quiz-progress span { background: var(--line); }
-#quiz-dialog .quiz-progress span.active { background: var(--ink); }
-#quiz-dialog .quiz-option { border-color: var(--field-line); border-radius: 12px; background: var(--sheet); color: var(--ink); }
-#quiz-dialog .quiz-option:hover { border-color: var(--muted); background: var(--sheet); }
-#quiz-dialog .quiz-option.selected { border-color: var(--ink); background: var(--sheet); box-shadow: inset 0 0 0 1px var(--ink); }
-#quiz-dialog .quiz-option span:last-child { color: var(--muted); }
-#quiz-dialog .quiz-option.selected span:last-child { color: var(--ink); }
-#quiz-dialog .area-output small { color: var(--muted); }
-#quiz-dialog .area-range { accent-color: var(--ink); }
-#quiz-dialog .quiz-summary { margin-bottom: 16px; padding: 22px 22px 18px; border: 1px solid var(--line); border-radius: 16px; background: var(--sheet); }
-#quiz-dialog .quiz-summary p { margin: 0; font-size: 13px !important; line-height: 1.5; color: var(--muted); }
-#quiz-dialog .quiz-summary .quiz-summary-label { font-size: 12px !important; }
-#quiz-dialog .quiz-summary .estimate { display: block; margin: 6px 0 8px; font-size: 46px; font-weight: 450; line-height: 1.05; letter-spacing: -2px; color: var(--ink); }
-#quiz-dialog .summary-dl { margin: 0 0 18px; font-size: 13px; }
-#quiz-dialog .quiz-form { display: grid; gap: 6px; }
-#quiz-dialog .quiz-form .modal-field-label { margin: 8px 0 0; font-size: 12px; color: var(--muted); }
-#quiz-dialog .quiz-form .quiz-consent { margin: 10px 0 4px; }
-#quiz-dialog .quiz-form .button { width: 100%; justify-content: center; margin-top: 6px; }
-#quiz-dialog .quiz-form .small-print { min-height: 16px; margin: 4px 0 0; }
-@media (max-width: 480px) { #quiz-dialog .quiz-summary .estimate { font-size: 36px; letter-spacing: -1.4px; } }
-
-/* ==========================================================================
    Подвал: слева заголовок и контакты, справа карточка формы «Оставить заявку»
    ========================================================================== */
 .footer.section-pad { padding-top: 96px; padding-bottom: 28px; }
@@ -1033,13 +1002,15 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
 .footer-card-lead { margin: 8px 0 24px; font-size: 15px; line-height: 1.6; color: var(--muted); }
 .footer-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
 .footer-field { display: flex; flex-direction: column; gap: 8px; }
+.footer-field-wide { grid-column: 1 / -1; }
 .footer-field span { font-size: 14px; color: var(--muted); }
-.footer-field input { width: 100%; height: 52px; padding: 0 16px; border: 1px solid var(--field-line); border-radius: 12px; background: var(--paper); color: var(--ink); font: inherit; font-size: 16px; transition: border-color 0.2s; }
+.footer-field :is(input, select, textarea) { width: 100%; min-height: 52px; padding: 12px 16px; border: 1px solid var(--field-line); border-radius: 12px; background: var(--paper); color: var(--ink); font: inherit; font-size: 16px; transition: border-color 0.2s; }
+.footer-field textarea { resize: vertical; }
 .footer-field input::placeholder { color: var(--muted); }
-.footer-field input:hover { border-color: var(--muted); }
-.footer-field input:focus { outline: none; border-color: var(--ink); }
-.footer-field input:focus-visible { outline: 2px solid var(--plum); outline-offset: 2px; }
-.footer-field input[aria-invalid="true"] { border-color: var(--error-ink); }
+.footer-field :is(input, select, textarea):hover { border-color: var(--muted); }
+.footer-field :is(input, select, textarea):focus { outline: none; border-color: var(--ink); }
+.footer-field :is(input, select, textarea):focus-visible { outline: 2px solid var(--plum); outline-offset: 2px; }
+.footer-field :is(input, select, textarea)[aria-invalid="true"] { border-color: var(--error-ink); }
 .footer-consent { grid-column: 1 / -1; display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.45; color: var(--muted); }
 .footer-consent input { flex: none; width: 20px; height: 20px; margin: 0; accent-color: var(--plum); }
 .footer-consent a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--field-line); text-underline-offset: 3px; }
@@ -1056,8 +1027,8 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
 .footer .legal { display: grid; grid-template-columns: auto auto minmax(0, 1fr); gap: 12px 48px; align-items: start; font-size: 12px; line-height: 1.6; }
 .footer .legal > span:not(.legal-links) { white-space: nowrap; }
 .footer .legal-link { font-size: 12px; }
-[data-theme="dark"] .footer-contacts a:focus-visible, [data-theme="dark"] .footer-field input:focus-visible { outline-color: var(--plum-text); }
-[data-theme="dark"] .footer-field input { border-color: var(--input-line); }
+[data-theme="dark"] .footer-contacts a:focus-visible, [data-theme="dark"] .footer-field :is(input, select, textarea):focus-visible { outline-color: var(--plum-text); }
+[data-theme="dark"] .footer-field :is(input, select, textarea) { border-color: var(--input-line); }
 @media (max-width: 1100px) {
   .footer-main { gap: 32px; }
   .footer-info h2 { font-size: 40px; }
@@ -1110,40 +1081,6 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
 [data-theme="dark"] .ask-option:focus-visible { outline-color: var(--plum-text); }
 
 /* ==========================================================================
-   Отзывы: пока настоящих нет, вместо карточек приглашение оставить отзыв
-   ========================================================================== */
-.reviews .reviews-grid:empty { display: none; }
-.reviews .reviews-invite { display: flex; align-items: center; justify-content: space-between; gap: 24px 48px; margin-top: 16px; padding: 28px 30px; border-radius: 20px; background: var(--paper); color: var(--ink); }
-.reviews .reviews-grid:empty + .reviews-invite { margin-top: 0; }
-.reviews-invite h3 { margin: 0; font-size: 24px; font-weight: 500; line-height: 1.25; letter-spacing: -0.6px; }
-.reviews .reviews-invite p { max-width: 600px; margin: 10px 0 0; font-size: 15px; line-height: 1.6; color: var(--muted); }
-.reviews-invite-actions { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 14px 24px; }
-.reviews-invite-link { font-size: 15px; color: inherit; text-decoration: underline; text-decoration-color: var(--line); text-decoration-thickness: 1px; text-underline-offset: 5px; transition: text-decoration-color 0.2s; }
-.reviews-invite-link:hover { text-decoration-color: currentColor; }
-.reviews-invite-link:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; border-radius: 4px; }
-/* Пока отзывов нет, заголовок «Что говорят наши клиенты» не показываем: блок становится приглашением */
-#main > .reviews:has(.reviews-grid:empty) { padding-top: 64px; padding-bottom: 64px; }
-.reviews:has(.reviews-grid:empty) .section-heading, .reviews:has(.reviews-grid:empty) .reviews-grid { display: none; }
-.reviews:has(.reviews-grid:empty) .reviews-invite { align-items: flex-end; margin: 0; padding: 0; background: none; color: inherit; }
-.reviews:has(.reviews-grid:empty) .reviews-invite h3 { max-width: 640px; font-size: 44px; line-height: 1.1; letter-spacing: -1.8px; }
-.reviews:has(.reviews-grid:empty) .reviews-invite p { max-width: 520px; margin-top: 16px; font-size: 16px; color: var(--night-muted); }
-.reviews:has(.reviews-grid:empty) .reviews-invite-link { text-decoration-color: var(--night-line); }
-.reviews:has(.reviews-grid:empty) .button.plum:focus-visible { outline-color: var(--tile-dark-ink); }
-.review-modal .review-form { display: grid; gap: 6px; }
-.review-modal .modal-field-label { margin: 8px 0 0; }
-.review-modal .quiz-consent { margin: 8px 0 0; }
-@media (max-width: 760px) {
-  .reviews .reviews-invite { flex-direction: column; align-items: flex-start; padding: 22px 20px; }
-  .reviews-invite h3 { font-size: 20px; }
-  #main > .reviews:has(.reviews-grid:empty) { padding-top: 44px; padding-bottom: 44px; }
-  .reviews:has(.reviews-grid:empty) .reviews-invite { align-items: flex-start; }
-  .reviews:has(.reviews-grid:empty) .reviews-invite h3 { font-size: 30px; letter-spacing: -1.2px; }
-  .reviews:has(.reviews-grid:empty) .reviews-invite p { font-size: 15px; }
-  .reviews-invite-actions { width: 100%; }
-  .reviews-invite-actions .button { width: 100%; }
-}
-
-/* ==========================================================================
    «Наши услуги» на главной: восемь направлений. «Отделка» ведёт на свою страницу,
    остальные открывают окно услуги (то же, что в меню «Услуги»).
    ========================================================================== */
@@ -1181,34 +1118,28 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
    сланцевая лента, белые карточки, номер шага в плашке. Кнопка расчёта светлая, чтобы читалась на ленте. */
 #main > .how { margin-top: 96px; padding-top: 52px; padding-bottom: 48px; background: var(--slate); color: var(--slate-text); }
 [data-theme="dark"] #main > .how { background: var(--blue); }
-.how .how-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 30px; margin-bottom: 0; }
+.how .how-head { margin-bottom: 0; }
 .how #how-title { margin: 0; font-size: 44px; line-height: 1.1; letter-spacing: -1.8px; }
 .how #how-title span { color: var(--slate-soft); }
-.how .how-head > p { margin: 0 0 6px; font-size: 14px; line-height: 1.6; color: var(--slate-text); text-align: right; }
 .how .process-grid { gap: 8px; margin-top: 32px; }
 .how .process-grid article { min-height: 0; padding: 22px 22px 26px; border-radius: 18px; background: var(--sheet); color: var(--ink); }
 .how .step-number { align-self: flex-start; margin: 0 0 30px; padding: 8px 10px; border-radius: 10px; background: var(--soft); color: var(--ink); font-size: 26px; font-weight: 450; line-height: 1; letter-spacing: -0.05em; font-variant-numeric: tabular-nums; }
 .how .step-number > span { font-size: inherit; font-weight: inherit; }
 .how .process-grid h3 { margin: 0 0 8px; font-size: 19px; font-weight: 600; line-height: 1.22; letter-spacing: -0.025em; }
 .how .process-grid p:not(.step-number) { margin: 0; font-size: 14px; line-height: 1.55; color: var(--body); }
-.how-bottom { display: flex; align-items: center; gap: 16px 24px; margin-top: 24px; }
+.how-bottom { margin-top: 24px; }
 #main .how .how-cta { justify-content: center; min-height: 52px; padding: 0 26px; border-radius: 14px; background: var(--sheet); color: var(--ink); font-size: 15px; font-weight: 500; letter-spacing: -0.01em; transition: background-color 0.2s, transform 0.2s; }
 #main .how .how-cta:hover { background: var(--sheet-hover); }
 #main .how .how-cta:focus-visible { outline: 2px solid var(--slate-text); outline-offset: 3px; }
-.how-bottom p { max-width: 420px; margin: 0; font-size: 14px; line-height: 1.55; color: var(--slate-text); }
 @media (max-width: 1100px) { .how #how-title { font-size: 40px; } .how .process-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 760px) {
   #main > .how { margin-top: 64px; padding-top: 36px; padding-bottom: 32px; }
-  .how .how-head { display: block; }
   .how #how-title { font-size: 30px; letter-spacing: -1.2px; }
-  .how .how-head > p { margin: 14px 0 0; text-align: left; }
-  .how .how-head > p br { display: none; }
   .how .process-grid { grid-template-columns: minmax(0, 1fr); margin-top: 22px; }
   .how .process-grid article { display: grid; grid-template-columns: 50px minmax(0, 1fr); gap: 4px 12px; align-items: start; padding: 16px; }
   .how .step-number { grid-row: 1 / span 2; margin: 0; justify-self: start; font-size: 23px; }
   .how .process-grid h3 { margin: 6px 0 0; font-size: 17px; }
   .how .process-grid p:not(.step-number) { grid-column: 2; }
-  .how-bottom { flex-direction: column; align-items: stretch; }
   #main .how .how-cta { width: 100%; }
 }
 @media (max-width: 400px) { .how #how-title { font-size: 28px; letter-spacing: -1.1px; } }
@@ -1248,12 +1179,10 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
 .faq-side { display: flex; flex-direction: column; align-items: flex-start; }
 .faq #faq-title { margin: 0; font-size: 44px; line-height: 1.1; letter-spacing: -1.8px; }
 [data-page="otdelka"] .faq #faq-title { text-wrap: balance; }
-.faq-lead { max-width: 400px; margin: 16px 0 0; font-size: 16px; line-height: 1.6; color: var(--muted); }
 /* фото-плитка с реальным объектом: растёт на всю оставшуюся высоту колонки, текст внизу на затемнении */
 .faq-help { position: relative; isolation: isolate; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; width: 100%; min-height: 400px; margin-top: 32px; overflow: hidden; border-radius: 24px; background: var(--tile-dark); color: var(--photo-ink); }
 .faq-help-photo { position: absolute; z-index: -2; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .faq-help::after { content: ""; position: absolute; z-index: -1; inset: 0; background: linear-gradient(180deg, var(--photo-shade-0) 28%, var(--photo-shade-mid) 52%, var(--photo-shade) 100%); }
-.faq-help-place { position: absolute; top: 16px; left: 16px; padding: 7px 12px; border-radius: 20px; background: var(--chip); color: var(--ink); font-size: 12px; line-height: 1.4; }
 .faq-help-body { padding: 28px; }
 .faq-help h3 { margin: 0; font-size: 26px; font-weight: 500; line-height: 1.2; letter-spacing: -0.7px; }
 .faq-help p { max-width: 360px; margin: 10px 0 22px; font-size: 15px; line-height: 1.6; color: var(--photo-ink-soft); }
@@ -1287,8 +1216,7 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
   #main > .faq { grid-template-columns: minmax(0, 1fr); gap: 0; padding-top: 72px; padding-bottom: 24px; }
   .faq-side { display: contents; }
   .faq #faq-title { font-size: 30px; letter-spacing: -1.2px; }
-  [data-page="otdelka"] .faq #faq-title { margin-bottom: 24px; }
-  .faq-lead { margin: 12px 0 24px; font-size: 15px; }
+  .faq #faq-title { margin-bottom: 24px; }
   .faq .faq-list { order: 2; }
   .faq-help { order: 3; flex: none; min-height: 340px; margin-top: 12px; border-radius: 20px; }
   .faq-help-body { padding: 22px 20px; }
@@ -1325,7 +1253,7 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
 
 /* ---------- Окна: та же основная кнопка, подписи полей не мельче 13 px ---------- */
 .modal .button.plum:not(.hero-cta) { justify-content: center; min-height: 52px; padding: 0 26px; border-radius: 14px; font-size: 15px; font-weight: 500; letter-spacing: -0.01em; }
-.modal .modal-field-label, #quiz-dialog .quiz-form .modal-field-label { font-size: 13px; }
+.modal .modal-field-label { font-size: 13px; }
 .modal h2:focus { outline: none; }
 
 /* ---------- «Отделка», форма сметы: подписи и кнопка в общей шкале ---------- */

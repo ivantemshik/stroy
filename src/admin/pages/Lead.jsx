@@ -2,8 +2,8 @@ import React, {useState} from 'react';
 import {api, fmtDate, fmtPhone, minutes, rub} from '../api.js';
 import {useAsync, Page, Panel, Button, Field, Loading, ErrorBox, StatusBadge, Notice} from '../ui.jsx';
 import {can, go} from '../nav.js';
+import {SERVICES} from '../../../server/permissions.js';
 
-const SERVICES = {construction: 'Строительство дома', finishing: 'Отделочные работы', design: 'Проектирование', engineering: 'Инженерные системы', landscape: 'Благоустройство', commercial: 'Коммерческий объект', other: 'Другое'};
 const CHANNELS = {site: 'Сайт', telegram_bot: 'ИИ-консультант в Telegram', manual: 'Добавлена вручную'};
 const CONTACT = {call: 'Звонок', telegram: 'Telegram', whatsapp: 'WhatsApp', max: 'Max', email: 'Почта'};
 const DETAILS = {object: 'Объект', area: 'Площадь', floors: 'Этажность', material: 'Материал', has_project: 'Проект', has_plot: 'Участок', location: 'Где', budget: 'Бюджет', timing: 'Сроки', stage: 'Стадия', design_project: 'Дизайн проект', scope: 'Состав работ', estimate: 'Предварительный расчёт', rooms: 'Помещения'};

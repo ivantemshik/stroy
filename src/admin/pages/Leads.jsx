@@ -2,8 +2,8 @@ import React, {useEffect, useState} from 'react';
 import {api, download, fmtDate, fmtPhone, qs} from '../api.js';
 import {useAsync, Page, Panel, Button, Field, Loading, ErrorBox, StatusBadge, Pagination, Notice} from '../ui.jsx';
 import {can, go} from '../nav.js';
+import {SERVICES} from '../../../server/permissions.js';
 
-const SERVICES = {construction: 'Строительство', finishing: 'Отделка', design: 'Проектирование', engineering: 'Инженерия', landscape: 'Благоустройство', commercial: 'Коммерческий', other: 'Другое'};
 const CHANNELS = {site: 'Сайт', telegram_bot: 'Telegram бот', manual: 'Вручную'};
 const STATUSES = {new: 'Новая', in_progress: 'В работе', qualified: 'Целевая', meeting: 'Встреча', estimate: 'Смета', contract: 'Договор', rejected: 'Отказ', spam: 'Спам'};
 

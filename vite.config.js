@@ -3,7 +3,8 @@ import react from '@vitejs/plugin-react';
 import {fileURLToPath} from 'node:url';
 import {readFileSync, existsSync, readdirSync, statSync} from 'node:fs';
 import {createHash} from 'node:crypto';
-import {bakeHtml} from './src/site/content-render.js';
+import {bakeHtml, escapeHtml} from './src/site/content-render.js';
+import {SERVICE_LIST} from './src/site/services.js';
 import {CONTENT_DEFAULTS} from './server/content-defaults.js';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
@@ -29,25 +30,28 @@ const SITEMAP = ['/', '/otdelka/', '/privacy/', '/soglasie/', '/cookies/'];
 
 // Общие куски страниц (шапка, подвал с контактами и окна) лежат в src/site/partials и вставляются
 // на место комментария <!--#include имя флаги-->. В шапке у всех страниц есть переключатель светлой и тёмной темы,
-// флаг doc делает кнопку «Обсудить проект» ссылкой на контакты главной.
+// Флаг doc направляет «Обсудить проект» к форме на главной.
 const PARTIALS_DIR = `${root}src/site/partials/`;
 const THEME_TOGGLE = '<button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false" aria-label="Включить тёмную тему"><svg class="i-moon" viewBox="0 0 20 20" aria-hidden="true"><path d="M16.4 12.4A6.8 6.8 0 0 1 7.6 3.6a6.8 6.8 0 1 0 8.8 8.8Z"/></svg><svg class="i-sun" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3.4"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.3 4.3l1.4 1.4M14.3 14.3l1.4 1.4M4.3 15.7l1.4-1.4M14.3 5.7l1.4-1.4"/></svg></button>';
 function includePartials(html) {
   const page = /<body[^>]*\sdata-page="([\w-]+)"/.exec(html)?.[1] || 'home';
+  const defaultService = page === 'otdelka' ? 'finishing' : 'other';
+  const serviceOptions = [...SERVICE_LIST, {lead: 'other', title: 'Другое'}].map(({lead, title}) =>
+    `<option value="${escapeHtml(lead)}"${lead === defaultService ? ' selected' : ''}>${escapeHtml(title)}</option>`).join('');
   return html.replace(/<!--#include (\w+)((?: [\w-]+)*)\s*-->/g, (match, name, flagsRaw) => {
     const flags = new Set(flagsRaw.trim().split(/\s+/).filter(Boolean));
-    const cta = flags.has('doc')
-      ? '<a class="header-contact" href="/#contacts">Обсудить проект</a>'
-      : '<button class="header-contact" data-open="quiz">Обсудить проект</button>';
-    const ctaMobile = flags.has('doc') ? '<a class="mobile-menu-cta" href="/#contacts">Обсудить проект</a>' : '<button class="mobile-menu-cta" data-open="quiz">Обсудить проект</button>';
+    const requestHref = page === 'otdelka' ? '#otdelka-form' : '#footer-form';
+    const headerRequest = flags.has('doc') ? '/#footer-form' : requestHref;
+    const cta = `<a class="header-contact" href="${headerRequest}" data-request>Обсудить проект</a>`;
+    const ctaMobile = `<a class="mobile-menu-cta" href="${headerRequest}" data-request>Обсудить проект</a>`;
     const part = readFileSync(`${PARTIALS_DIR}${name}.html`, 'utf8')
       .replaceAll('{{page}}', page)
       .replaceAll('{{themeToggle}}', THEME_TOGGLE)
       .replaceAll('{{ctaMobile}}', ctaMobile)
-      .replaceAll('{{pricesCta}}', page === 'otdelka' ? 'Рассчитать отделку' : 'Рассчитать мой дом')
+      .replaceAll('{{requestHref}}', requestHref)
       .replaceAll('{{cta}}', cta);
     return part.replaceAll(`data-nav="${page}"`, `data-nav="${page}" aria-current="page"`).trim();
-  });
+  }).replaceAll('{{leadServiceOptions}}', serviceOptions);
 }
 
 const siteUrl = () => (process.env.PUBLIC_SITE_URL || process.env.SITE_URL || 'http://127.0.0.1:5173').replace(/\/$/, '');

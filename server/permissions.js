@@ -44,6 +44,7 @@ export const statusStage = key => LEAD_STATUSES.find(s => s.key === key)?.stage 
 
 export const SERVICES = {
   construction: 'Строительство дома',
+  works: 'Строительные работы',
   finishing: 'Отделочные работы',
   design: 'Проектирование',
   engineering: 'Инженерные системы',

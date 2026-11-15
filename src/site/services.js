@@ -13,7 +13,7 @@ export const SERVICE_LIST = [
     photo: 'service-build', alt: 'Визуализация: современный двухэтажный загородный дом с панорамными окнами среди сосен'
   },
   {
-    key: 'works', lead: 'construction', tg: 'construction',
+    key: 'works', lead: 'works', tg: 'construction',
     title: 'Строительные работы',
     short: 'Фундаменты, стены, перекрытия, фасады и кровля',
     result: 'Отдельный этап стройки или весь каркас дома: фундамент, стены и перекрытия, утепление фасада и кровля.',
@@ -22,7 +22,7 @@ export const SERVICE_LIST = [
     photo: 'service-works', alt: 'Визуализация: стройка загородного дома, плитный фундамент и стены первого этажа из блоков'
   },
   {
-    key: 'finishing', href: '/otdelka/',
+    key: 'finishing', lead: 'finishing', href: '/otdelka/',
     title: 'Отделка и ремонт',
     short: 'Отделка по дизайн проекту, косметический и капитальный ремонт',
     photo: 'service-finishing', alt: 'Визуализация: светлая гостиная загородного дома после отделки'

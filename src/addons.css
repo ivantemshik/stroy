@@ -884,8 +884,14 @@ html:not(.js) .theme-toggle { display: none; }
   .otd-bento .pj-price-value strong, .otd-bento .pj-catalog-value strong { font-size: 30px; letter-spacing: -1.4px; }
   .otd-check { padding: 44px 10px 10px; }
   .otd-check-frame { grid-template-columns: minmax(0, 1fr); gap: 10px; }
-  .otd-check-photo { min-height: 0; aspect-ratio: 4 / 5; border-radius: 24px; }
-  .otd-check-copy { order: -1; padding: 30px 22px 24px; border-radius: 24px; }
+  /* фото внутри той же карточки: под вводным текстом, перед списком проверок, номера на фото совпадают с пунктами */
+  .otd-check-frame { display: flex; flex-direction: column; padding: 30px 22px 24px; border-radius: 24px; background: var(--sheet); color: var(--ink); }
+  .otd-check-copy { display: contents; }
+  .otd-check-copy > h2 { order: 1; }
+  .otd-check-copy > p { order: 2; }
+  .otd-check-photo { order: 3; min-height: 0; margin-top: 22px; aspect-ratio: 4 / 5; border-radius: 18px; }
+  .otd-check-list { order: 4; }
+  .otd-check-cta { order: 5; }
   .otd-check-list { grid-template-columns: minmax(0, 1fr); padding-top: 22px; gap: 8px; }
   .otd-check-cta { padding-top: 22px; }
   .otd-check-cta .button { width: 100%; }
@@ -1104,10 +1110,11 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
    «Наши услуги» на главной: восемь направлений. «Отделка» ведёт на свою страницу,
    остальные открывают окно услуги (то же, что в меню «Услуги»).
    ========================================================================== */
-.uslugi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+/* девять направлений: сетка 3×3, на телефоне карточки горизонтальные (фото слева, текст и стрелка справа) */
+.uslugi-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
 .uslugi-grid > li { display: flex; }
 .usluga { display: flex; flex-direction: column; width: 100%; padding: 0; border: 0; border-radius: 22px; overflow: hidden; background: var(--sheet); color: var(--ink); font: inherit; text-align: left; cursor: pointer; transition: transform 0.25s, box-shadow 0.25s; }
-.usluga img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.usluga img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
 .usluga-text { display: flex; flex-direction: column; gap: 6px; padding: 18px 20px 0; }
 .usluga-text b { font-size: 18px; font-weight: 500; line-height: 1.3; letter-spacing: -0.3px; }
 .usluga-text > span { font-size: 14px; line-height: 1.5; color: var(--muted); }
@@ -1120,15 +1127,24 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
 .usluga:hover { transform: translateY(-2px); box-shadow: 0 12px 30px var(--pop-shadow); }
 .usluga:focus-visible { outline: 2px solid var(--plum); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .usluga { transition: none; } .usluga:hover { transform: none; } }
-@media (max-width: 1100px) { .uslugi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .usluga img { aspect-ratio: 16 / 9; } }
+@media (max-width: 1100px) { .usluga img { aspect-ratio: 4 / 3; } .usluga-text b { font-size: 17px; } }
 @media (max-width: 760px) {
-  .uslugi-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
-  .usluga { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; border-radius: 18px; }
-  .usluga img { grid-column: 1 / -1; width: 100%; height: auto; aspect-ratio: 1 / 1; }
-  .usluga-text { padding: 16px 0 18px 16px; gap: 5px; }
-  .usluga-foot { margin: 0; padding: 0 16px 0 12px; }
+  .uslugi-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  /* квадратное фото слева на всю высоту карточки (сторона --s), справа заголовок, описание и стрелка; цену на телефоне не показываем.
+     Текст укладывается в высоту фото: заголовок и описание не длиннее двух строк */
+  .usluga { --s: 144px; display: grid; grid-template-columns: var(--s) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; min-height: var(--s); border-radius: 18px; }
+  .usluga img { grid-column: 1; grid-row: 1 / -1; width: var(--s); height: 100%; min-height: var(--s); aspect-ratio: auto; object-fit: cover; }
+  .usluga-text { grid-column: 2; padding: 12px 12px 0; gap: 4px; }
+  .usluga-text b, .usluga-text > span { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+  .usluga-text b { font-size: 15px; line-height: 1.25; }
+  .usluga-text > span { font-size: 13px; line-height: 1.45; }
+  .usluga-foot { grid-column: 2; margin: 0; padding: 8px 12px 12px; }
   .usluga-from { display: none; }
+  .usluga-arrow { width: 30px; height: 30px; }
 }
+/* узкие телефоны: описание может занять три строки, тогда фото чуть выше квадрата, текст не обрезается */
+@media (max-width: 380px) { .usluga { --s: 136px; } .usluga-foot { padding: 6px 12px 10px; } .usluga-arrow { width: 28px; height: 28px; } .usluga-text > span { -webkit-line-clamp: 3; } }
+@media (max-width: 340px) { .usluga { --s: 116px; } }
 [data-theme="dark"] .usluga:focus-visible { outline-color: var(--plum-text); }
 
 /* «Как идёт работа» на главной: тот же вид, что у цепочки этапов на «Отделке» (.pj-stages-band, .pj-chain):
@@ -1310,8 +1326,11 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
 .ptl-walls-list span { font-size: 15px; line-height: 1.55; color: var(--muted); }
 #main .ptl-walls-cta { margin-top: auto; }
 
-/* в плитке вопросов световая линия уходит вверх кадра, под текстом спокойная стена */
-.faq-help .ptl-faq-photo { object-position: 50% 12%; }
+/* в плитке вопросов потолок с подсветкой сверху, под текстом и кнопками спокойная стена */
+.faq-help .ptl-faq-photo { object-position: 50% 45%; }
+@media (max-width: 900px) { .faq-help .ptl-faq-photo { object-position: 50% 82%; } }
+/* «Потолки в интерьере»: верх кадров светлый (белый потолок), подписи карточек читаются за счёт затемнения сверху */
+[data-page="potolki"] .project-card::after { background: linear-gradient(180deg, var(--photo-shade) 0%, var(--photo-shade-mid) 24%, var(--photo-shade-0) 48%); }
 
 @media (max-width: 1100px) { .ptl-types-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 900px) {
@@ -1330,4 +1349,20 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
   .ptl-walls-copy > p { font-size: 15px; }
   .ptl-walls-list li { padding: 16px; }
   #main .ptl-walls-cta { width: 100%; }
+}
+
+/* «Натяжные потолки» на телефоне: этапы монтажа сеткой 2×2 (01-04 слева направо, сверху вниз),
+   в ценах чёрная плитка во всю ширину, две другие рядом, полный прайс ниже во всю ширину */
+@media (max-width: 760px) {
+  [data-page="potolki"] .how .process-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  [data-page="potolki"] .how .process-grid article { display: flex; flex-direction: column; align-items: flex-start; padding: 14px 14px 16px; border-radius: 16px; }
+  [data-page="potolki"] .how .step-number { margin: 0 0 14px; padding: 6px 8px; font-size: 20px; }
+  [data-page="potolki"] .how .process-grid h3 { margin: 0 0 6px; font-size: 15px; line-height: 1.25; }
+  [data-page="potolki"] .how .process-grid p:not(.step-number) { font-size: 13px; line-height: 1.45; }
+  [data-page="potolki"] .price-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  [data-page="potolki"] .price-grid .price-item.is-dark { grid-column: 1 / -1; }
+  [data-page="potolki"] .price-grid .ptl-price-text { min-height: 0; gap: 18px; padding: 18px 16px; border-radius: 20px; }
+  [data-page="potolki"] .price-grid .ptl-price-text strong { font-size: 24px; letter-spacing: -0.8px; white-space: normal; }
+  [data-page="potolki"] .price-grid .ptl-price-text .price-value small:last-child { font-size: 12px; line-height: 1.4; }
+  [data-page="potolki"] .price-grid .ptl-price-text .price-arrow { width: 30px; height: 30px; }
 }

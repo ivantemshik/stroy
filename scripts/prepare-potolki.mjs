@@ -12,7 +12,9 @@ await mkdir(out, {recursive: true});
 // [ширина, высота]: файл называется <имя>-<ширина>.webp
 const sizes = {
   hero: [[1536, 1024], [1100, 733]],
+  'hero-night': [[1536, 1024], [1100, 733]],
   'hero-mobile': [[800, 1200], [560, 840]],
+  'hero-mobile-night': [[800, 1200], [560, 840]],
   matovyy: [[800, 600], [480, 360]],
   paryashchiy: [[800, 600], [480, 360]],
   linii: [[800, 600], [480, 360]],
@@ -28,6 +30,17 @@ for (const [name, list] of Object.entries(sizes)) {
   for (const [width, height] of list) {
     const target = `${out}/${name}-${width}.webp`;
     await sharp(file).resize(width, height, {fit: 'cover', position: 'centre'}).webp({quality: 82}).toFile(target);
+    console.log(target);
+    done += 1;
+  }
+}
+// «Потолки в интерьере»: карточки и галерея берут фото из public/images/objects (как остальные галереи сайта)
+for (const id of ['potolki-holl', 'potolki-spalnya', 'potolki-kabinet', 'potolki-kuhnya', 'potolki-vannaya', 'potolki-detskaya']) {
+  const file = ['webp', 'png'].map(ext => `${source}/${id}.${ext}`).find(existsSync);
+  if (!file) continue;
+  for (const [width, height, suffix] of [[1536, 1024], [800, 533], [320, 240, 'thumb']]) {
+    const target = `public/images/objects/${id}-${suffix || width}.webp`;
+    await sharp(file).resize(width, height, {fit: 'cover', position: 'centre'}).webp({quality: suffix ? 78 : 82}).toFile(target);
     console.log(target);
     done += 1;
   }

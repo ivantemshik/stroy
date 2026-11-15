@@ -12,6 +12,7 @@ await mkdir(out, {recursive: true});
 // [ширина, высота, суффикс]: по умолчанию суффикс это ширина, «thumb» это миниатюра 112×112 для списка разделов
 const sizes = {
   gostinaya: [[1536, 1024], [1100, 733], [800, 533]],
+  'gostinaya-night': [[1536, 1024], [1100, 733], [800, 533]],
   materialy: [[1200, 800], [800, 533]],
   chernovaya: [[1200, 800], [112, 112, 'thumb']],
   inzheneriya: [[1200, 800], [112, 112, 'thumb']],
@@ -26,6 +27,7 @@ const jobs = [
   {name: 'about-team-placeholder', list: [[1400, 933], [800, 533]], from: 'design/sources/about/about-team-placeholder', to: 'public/images/about/about-team-placeholder'},
   // Вертикальный кадр первого экрана «Отделки» для телефона
   {name: 'hero-mobile', list: [[800, 1200], [560, 840]], from: `${source}/hero-mobile`, to: `${out}/hero-mobile`},
+  {name: 'hero-mobile-night', list: [[800, 1200], [560, 840]], from: `${source}/hero-mobile-night`, to: `${out}/hero-mobile-night`},
   // Квадратные фото окон услуг (src/site/services.js)
   ...['build', 'works', 'finishing', 'engineering', 'landscape', 'lighting', 'furniture', 'design'].map(key => ({
     name: `service-${key}`, list: [[800, 800], [480, 480]], from: `design/sources/services/service-${key}`, to: `public/images/services/service-${key}`

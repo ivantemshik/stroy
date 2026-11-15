@@ -1,0 +1,36 @@
+:root {
+  --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 64px; --space-3xl: 96px; --space-4xl: 144px;
+  --text-xs: 0.8125rem; --text-sm: 0.9375rem; --text-md: 1.0625rem; --text-lg: 1.25rem; --text-xl: 1.5625rem; --text-2xl: 1.953rem; --text-3xl: 2.441rem;
+  --text-display: clamp(2.5rem, 3.6vw + 0.75rem, 4.5rem);
+  --text-section: clamp(2.125rem, 2.3vw + 1rem, 3.5rem); --text-title: clamp(1.25rem, 0.75vw + 0.875rem, 1.625rem); --text-lead: clamp(1.125rem, 0.35vw + 1rem, 1.375rem);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1); --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms; --dur-short: 220ms; --dur-long: 420ms;
+  --color-error: oklch(50% 0.17 27); --color-success: oklch(46% 0.1 150);
+  --container: 1440px; --gutter: 64px; --gap-columns: 32px; --section-gap-s: 120px; --section-gap: 144px; --section-gap-l: 176px;
+  --z-base: 1; --z-raised: 10; --z-sticky: 200; --z-sticky-nav: 300; --z-modal: 400; --z-toast: 500;
+
+  /* Палитра текущего проекта «Дом Мира»: бумага #f7f7f5, графит #181918, небо #91b2bf, слива #51435a */
+  --color-paper: oklch(97.6% 0.0026 106.4);
+  --color-paper-2: oklch(95% 0.0054 117.9);
+  --color-paper-3: oklch(91.4% 0.0055 117.9);
+  --color-ink: oklch(21.2% 0.0025 145.5);
+  --color-ink-2: oklch(35.4% 0.0043 145.5);
+  --color-muted: oklch(49.2% 0.0073 137.8);
+  --color-rule: oklch(87.6% 0.0084 121.6);
+  --color-sky: oklch(74.3% 0.0405 223.8);
+  --color-sky-2: oklch(92.5% 0.0105 219.6);
+  --color-accent: oklch(40.6% 0.0417 312);
+  --color-accent-2: oklch(34.2% 0.0377 311.5);
+  --color-accent-ink: oklch(97.6% 0.0026 106.4);
+  --color-focus: oklch(34.2% 0.0377 311.5);
+  --color-scrim: oklch(97.6% 0.0026 106.4 / 0.86);
+  --color-shade: oklch(21.2% 0.0025 145.5 / 0.72);
+
+  --font-display: "Manrope", ui-sans-serif, sans-serif;
+  --font-body: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-outlier: var(--font-body);
+
+  --radius-stage: 38px; --radius-card: 24px; --radius-input: 14px; --radius-pill: 999px; --rule-hair: 1px; --shadow-card: none;
+  --tracking-display: -0.025em;
+  --header-h: 84px;
+}

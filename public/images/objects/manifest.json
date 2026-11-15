@@ -1,0 +1,371 @@
+{
+ "promenad-zima": {
+  "width": 1417,
+  "height": 962,
+  "widths": [
+   1417,
+   1200,
+   800
+  ]
+ },
+ "promenad-vecher": {
+  "width": 1571,
+  "height": 1098,
+  "widths": [
+   1571,
+   800
+  ]
+ },
+ "promenad-noch": {
+  "width": 1468,
+  "height": 1098,
+  "widths": [
+   1468
+  ]
+ },
+ "promenad-basseyn": {
+  "width": 1417,
+  "height": 1130,
+  "widths": [
+   1417,
+   800
+  ]
+ },
+ "promenad-lestnica": {
+  "width": 1098,
+  "height": 1478,
+  "widths": [
+   1098,
+   600
+  ]
+ },
+ "malakhovka": {
+  "width": 1536,
+  "height": 1152,
+  "widths": [
+   1536,
+   800
+  ]
+ },
+ "malakhovka-fasad": {
+  "width": 1536,
+  "height": 1152,
+  "widths": [
+   1536
+  ]
+ },
+ "malakhovka-vhod": {
+  "width": 1536,
+  "height": 1152,
+  "widths": [
+   1536
+  ]
+ },
+ "malakhovka-do": {
+  "width": 1536,
+  "height": 1152,
+  "widths": [
+   1536
+  ]
+ },
+ "nikolina-gora": {
+  "width": 1632,
+  "height": 1224,
+  "widths": [
+   1600,
+   800
+  ]
+ },
+ "nikolina-gora-vhod": {
+  "width": 1024,
+  "height": 768,
+  "widths": [
+   1024
+  ]
+ },
+ "nikolina-gora-ugol": {
+  "width": 1632,
+  "height": 1224,
+  "widths": [
+   1600
+  ]
+ },
+ "timurkino": {
+  "width": 2312,
+  "height": 1042,
+  "widths": [
+   1600,
+   800
+  ]
+ },
+ "timurkino-fasad": {
+  "width": 2312,
+  "height": 1042,
+  "widths": [
+   1600
+  ]
+ },
+ "timurkino-plita": {
+  "width": 2000,
+  "height": 900,
+  "widths": [
+   1600,
+   800
+  ]
+ },
+ "timurkino-monolit": {
+  "width": 2312,
+  "height": 1042,
+  "widths": [
+   1600
+  ]
+ },
+ "timurkino-uteplenie": {
+  "width": 1042,
+  "height": 2312,
+  "widths": [
+   1000,
+   600
+  ]
+ },
+ "timurkino-gotov": {
+  "width": 2000,
+  "height": 900,
+  "widths": [
+   1600
+  ]
+ },
+ "peshkovo": {
+  "width": 1200,
+  "height": 1600,
+  "widths": [
+   1200,
+   700
+  ]
+ },
+ "peshkovo-etap-uchastok": {
+  "width": 2312,
+  "height": 1042,
+  "widths": [
+   1200,
+   700
+  ]
+ },
+ "peshkovo-etap-plita": {
+  "width": 2000,
+  "height": 900,
+  "widths": [
+   1200,
+   700
+  ]
+ },
+ "peshkovo-etap-steny": {
+  "width": 2312,
+  "height": 1042,
+  "widths": [
+   1200,
+   700
+  ]
+ },
+ "peshkovo-etap-beton": {
+  "width": 2000,
+  "height": 900,
+  "widths": [
+   1200
+  ]
+ },
+ "peshkovo-etap-krovlya": {
+  "width": 2312,
+  "height": 1042,
+  "widths": [
+   1200,
+   700
+  ]
+ },
+ "peshkovo-etap-fasad": {
+  "width": 2000,
+  "height": 900,
+  "widths": [
+   1200,
+   700
+  ]
+ },
+ "peshkovo-gotov": {
+  "width": 1200,
+  "height": 1600,
+  "widths": [
+   1200,
+   700
+  ]
+ },
+ "peshkovo-gotov-2": {
+  "width": 1200,
+  "height": 1600,
+  "widths": [
+   1200
+  ]
+ },
+ "peshkovo-gotov-3": {
+  "width": 1200,
+  "height": 1600,
+  "widths": [
+   1200
+  ]
+ },
+ "banya": {
+  "width": 1440,
+  "height": 1920,
+  "widths": [
+   1200,
+   700
+  ]
+ },
+ "banya-2": {
+  "width": 1440,
+  "height": 1920,
+  "widths": [
+   1200
+  ]
+ },
+ "garazh": {
+  "width": 1440,
+  "height": 1920,
+  "widths": [
+   1200,
+   700
+  ]
+ },
+ "garazh-2": {
+  "width": 1440,
+  "height": 1920,
+  "widths": [
+   1200
+  ]
+ },
+ "garazh-3": {
+  "width": 1440,
+  "height": 1920,
+  "widths": [
+   1200
+  ]
+ },
+ "garazh-potolok": {
+  "width": 960,
+  "height": 1280,
+  "widths": [
+   960
+  ]
+ },
+ "garazh-otdelka": {
+  "width": 960,
+  "height": 1280,
+  "widths": [
+   960
+  ]
+ },
+ "otdelka-gostinaya": {
+  "width": 1472,
+  "height": 1098,
+  "widths": [
+   1472,
+   1100,
+   800
+  ]
+ },
+ "otdelka-stolovaya": {
+  "width": 1467,
+  "height": 1098,
+  "widths": [
+   1467,
+   800
+  ]
+ },
+ "otdelka-gostinaya-2": {
+  "width": 1446,
+  "height": 1063,
+  "widths": [
+   1446,
+   800
+  ]
+ },
+ "otdelka-kamin": {
+  "width": 1463,
+  "height": 1098,
+  "widths": [
+   1463,
+   800
+  ]
+ },
+ "otdelka-spalnya": {
+  "width": 1449,
+  "height": 1098,
+  "widths": [
+   1449,
+   800
+  ]
+ },
+ "otdelka-vannaya": {
+  "width": 1063,
+  "height": 1514,
+  "widths": [
+   1063,
+   600
+  ]
+ },
+ "otdelka-kuhnya": {
+  "width": 1098,
+  "height": 1523,
+  "widths": [
+   1098,
+   600
+  ]
+ },
+ "otdelka-stolovaya-2": {
+  "width": 2016,
+  "height": 1512,
+  "widths": [
+   1600,
+   800
+  ]
+ },
+ "otdelka-shkafy": {
+  "width": 2016,
+  "height": 1512,
+  "widths": [
+   1600,
+   800
+  ]
+ },
+ "otdelka-lestnica": {
+  "width": 1512,
+  "height": 2016,
+  "widths": [
+   1100,
+   600
+  ]
+ },
+ "otdelka-chernovaya": {
+  "width": 867,
+  "height": 1156,
+  "widths": [
+   867,
+   600
+  ]
+ },
+ "otdelka-karkas": {
+  "width": 867,
+  "height": 1156,
+  "widths": [
+   867,
+   600
+  ]
+ },
+ "rekonstrukciya": {
+  "width": 1224,
+  "height": 1632,
+  "widths": [
+   1100,
+   600
+  ]
+ }
+}

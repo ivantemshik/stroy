@@ -2,6 +2,13 @@ node_modules/
 design/
 qa/
 scripts/
+test/
+research/
+photos/
+.cache/
+.claude/
+.env
+.env.*
 README.md
 Обзор_ГК_ВесьМир.md
-photos/
+figma-export.html

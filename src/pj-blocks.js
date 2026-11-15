@@ -7,12 +7,10 @@ import {postLead, warmUpProtection} from './site/forms.js';
 import {goal} from './site/analytics.js';
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-const pad = number => String(number).padStart(2, '0');
 
 /* Состав: один раздел раскрыт, фото слева меняется под него */
 const items = [...document.querySelectorAll('.pj-item')];
 const photo = document.querySelector('#section-photo');
-const caption = document.querySelector('#section-caption');
 function openItem(item) {
   if (item.classList.contains('is-open')) return;
   items.forEach(other => {
@@ -21,9 +19,6 @@ function openItem(item) {
     other.querySelector('.pj-item-head').setAttribute('aria-expanded', String(open));
     other.querySelector('.pj-item-body').hidden = !open;
   });
-  const index = items.indexOf(item) + 1;
-  const title = item.querySelector('.pj-item-title').lastChild.textContent.trim();
-  if (caption) caption.textContent = `${pad(index)} / ${pad(items.length)} · ${title}`;
   if (!photo) return;
   const swap = () => { photo.src = item.dataset.photo; photo.alt = item.dataset.alt; };
   if (reducedMotion.matches) { swap(); return; }

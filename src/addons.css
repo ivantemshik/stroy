@@ -370,13 +370,13 @@ html:not(.js) .theme-toggle { display: none; }
 @media (max-width: 760px) { [data-theme="dark"] .pj-sky::after { background: linear-gradient(180deg, var(--sky-fade-92) 46%, var(--sky-fade-0) 66%); } }
 [data-theme="dark"] .pj-model, [data-theme="dark"] .pj-gallery-photo, [data-theme="dark"] .pj-site-frame { background: var(--card-2); }
 [data-theme="dark"] .pj-model::after { background: linear-gradient(180deg, var(--night-fade-0) 45%, rgba(17, 19, 21, 0.9) 78%, var(--paper) 100%); }
-[data-theme="dark"] .pj-scale, [data-theme="dark"] .pj-gallery-photo figcaption, [data-theme="dark"] .pj-callouts span { background: var(--night-chip); color: var(--ink); }
+[data-theme="dark"] .pj-callouts span { background: var(--night-chip); color: var(--ink); }
 [data-theme="dark"] .pj-price-tile, [data-theme="dark"] .pj-spec { background: var(--card); color: var(--ink); }
 [data-theme="dark"] .pj-catalog-tile, [data-theme="dark"] .pj-form { background: var(--band); }
 [data-theme="dark"] .pj-catalog-tile:hover .pj-circle { background: var(--ink); color: var(--paper); }
 [data-theme="dark"] .pj-item { background: rgba(255, 255, 255, 0.04); }
 [data-theme="dark"] .pj-item:not(.is-open):hover, [data-theme="dark"] .pj-item.is-open { background: var(--card); }
-[data-theme="dark"] .pj-item.is-open .pj-item-title small, [data-theme="dark"] .pj-spec th { color: var(--plum-text); }
+[data-theme="dark"] .pj-spec th { color: var(--plum-text); }
 [data-theme="dark"] .pj-site-frame::after { background: linear-gradient(90deg, var(--night-fade) 0, var(--night-fade-85) 30%, var(--night-fade-0) 50%); }
 [data-theme="dark"] .pj-submit { background: var(--ink); color: var(--paper); }
 [data-theme="dark"] .pj-submit:hover { background: #ffffff; }
@@ -1216,14 +1216,16 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
 /* «С чем к нам приходят» на «Отделке»: три сценария входа (дом без отделки, дизайн проект, капитальный ремонт) */
 .otd-paths .section-heading { margin-bottom: 28px; }
 .otd-paths-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
-.otd-path { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 26px 26px 26px; border-radius: 24px; background: var(--sheet); color: var(--ink); }
-.otd-path-icon { width: 48px; height: 48px; margin-bottom: 18px; padding: 12px; border-radius: 14px; background: var(--soft); fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.otd-path { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 22px 24px; border-radius: 24px; background: var(--sheet); color: var(--ink); }
+.otd-path-icon { width: 40px; height: 40px; margin-bottom: 6px; padding: 10px; border-radius: 12px; background: var(--soft); fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .otd-path h3 { margin: 0; font-size: 22px; font-weight: 500; line-height: 1.2; letter-spacing: -0.5px; }
-.otd-path p { margin: 0 0 12px; font-size: 15px; line-height: 1.6; color: var(--muted); }
-.otd-path .pj-item-link { margin-top: auto; }
-.otd-path .pj-item-link:focus-visible { outline: 2px solid var(--plum); outline-offset: 2px; }
-[data-theme="dark"] .otd-path .pj-item-link:focus-visible { outline-color: var(--plum-text); }
-@media (max-width: 900px) { .otd-paths-grid { grid-template-columns: minmax(0, 1fr); gap: 8px; } .otd-path { padding: 22px 20px; border-radius: 18px; } .otd-path h3 { font-size: 20px; } }
+.otd-path p { margin: 0; font-size: 15px; line-height: 1.5; color: var(--muted); }
+@media (max-width: 900px) {
+  .otd-paths-grid { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .otd-path { display: grid; grid-template-columns: 40px minmax(0, 1fr); column-gap: 12px; padding: 18px 20px; border-radius: 18px; }
+  .otd-path-icon { grid-row: span 2; margin: 0; }
+  .otd-path h3 { font-size: 20px; }
+}
 
 /* «Наши услуги»: одна строка о компании под заголовком (полный блок «О компании» ниже, после цен и этапов) */
 .uslugi .section-heading { margin-bottom: 14px; }
@@ -1245,6 +1247,7 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
 #main > .faq { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 12px 48px; align-items: stretch; padding-top: 112px; padding-bottom: 40px; }
 .faq-side { display: flex; flex-direction: column; align-items: flex-start; }
 .faq #faq-title { margin: 0; font-size: 44px; line-height: 1.1; letter-spacing: -1.8px; }
+[data-page="otdelka"] .faq #faq-title { text-wrap: balance; }
 .faq-lead { max-width: 400px; margin: 16px 0 0; font-size: 16px; line-height: 1.6; color: var(--muted); }
 /* фото-плитка с реальным объектом: растёт на всю оставшуюся высоту колонки, текст внизу на затемнении */
 .faq-help { position: relative; isolation: isolate; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; width: 100%; min-height: 400px; margin-top: 32px; overflow: hidden; border-radius: 24px; background: var(--tile-dark); color: var(--photo-ink); }
@@ -1284,6 +1287,7 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
   #main > .faq { grid-template-columns: minmax(0, 1fr); gap: 0; padding-top: 72px; padding-bottom: 24px; }
   .faq-side { display: contents; }
   .faq #faq-title { font-size: 30px; letter-spacing: -1.2px; }
+  [data-page="otdelka"] .faq #faq-title { margin-bottom: 24px; }
   .faq-lead { margin: 12px 0 24px; font-size: 15px; }
   .faq .faq-list { order: 2; }
   .faq-help { order: 3; flex: none; min-height: 340px; margin-top: 12px; border-radius: 20px; }
@@ -1311,15 +1315,12 @@ button.prices-more { padding: 0; border: 0; background: none; font: inherit; fon
 .design-page .pj-catalog-top .eyebrow { color: var(--tile-dark-ink); }
 .design-page .pj-crumbs { font-size: 12px; }
 .design-page .pj-lead { font-size: 15px; }
-.design-page .pj-scale, .design-page .pj-gallery-photo figcaption { font-size: 12px; }
 .design-page .pj-price-value small, .design-page .pj-price-value small:last-child { font-size: 13px; }
 .design-page .pj-catalog-value { font-size: 13px; }
-.design-page .pj-item-title small { font-size: 12px; }
 .design-page .pj-item-price { font-size: 14px; }
 .design-page .pj-item-body > p { max-width: 460px; font-size: 15px; line-height: 1.6; }
 .design-page .pj-item-cost small { font-size: 13px; }
 .design-page .pj-chain-note { font-size: 14px; }
-.design-page .pj-stages-head > p { font-size: 14px; }
 .design-page .otd-price-tiles li > span { font-size: 15px; }
 
 /* ---------- Окна: та же основная кнопка, подписи полей не мельче 13 px ---------- */
